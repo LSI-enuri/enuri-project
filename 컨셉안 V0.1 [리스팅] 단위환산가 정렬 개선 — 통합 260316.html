@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[리스팅] 단위환산가 정렬 개선 - 통합</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;background:#f0f0ef;padding:40px 24px;color:#1a1a1a;font-size:14px;line-height:1.5}
+.doc{max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.header{background:#003D6B;border-radius:12px;padding:24px 28px;display:flex;flex-direction:column;gap:14px}
+.header-title{font-size:17px;font-weight:600;color:#fff;letter-spacing:-0.2px}
+.header-divider{height:1px;background:rgba(0,146,255,0.3)}
+.meta-row{display:flex;gap:36px;flex-wrap:wrap}
+.meta-item{display:flex;flex-direction:column;gap:4px}
+.meta-label{font-size:10px;color:#6DBEFF;text-transform:uppercase;letter-spacing:0.8px;font-weight:500}
+.meta-value{font-size:13px;color:#C8E6FF;font-weight:500}
+.section{display:flex;flex-direction:column;gap:10px}
+.section-heading{font-size:14px;font-weight:600;color:#1a1a1a;display:flex;align-items:center;gap:8px}
+.section-heading::before{content:'';display:inline-block;width:3px;height:16px;background:#0092FF;border-radius:2px;flex-shrink:0}
+.card{background:#fff;border:1px solid #e2e2e2;border-radius:12px;overflow:hidden}
+.info-grid{display:grid;grid-template-columns:1fr 2fr}
+.info-cell{padding:14px 18px;border-bottom:1px solid #e2e2e2}
+.info-cell:nth-child(1){border-right:1px solid #e2e2e2}
+.info-label{font-size:11px;color:#999;margin-bottom:4px;font-weight:500}
+.info-value{font-size:13px;color:#1a1a1a;font-weight:600}
+.purpose-bar{background:#EBF5FF;border-top:1px solid #B3D9FF;padding:14px 18px}
+.purpose-label{font-size:11px;color:#0070C4;margin-bottom:5px;font-weight:500}
+.purpose-text{font-size:13px;color:#003D6B;font-weight:500;line-height:1.6;word-break:keep-all}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.compare-card{border-radius:12px;overflow:hidden;border:1px solid #e2e2e2}
+.compare-head{padding:14px 18px 12px;background:#f7f7f7;border-bottom:1px solid #e2e2e2}
+.compare-head-title{font-size:13px;font-weight:600;color:#1a1a1a}
+.compare-head-sub{font-size:11px;margin-top:3px;color:#777}
+.compare-body{background:#fff;padding:12px 18px 14px;display:flex;flex-direction:column;gap:8px}
+.compare-item{font-size:12px;color:#555;line-height:1.6}
+.compare-footer{padding:10px 18px;font-size:12px;font-weight:600;border-top:1px solid #e2e2e2;color:#1a1a1a;background:#f7f7f7}
+.policy-list{display:flex;flex-direction:column}
+.policy-row{display:flex;align-items:flex-start;gap:12px;padding:13px 18px;border-bottom:1px solid #e2e2e2}
+.policy-row:last-child{border-bottom:none}
+.policy-row.ref-row{background:#f9f9f9}
+.policy-badge{flex-shrink:0;background:#EBF5FF;color:#0070C4;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;border:1px solid #B3D9FF;margin-top:1px;white-space:nowrap}
+.policy-badge.ref{background:#f0f0f0;color:#777;border-color:#ddd}
+.policy-text{font-size:13px;color:#1a1a1a;line-height:1.6}
+.policy-sub{font-size:12px;color:#666;margin-top:4px;line-height:1.5}
+.ref-title{font-size:12px;font-weight:600;color:#555;margin-bottom:5px}
+.case-labels{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.case-label{border-radius:8px;padding:9px 14px;font-size:12px;font-weight:600;text-align:center;background:#EBF5FF;color:#003D6B;border:1px solid #B3D9FF}
+.tie-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.tie-table th{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.5px;padding:10px 16px;background:#f7f7f7;border-bottom:1px solid #ddd;text-align:left;white-space:nowrap}
+.tie-table th:nth-child(1){width:60px}
+.tie-table th:nth-child(2){width:54%}
+.tie-table th:nth-child(3){width:auto}
+.tie-table td{padding:14px 16px;font-size:12px;color:#1a1a1a;vertical-align:top;border-bottom:1px solid #e8e8e8;line-height:1.7;word-break:keep-all}
+.tie-table tr:last-child td{border-bottom:none}
+.tie-table td:first-child{text-align:center;vertical-align:middle;white-space:nowrap}
+.tie-table td:last-child{color:#666;font-size:12px}
+.plan-badge{display:inline-block;background:#EBF5FF;color:#0070C4;font-size:11px;font-weight:600;padding:3px 9px;border-radius:4px;border:1px solid #B3D9FF}
+.figma-row{display:flex;align-items:center;gap:14px;padding:16px 18px}
+.figma-icon{width:34px;height:34px;border-radius:6px;background:#1E1E1E;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.figma-icon svg{width:16px;height:22px}
+.figma-info{display:flex;flex-direction:column;gap:4px}
+.figma-label{font-size:11px;color:#888;font-weight:500}
+.figma-link{font-size:13px;font-weight:600;color:#0070C4;text-decoration:none}
+.figma-link:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <div class="header">
+    <div class="header-title">[리스팅] 단위환산가 정렬 개선 — 통합</div>
+    <div class="header-divider"></div>
+    <div class="meta-row">
+      <div class="meta-item"><span class="meta-label">버전</span><span class="meta-value">컨셉안 v0.1</span></div>
+      <div class="meta-item"><span class="meta-label">최종작성일</span><span class="meta-value">2026.03.16</span></div>
+      <div class="meta-item"><span class="meta-label">기획담당자</span><span class="meta-value">에누리서비스기획 이상인</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">01 프로젝트 개요</div>
+    <div class="card">
+      <div class="info-grid">
+        <div class="info-cell">
+          <div class="info-label">범위</div>
+          <div class="info-value">PC / MW / APP</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-label">적용 페이지</div>
+          <div class="info-value">카테고리 페이지 (LP), 검색결과 페이지 (SRP)</div>
+        </div>
+      </div>
+      <div class="purpose-bar">
+        <div class="purpose-label">목적</div>
+        <div class="purpose-text">단위별 분산된 정렬을 통합하여 고객이 단위 선택 없이도 단위환산가가 있는 상품 중 실제 가장 저렴한 상품을 바로 탐색</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">02 현황 (As-Is) vs 개선 (To-Be)</div>
+    <div class="compare-grid">
+      <div class="compare-card">
+        <div class="compare-head">
+          <div class="compare-head-title">As-Is — 현황</div>
+          <div class="compare-head-sub">단위별 분리 정렬 (ml당 / g당 / L당 ...)</div>
+        </div>
+        <div class="compare-body">
+          <div class="compare-item">· 고객이 단위 직접 선택 필요</div>
+          <div class="compare-item">· 다른 단위의 더 저렴한 상품 미노출</div>
+          <div class="compare-item">· 최적 가성비 상품 발견 실패 위험</div>
+          <div class="compare-item">· 정렬 UX 파편화</div>
+        </div>
+        <div class="compare-footer">→ 고객 구매 기회 손실</div>
+      </div>
+      <div class="compare-card">
+        <div class="compare-head">
+          <div class="compare-head-title">To-Be — 개선</div>
+          <div class="compare-head-sub">단위 통합 정렬</div>
+        </div>
+        <div class="compare-body">
+          <div class="compare-item">· 단위 선택 불필요</div>
+          <div class="compare-item">· 전 상품 단위환산가 기준 통합 노출</div>
+          <div class="compare-item">· 실질적 최저가 상품 최상단 노출</div>
+          <div class="compare-item">· 직관적 정렬 UX</div>
+        </div>
+        <div class="compare-footer">→ 단위환산가가 있는 모델의 최저가 통합 탐색 가능</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">03 필수 정책</div>
+    <div class="card">
+      <div class="policy-list">
+        <div class="policy-row">
+          <span class="policy-badge">P1</span>
+          <div><div class="policy-text">정렬명: 단위환산 최저가순 (UI 표기 동일)</div></div>
+        </div>
+        <div class="policy-row">
+          <span class="policy-badge">P2</span>
+          <div><div class="policy-text">단위환산가 기준 오름차순 정렬 (단위 종류 무관, 전체 통합)</div></div>
+        </div>
+        <div class="policy-row">
+          <span class="policy-badge">P3</span>
+          <div><div class="policy-text">단위환산가 없는 상품 → 정렬 대상에서 제외</div></div>
+        </div>
+        <div class="policy-row">
+          <span class="policy-badge">P4</span>
+          <div><div class="policy-text">모델에 속한 상품들 중 단위환산 최저가 상품을 기준으로 정렬 및 대표모델이 됨</div></div>
+        </div>
+        <div class="policy-row">
+          <span class="policy-badge">P5</span>
+          <div>
+            <div class="policy-text">정렬 제공 범위: 단위환산가가 있는 가격비교 모델</div>
+            <div class="policy-sub">(PC: 전체, 가격비교 탭에서만 정렬 노출 / MW·APP: 전체 리스트)</div>
+          </div>
+        </div>
+        <div class="policy-row">
+          <span class="policy-badge">P6</span>
+          <div>
+            <div class="policy-text">단위 업데이트 주기: 카테고리 재분류 및 새 단위 생성 시 24시간(1일) 주기로 업데이트 후 프론트 반영</div>
+            <div class="policy-sub">* 현재 정책 유지</div>
+          </div>
+        </div>
+        <div class="policy-row ref-row">
+          <span class="policy-badge ref">참고</span>
+          <div>
+            <div class="ref-title">단위환산가 산출 기준 (가격 기준)</div>
+            <div class="policy-sub">PC — 배송비포함 필터 선택 전: 배송비 미포함 최저가 기준</div>
+            <div class="policy-sub">PC — 배송비포함 필터 선택 후: 배송비 포함 최저가 기준</div>
+            <div class="policy-sub">MO — 배송비 포함 최저가 데이터 없으므로 데이터 추가 이후 보완 예정</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">04 동률 처리 정책 (Tie-breaking) — 제안</div>
+    <div class="case-labels">
+      <div class="case-label">케이스 A — 동일 단위 + 동일 단위환산 최저가</div>
+      <div class="case-label">케이스 B — 다른 단위 + 동일 단위환산 최저가</div>
+    </div>
+    <div class="card">
+      <table class="tie-table">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>정렬 우선순위</th>
+            <th>비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="plan-badge">1안</span></td>
+            <td>(LP/SRP) 인기순 높은 상품순 &gt; 동률 시 랜덤</td>
+            <td>· 인기순 상품 우선 노출<br>· 단위환산 최저가순 정렬 내 인기순 정렬 활용 가능한지 개발 검토 필요</td>
+          </tr>
+          <tr>
+            <td><span class="plan-badge">2안</span></td>
+            <td>(LP/SRP) 단위환산 최저가 상품의 최저가 가격순 &gt; 동률 시 랜덤</td>
+            <td>구현 단순, 가격 직관성 높음</td>
+          </tr>
+          <tr>
+            <td><span class="plan-badge">3안</span></td>
+            <td>(LP) 랜덤<br>(SRP) 상품이 많은 카테고리순 &gt; 같은 카테고리 시 랜덤</td>
+            <td>LP/SRP 로직 분리 &gt; 개발·운영 복잡도 증가</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">05 프론트 / 정책 컨셉안</div>
+    <div class="card">
+      <div class="figma-row">
+        <div class="figma-icon">
+          <svg viewBox="0 0 38 57" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 28.5C19 25.98 20 23.56 21.78 21.78C23.56 20 25.98 19 28.5 19C31.02 19 33.44 20 35.22 21.78C36.999 23.56 38 25.98 38 28.5C38 31.02 36.999 33.44 35.22 35.22C33.44 36.999 31.02 38 28.5 38C25.98 38 23.56 36.999 21.78 35.22C20 33.44 19 31.02 19 28.5Z" fill="#1ABCFE"/>
+            <path d="M0 47.5C0 44.98 1 42.56 2.78 40.78C4.56 39 6.98 38 9.5 38H19V47.5C19 50.02 18 52.44 16.22 54.22C14.44 55.999 12.02 57 9.5 57C6.98 57 4.56 55.999 2.78 54.22C1 52.44 0 50.02 0 47.5Z" fill="#0ACF83"/>
+            <path d="M19 0V19H28.5C31.02 19 33.44 18 35.22 16.22C36.999 14.44 38 12.02 38 9.5C38 6.98 36.999 4.56 35.22 2.78C33.44 1 31.02 0 28.5 0H19Z" fill="#FF7262"/>
+            <path d="M0 9.5C0 12.02 1 14.44 2.78 16.22C4.56 18 6.98 19 9.5 19H19V0H9.5C6.98 0 4.56 1 2.78 2.78C1 4.56 0 6.98 0 9.5Z" fill="#F24E1E"/>
+            <path d="M0 28.5C0 31.02 1 33.44 2.78 35.22C4.56 36.999 6.98 38 9.5 38H19V19H9.5C6.98 19 4.56 20 2.78 21.78C1 23.56 0 25.98 0 28.5Z" fill="#A259FF"/>
+          </svg>
+        </div>
+        <div class="figma-info">
+          <div class="figma-label">PC / MOBILE 프론트·정책 컨셉안</div>
+          <a class="figma-link" href="https://www.figma.com/design/Cp1CAoSqYUtufksekQuh7G/%EB%8B%A8%EC%9C%84%ED%99%98%EC%82%B0%EA%B0%80-%EC%B5%9C%EC%A0%80%EA%B0%80%EC%88%9C-%EC%A0%95%EB%A0%AC?node-id=0-1&t=YKxWtAAJBuumhyO0-1" target="_blank">단위환산가 최저가순 정렬 — Figma에서 열기 ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

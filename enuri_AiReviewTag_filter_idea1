@@ -1,0 +1,1304 @@
+[에누리 Ai리뷰요약 필터 서비스 - 아이데이션 1.htm](https://github.com/user-attachments/files/27005634/Ai.-.1.htm)
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>에누리 AI 쇼핑 어드바이저</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #1a70dd;
+    --blue-light: #e8f1fb;
+    --blue-mid: #5b9de8;
+    --gray: #888;
+    --gray-light: #f5f5f5;
+    --gray-border: #e0e0e0;
+    --text: #222;
+    --text-sub: #555;
+    --tag-positive: #1a70dd;
+    --tag-negative: #888;
+    --ai-bg: linear-gradient(135deg, #1a70dd 0%, #0d4fa8 100%);
+  }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: #f7f8fa;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: #fff;
+    border-bottom: 1px solid var(--gray-border);
+    padding: 0 20px;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 52px;
+    border-bottom: 1px solid #eee;
+  }
+  .logo { font-size: 20px; font-weight: 700; color: var(--blue); letter-spacing: -0.5px; }
+  .search-bar {
+    flex: 1;
+    display: flex;
+    border: 2px solid var(--blue);
+    border-radius: 4px;
+    overflow: hidden;
+    height: 36px;
+  }
+  .search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0 12px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .search-bar button {
+    background: var(--blue);
+    border: none;
+    color: #fff;
+    padding: 0 14px;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  .header-nav {
+    display: flex;
+    gap: 16px;
+    height: 38px;
+    align-items: center;
+    font-size: 12.5px;
+    color: var(--text-sub);
+  }
+  .header-nav span { cursor: pointer; }
+  .header-nav span:hover { color: var(--blue); }
+
+  /* ── PAGE WRAP ── */
+  .page-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  /* ── 이런 상품 어때요? 배너 ── */
+  .reco-banner {
+    background: #fff;
+    border: 1px solid var(--gray-border);
+    border-bottom: none;
+    padding: 10px 14px 12px;
+    margin-top: 0;
+  }
+  .reco-banner-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .reco-banner-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .reco-banner-ad { font-size: 10.5px; color: #aaa; border: 1px solid #ddd; padding: 1px 6px; border-radius: 2px; }
+  .reco-items { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 2px; }
+  .reco-item { flex-shrink: 0; width: 110px; cursor: pointer; }
+  .reco-item-img {
+    width: 110px; height: 80px; background: #d0d0d0;
+    border-radius: 4px; margin-bottom: 5px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .reco-item-badge {
+    position: absolute; top: 4px; left: 4px;
+    background: #e8450a; color: #fff;
+    font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 2px;
+  }
+  .reco-item-shop { font-size: 10px; color: var(--gray); margin-bottom: 2px; }
+  .reco-item-name {
+    font-size: 11px; color: var(--text); line-height: 1.35; margin-bottom: 3px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .reco-item-price { font-size: 12px; font-weight: 700; color: var(--text); }
+  .reco-item-delivery { font-size: 10px; color: #555; }
+  .reco-item-stars { font-size: 10px; color: #f5a623; }
+
+  /* ── 검색결과 + 필터 테이블 ── */
+  .filter-table-wrap {
+    background: #fff;
+    border: 1px solid var(--gray-border);
+    border-bottom: none;
+    margin-bottom: 12px;
+  }
+  .filter-title-row {
+    background: #f5f5f5;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--gray-border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .filter-title-kw { font-size: 14px; font-weight: 700; color: var(--blue); }
+  .filter-title-label { font-size: 14px; font-weight: 700; color: var(--text); }
+  .filter-title-meta { font-size: 11.5px; color: var(--gray); margin-left: 4px; }
+  .filter-table { width: 100%; border-collapse: collapse; }
+  .filter-table tr { border-bottom: 1px solid var(--gray-border); }
+  .filter-table tr:last-child { border-bottom: none; }
+  .filter-table td { padding: 8px 14px; vertical-align: middle; }
+  .filter-table .f-label {
+    background: #fafafa; font-weight: 600; color: var(--text-sub);
+    font-size: 12px; width: 90px; white-space: nowrap;
+    border-right: 1px solid var(--gray-border);
+  }
+  .filter-table .f-content { font-size: 12px; }
+
+  /* 카테고리 탭 */
+  .cat-tabs { display: flex; gap: 5px; flex-wrap: wrap; }
+  .cat-tab {
+    border: 1px solid var(--gray-border); border-radius: 3px;
+    padding: 4px 10px; font-size: 12px; cursor: pointer;
+    background: #fff; color: var(--text-sub); font-family: inherit;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .cat-tab.active { background: var(--blue); color: #fff; border-color: var(--blue); font-weight: 700; }
+  .cat-tab:hover:not(.active) { border-color: #aaa; }
+
+  /* 브랜드·카드 체크박스 */
+  .check-group { display: flex; flex-wrap: wrap; gap: 5px 18px; }
+  .check-item {
+    display: flex; align-items: center; gap: 4px;
+    cursor: pointer; font-size: 12px; color: var(--text-sub); white-space: nowrap;
+  }
+  .check-item input[type=checkbox] { accent-color: var(--blue); width: 13px; height: 13px; }
+  .check-item .ci-count { color: var(--gray); font-size: 11px; }
+  .filter-more {
+    font-size: 11.5px; color: var(--blue); cursor: pointer;
+    border: none; background: none; font-family: inherit; padding: 0; margin-left: 4px;
+  }
+
+  /* 가격대 버튼 */
+  .price-btns { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+  .price-btn {
+    border: 1px solid var(--gray-border); border-radius: 3px;
+    padding: 4px 10px; font-size: 12px; cursor: pointer;
+    background: #fff; color: var(--text-sub); font-family: inherit; transition: all 0.15s;
+  }
+  .price-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .price-inputs { display: flex; align-items: center; gap: 4px; margin-left: 6px; }
+  .price-inp {
+    border: 1px solid var(--gray-border); border-radius: 3px;
+    padding: 3px 7px; font-size: 12px; font-family: inherit; width: 80px; outline: none;
+  }
+  .price-inp:focus { border-color: var(--blue); }
+  .price-go {
+    background: #eee; border: 1px solid var(--gray-border); border-radius: 3px;
+    padding: 3px 9px; font-size: 12px; font-family: inherit; cursor: pointer;
+  }
+
+  /* ── AI ADVISOR PANEL ── */
+  .advisor-panel {
+    background: #fff;
+    border: 1.5px solid var(--blue);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(26,112,221,0.08);
+  }
+  .advisor-header {
+    background: var(--ai-bg);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .advisor-header .ai-badge {
+    background: rgba(255,255,255,0.22);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .advisor-header .title {
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    flex: 1;
+  }
+  .advisor-header .subtitle {
+    color: rgba(255,255,255,0.82);
+    font-size: 11.5px;
+  }
+  .advisor-header .toggle-icon {
+    color: rgba(255,255,255,0.8);
+    font-size: 13px;
+    transition: transform 0.3s;
+  }
+  .advisor-header.open .toggle-icon { transform: rotate(180deg); }
+
+  .advisor-body {
+    padding: 16px 18px 18px;
+    display: none;
+  }
+  .advisor-body.open { display: block; }
+
+  /* Situation Chips - 가로 스와이프 */
+  .situation-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .situation-label {
+    font-size: 11.5px;
+    color: var(--gray);
+    font-weight: 500;
+  }
+  .chip-nav-btns {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .chip-nav-btn {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid var(--blue);
+    background: #fff;
+    color: var(--blue);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    padding: 0;
+    font-family: inherit;
+  }
+  .chip-nav-btn:hover { background: var(--blue); color: #fff; }
+  .chip-nav-btn:disabled { border-color: #ddd; color: #ccc; cursor: default; background: #fff; }
+  .chip-scroll-wrap {
+    position: relative;
+    margin-bottom: 14px;
+  }
+  .chip-scroll {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    align-items: stretch;
+  }
+  .chip-scroll::-webkit-scrollbar { display: none; }
+  .chip-fade-left {
+    position: absolute;
+    left: 0; top: 0; bottom: 4px;
+    width: 36px;
+    background: linear-gradient(to left, transparent, #fff);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 1;
+  }
+  .chip-fade-left.show { opacity: 1; }
+  .chip-fade-right {
+    position: absolute;
+    right: 0; top: 0; bottom: 4px;
+    width: 52px;
+    background: linear-gradient(to right, transparent, #fff);
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 1;
+  }
+  .chip-fade-right.hide { opacity: 0; }
+  .chip {
+    border: 1.5px solid var(--blue);
+    color: var(--blue);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: #fff;
+    font-family: inherit;
+    flex-shrink: 0;
+    white-space: normal;
+    max-width: 160px;
+    text-align: left;
+    line-height: 1.4;
+  }
+  .chip:hover, .chip.active {
+    background: var(--blue);
+    color: #fff;
+  }
+
+  /* AI Response */
+  .ai-response {
+    margin-top: 14px;
+    background: var(--blue-light);
+    border-radius: 10px;
+    padding: 13px 15px;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .ai-response.show { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: none; } }
+
+  .ai-response-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .ai-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+  .ai-response-title { font-weight: 700; font-size: 12.5px; color: var(--blue); }
+
+  .ai-matched-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .ai-tag {
+    background: var(--blue);
+    color: #fff;
+    border-radius: 20px;
+    padding: 3px 11px;
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+  .ai-tag.weight-high { background: var(--blue); }
+  .ai-tag.weight-mid { background: var(--blue-mid); }
+
+  .ai-response-desc {
+    font-size: 12px;
+    color: var(--text-sub);
+    line-height: 1.6;
+  }
+  .ai-response-desc strong { color: var(--blue); }
+
+  .ai-result-count {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .ai-result-count em { color: var(--blue); font-style: normal; font-weight: 700; }
+
+  .ai-reset {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    color: var(--gray);
+    cursor: pointer;
+    border: 1px solid var(--gray-border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    background: #fff;
+    font-family: inherit;
+  }
+  .ai-reset:hover { color: var(--blue); border-color: var(--blue); }
+
+  /* ── FILTER & SORT BAR ── */
+  .filter-sort-bar {
+    background: #fff;
+    border: 1px solid var(--gray-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .filter-sort-label { font-size: 12px; color: var(--gray); margin-right: 4px; }
+  .sort-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sort-btn {
+    border: 1px solid var(--gray-border);
+    border-radius: 4px;
+    padding: 4px 11px;
+    font-size: 12px;
+    cursor: pointer;
+    background: #fff;
+    color: var(--text-sub);
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .sort-btn.active { background: var(--gray-light); border-color: #bbb; font-weight: 700; color: var(--text); }
+  .result-count { margin-left: auto; font-size: 12px; color: var(--gray); }
+  .result-count em { color: var(--blue); font-style: normal; font-weight: 700; }
+
+  /* Active filter strip */
+  .active-filters {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .active-filter-label { font-size: 11.5px; color: var(--gray); }
+  .active-filter-tag {
+    background: var(--blue-light);
+    color: var(--blue);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .active-filter-tag button {
+    background: none;
+    border: none;
+    color: var(--blue-mid);
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    padding: 0;
+  }
+  .filter-clear {
+    font-size: 11.5px;
+    color: var(--gray);
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+  .filter-clear:hover { color: var(--blue); }
+
+  /* ── PRODUCT LIST ── */
+  .product-list { display: flex; flex-direction: column; gap: 0; }
+
+  .product-card {
+    background: #fff;
+    border: 1px solid var(--gray-border);
+    border-radius: 0;
+    padding: 18px 16px;
+    display: flex;
+    gap: 16px;
+    border-bottom: none;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .product-card:first-child { border-radius: 8px 8px 0 0; }
+  .product-card:last-child { border-radius: 0 0 8px 8px; border-bottom: 1px solid var(--gray-border); }
+  .product-card:only-child { border-radius: 8px; border-bottom: 1px solid var(--gray-border); }
+  .product-card:hover { background: #fafcff; }
+  .product-card.hidden { display: none; }
+  .product-card.ai-highlighted { border-left: 3px solid var(--blue); }
+
+  .ai-rank-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 3px;
+    display: none;
+    z-index: 1;
+  }
+  .ai-rank-badge.show { display: block; }
+
+  .product-img-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .product-img {
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--gray-border);
+  }
+  .product-num {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: #333;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .product-info { flex: 1; min-width: 0; }
+  .product-name {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.45;
+    margin-bottom: 5px;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .product-name:hover { color: var(--blue); }
+  .product-cat { font-size: 11.5px; color: var(--gray); margin-bottom: 6px; }
+
+  .product-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: var(--gray);
+  }
+  .stars { color: #f5a623; font-size: 12px; }
+  .rating-val { font-weight: 700; color: var(--text); }
+
+  /* Tags */
+  .product-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 2px;
+  }
+  .ai-tag-label {
+    background: var(--blue);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+  }
+  .tag {
+    border-radius: 3px;
+    padding: 3px 9px;
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tag.positive {
+    background: var(--blue-light);
+    color: var(--blue);
+    border: 1px solid #c2d9f6;
+  }
+  .tag.negative {
+    background: #f2f2f2;
+    color: var(--gray);
+    border: 1px solid #e0e0e0;
+  }
+  .tag.matched {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+    font-weight: 700;
+  }
+
+  /* 가격 */
+  .product-price-area {
+    text-align: right;
+    flex-shrink: 0;
+    min-width: 120px;
+  }
+  .delivery-badge {
+    font-size: 11px;
+    color: var(--blue);
+    background: var(--blue-light);
+    border-radius: 3px;
+    padding: 2px 6px;
+    margin-bottom: 6px;
+    display: inline-block;
+  }
+  .price {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .price-unit { font-size: 13px; }
+  .price-sub { font-size: 11.5px; color: var(--gray); margin-top: 2px; }
+
+  /* Match score bar */
+  .match-bar-wrap {
+    margin-top: 8px;
+    display: none;
+  }
+  .match-bar-wrap.show { display: block; }
+  .match-bar-label {
+    font-size: 11px;
+    color: var(--blue);
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .match-bar {
+    height: 4px;
+    background: var(--gray-border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .match-bar-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+  /* ── LOADING ── */
+  .ai-loading {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0 4px;
+    font-size: 12px;
+    color: var(--blue);
+  }
+  .ai-loading.show { display: flex; }
+  .loader {
+    width: 14px; height: 14px;
+    border: 2px solid var(--blue-light);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── DIVIDER ── */
+  hr.card-divider {
+    border: none;
+    border-top: 1px solid var(--gray-border);
+    margin: 0 0 0 142px;
+  }
+
+  /* Responsive */
+  @media (max-width: 680px) {
+    .product-img { width: 80px; height: 80px; }
+    .product-price-area { min-width: 90px; }
+    .price { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="page-wrap">
+    <div class="header-top">
+      <div class="logo">에누리</div>
+      <div class="search-bar">
+        <input type="text" value="가벼운 운동화" readonly>
+        <button>🔍</button>
+      </div>
+      <div style="font-size:12px;color:#888;white-space:nowrap;">로그인 | 회원가입</div>
+    </div>
+    <div class="header-nav">
+      <span>가전/TV</span><span>컴퓨터</span><span>모바일</span><span>스포츠/아웃도어</span><span>가구</span><span>식품/유아</span><span>패션/뷰티</span>
+    </div>
+  </div>
+</div>
+
+<div class="page-wrap" style="padding-top:10px;">
+
+  <!-- ════ 이런 상품 어때요? 배너 (AI 패널 위) ════ -->
+  <div class="reco-banner">
+    <div class="reco-banner-header">
+      <span class="reco-banner-title">이런 상품 어때요?</span>
+      <span class="reco-banner-ad">광고</span>
+    </div>
+    <div class="reco-items">
+      <div class="reco-item">
+        <div class="reco-item-img"><span class="reco-item-badge" style="background:#1a70dd;">구매 100+</span></div>
+        <div class="reco-item-shop">낫소</div>
+        <div class="reco-item-name">바로인 클리어 발볼넓은 발편한 가벼운 남성...</div>
+        <div class="reco-item-price">49,900원</div>
+        <div class="reco-item-delivery">🚚 무료배송</div>
+        <div class="reco-item-stars">★ 4.6 (9)</div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-item-img"><span class="reco-item-badge" style="background:#1a70dd;">구매 380+</span></div>
+        <div class="reco-item-shop">원마일슈즈</div>
+        <div class="reco-item-name">가벼운 런닝화 발볼넓은 운동화</div>
+        <div class="reco-item-price">19,800원</div>
+        <div class="reco-item-delivery">🚚 무료배송</div>
+        <div class="reco-item-stars">★ 4.7 (253)</div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-item-img"><span class="reco-item-badge" style="background:#1a70dd;">구매 20+</span></div>
+        <div class="reco-item-shop">유어유스</div>
+        <div class="reco-item-name">뉴발란스 740 가벼운 운동화 발편한 신발 U740...</div>
+        <div class="reco-item-price">149,000원</div>
+        <div class="reco-item-delivery">택배 3,000원</div>
+        <div class="reco-item-stars">★ 4.9 (37)</div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-item-img"><span class="reco-item-badge" style="background:#1a70dd;">구매 30+</span></div>
+        <div class="reco-item-shop">유어유스</div>
+        <div class="reco-item-name">나이키 줌 보메로 5 가벼운 운동화 발편한신발 런...</div>
+        <div class="reco-item-price">109,000원</div>
+        <div class="reco-item-delivery">택배 3,000원</div>
+        <div class="reco-item-stars">★ 4.8 (6)</div>
+      </div>
+      <div class="reco-item">
+        <div class="reco-item-img"></div>
+        <div class="reco-item-shop">스카이마루</div>
+        <div class="reco-item-name">BFL 가벼운 운동화 워킹화 경량 조깅화 런닝화 R...</div>
+        <div class="reco-item-price">28,900원</div>
+        <div class="reco-item-delivery">🚚 무료배송</div>
+        <div class="reco-item-stars">★ 4.5 (10)</div>
+      </div>
+    </div>
+  </div><!-- /reco-banner -->
+
+  <!-- 검색결과 필터 테이블 -->
+  <div class="filter-table-wrap">
+    <div class="filter-title-row">
+      <span class="filter-title-kw">가벼운 운동화</span>
+      <span class="filter-title-label">검색결과</span>
+      <span class="filter-title-meta">( 카테고리 97 / 상품수 313,671 )</span>
+    </div>
+    <table class="filter-table">
+      <tr>
+        <td class="f-label">카테고리</td>
+        <td class="f-content">
+          <div class="cat-tabs">
+            <button class="cat-tab active">신발 <span style="color:inherit;font-size:10.5px;">377,805</span></button>
+            <button class="cat-tab">스포츠화 <span style="color:inherit;font-size:10.5px;">79,798</span></button>
+            <button class="cat-tab">등산 <span style="color:inherit;font-size:10.5px;">17,058</span></button>
+            <button class="cat-tab">유아동의류/입화/도서 <span style="color:inherit;font-size:10.5px;">5,611</span></button>
+            <button class="cat-tab">소방/산업 <span style="color:inherit;font-size:10.5px;">2,209</span></button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="f-label">제조사/브랜드 <span style="color:var(--blue);font-size:10.5px;font-weight:400;">190개 +</span></td>
+        <td class="f-content">
+          <div class="check-group">
+            <label class="check-item"><input type="checkbox"> 나이키</label>
+            <label class="check-item"><input type="checkbox"> 원드컵</label>
+            <label class="check-item"><input type="checkbox"> 엘란토</label>
+            <label class="check-item"><input type="checkbox"> 하시파바</label>
+            <label class="check-item"><input type="checkbox"> 프로스펙스</label>
+            <label class="check-item"><input type="checkbox"> 휠라</label>
+            <label class="check-item"><input type="checkbox"> 짬맥팬</label>
+            <label class="check-item"><input type="checkbox"> 아이더</label>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="f-label">카드특가</td>
+        <td class="f-content">
+          <div class="check-group">
+            <label class="check-item"><input type="checkbox"> 전체 <span class="ci-count">(39,227)</span></label>
+            <label class="check-item"><input type="checkbox"> 롯데 <span class="ci-count">(1,289)</span></label>
+            <label class="check-item"><input type="checkbox"> 삼성 <span class="ci-count">(251)</span></label>
+            <label class="check-item"><input type="checkbox"> 신한 <span class="ci-count">(923)</span></label>
+            <label class="check-item"><input type="checkbox"> 우리 <span class="ci-count">(510)</span></label>
+            <label class="check-item"><input type="checkbox"> 하나 <span class="ci-count">(65)</span></label>
+            <label class="check-item"><input type="checkbox"> 현대스마일 <span class="ci-count">(2,004)</span></label>
+            <label class="check-item"><input type="checkbox"> 현대 <span class="ci-count">(1,638)</span></label>
+            <br style="width:100%;">
+            <label class="check-item"><input type="checkbox"> BC <span class="ci-count">(3)</span></label>
+            <label class="check-item"><input type="checkbox"> KB <span class="ci-count">(32,537)</span></label>
+            <label class="check-item"><input type="checkbox"> NH <span class="ci-count">(8)</span></label>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="f-label">혜택/배송</td>
+        <td class="f-content">
+          <label class="check-item"><input type="checkbox"> 오늘출발</label>
+        </td>
+      </tr>
+      <tr>
+        <td class="f-label">가격대</td>
+        <td class="f-content">
+          <div class="price-btns">
+            <button class="price-btn">5만원 이하</button>
+            <button class="price-btn">5~7만원</button>
+            <button class="price-btn">7~10만원</button>
+            <button class="price-btn">10~12만원</button>
+            <button class="price-btn">12만원 이상</button>
+            <div class="price-inputs">
+              <input class="price-inp" type="text" value="0">
+              <span style="color:#aaa;font-size:12px;">~</span>
+              <input class="price-inp" type="text" value="999,999,999">
+              <button class="price-go">가격검색</button>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ════ AI ADVISOR PANEL ════ -->
+  <div class="advisor-panel">
+    <div class="advisor-header open" id="advisorToggle" onclick="toggleAdvisor()">
+      <span class="ai-badge">AI</span>
+      <span class="title">🏃 어떤 상황에서 신을 운동화를 찾고 계세요?</span>
+      <span class="subtitle">상황을 알려주시면 딱 맞는 상품을 골라드릴게요</span>
+      <span class="toggle-icon">▼</span>
+    </div>
+    <div class="advisor-body open" id="advisorBody">
+
+
+      <div class="situation-label-row">
+        <span class="situation-label">💡 자주 찾는 상황을 선택해보세요</span>
+        <div class="chip-nav-btns">
+          <button class="chip-nav-btn" id="chipPrev" onclick="scrollChips(-1)" aria-label="이전">‹</button>
+          <button class="chip-nav-btn" id="chipNext" onclick="scrollChips(1)" aria-label="다음">›</button>
+        </div>
+      </div>
+
+      <!-- 가로 스와이프 칩 영역 -->
+      <div class="chip-scroll-wrap">
+        <div class="chip-fade-left" id="chipFadeLeft"></div>
+        <div class="chip-scroll" id="chipScroll">
+          <button class="chip" onclick="selectSituation(this, '장시간 서서 일하는 직장인이에요. 발이 안 아프고 편한 걸 찾아요')">💼 장시간 서서 일하는 직장인이에요. 발이 안 아프고 편한 걸 찾아요</button>
+          <button class="chip" onclick="selectSituation(this, '매일 아침 30분씩 조깅해요. 가볍고 쿠션감 좋은 운동화 원해요')">🏃 매일 아침 조깅해요. 가볍고 쿠션감 좋은 운동화 원해요</button>
+          <button class="chip" onclick="selectSituation(this, '헬스장 PT 받아요. 착화감 좋고 안 미끄러운 걸 원해요')">🏋️ 헬스장 PT 받아요. 착화감 좋고 안 미끄러운 걸 원해요</button>
+          <button class="chip" onclick="selectSituation(this, '발볼이 넓어서 항상 발이 끼어요. 발볼 넓은 제품 찾아요')">👟 발볼이 넓어서 항상 발이 끼어요. 발볼 넓은 제품 찾아요</button>
+          <button class="chip" onclick="selectSituation(this, '선물용이라 색상이 예쁘고 디자인이 만족스러운 제품 원해요')">🎁 선물용이라 색상이 예쁘고 디자인 만족스러운 제품 원해요</button>
+          <button class="chip" onclick="selectSituation(this, '가성비 좋은 운동화 원해요. 저렴하지만 품질이 좋았으면 해요')">💰 가성비 좋은 운동화 원해요. 저렴하지만 품질이 좋았으면 해요</button>
+          <button class="chip" onclick="selectSituation(this, '등산이나 트레킹할 때 신을 운동화를 찾아요. 미끄럽지 않고 발목 지지가 좋은 걸 원해요')">🏔️ 등산할 때 신을 거 찾아요. 미끄럽지 않고 발목 지지 잘 되는 걸요</button>
+          <button class="chip" onclick="selectSituation(this, '무릎이 좋지 않아요. 충격 흡수가 잘 되고 쿠션이 두꺼운 운동화 원해요')">🦵 무릎이 좋지 않아요. 충격 흡수 잘 되고 쿠션 두꺼운 거 원해요</button>
+          <button class="chip" onclick="selectSituation(this, '하루 종일 걷는 여행용으로 신을 운동화를 찾아요. 가볍고 발이 덜 피곤한 걸 원해요')">✈️ 여행용으로 신을 거 찾아요. 하루 종일 걸어도 발이 안 피곤한 걸요</button>
+          <button class="chip" onclick="selectSituation(this, '초등학생 아이 운동화를 찾아요. 가볍고 잘 닳지 않는 내구성 있는 제품이면 좋겠어요')">👦 아이 운동화 찾아요. 가볍고 잘 안 닳는 내구성 있는 걸로요</button>
+          <button class="chip" onclick="selectSituation(this, '비가 와도 신을 수 있는 방수 기능이 있거나 빨리 마르는 운동화를 찾아요')">🌧️ 비 올 때도 신고 싶어요. 방수되거나 빨리 마르는 걸 찾아요</button>
+          <button class="chip" onclick="selectSituation(this, '요가나 필라테스 수업에서 신을 실내화를 찾아요. 얇고 바닥이 잘 느껴지는 걸 원해요')">🧘 요가·필라테스용 실내화 찾아요. 얇고 바닥 느낌 잘 오는 걸로요</button>
+          <button class="chip" onclick="selectSituation(this, '농구나 줄넘기 같은 점프 운동을 자주 해요. 발목 지지와 쿠션이 중요해요')">🏀 농구나 줄넘기 자주 해요. 발목 지지랑 쿠션이 제일 중요해요</button>
+          <button class="chip" onclick="selectSituation(this, '편의점이나 카페 아르바이트처럼 오래 서있는 알바생이에요. 발바닥이 안 아픈 게 제일 중요해요')">🛒 알바할 때 신을 거요. 오래 서 있어도 발바닥 안 아픈 게 최고예요</button>
+        </div>
+        <div class="chip-fade-right" id="chipFadeRight"></div>
+      </div>
+
+      <div class="ai-loading" id="aiLoading">
+        <div class="loader"></div>
+        <span>리뷰 태그를 분석하고 있어요...</span>
+      </div>
+
+      <div class="ai-response" id="aiResponse">
+        <div class="ai-response-header">
+          <div class="ai-dot"></div>
+          <div class="ai-response-title" id="aiResponseTitle">AI 어드바이저</div>
+        </div>
+        <div class="ai-matched-tags" id="aiMatchedTags"></div>
+        <div class="ai-response-desc" id="aiResponseDesc"></div>
+        <div class="ai-result-count" id="aiResultCount"></div>
+        <button class="ai-reset" onclick="resetAdvisor()">✕ 필터 초기화</button>
+      </div>
+    </div>
+  </div>
+  <div class="active-filters" id="activeFilters" style="display:none;">
+    <span class="active-filter-label">AI 적용 조건:</span>
+    <div id="activeFilterTags"></div>
+    <button class="filter-clear" onclick="resetAdvisor()">전체 초기화</button>
+  </div>
+
+  <!-- SORT BAR -->
+  <div class="filter-sort-bar">
+    <span class="filter-sort-label">정렬</span>
+    <div class="sort-btns">
+      <button class="sort-btn active" onclick="setSort(this,'popular')">인기순</button>
+      <button class="sort-btn" onclick="setSort(this,'price_asc')">최저가순</button>
+      <button class="sort-btn" onclick="setSort(this,'rating')">상품평 많은순</button>
+      <button class="sort-btn" onclick="setSort(this,'new')">신제품순</button>
+    </div>
+    <span class="result-count" id="resultCount">총 <em>6</em>개</span>
+  </div>
+
+  <!-- ════ PRODUCT LIST ════ -->
+  <div class="product-list" id="productList"></div>
+
+</div>
+
+<script>
+/* ── DATA ── */
+const PRODUCTS = [
+  {
+    id: 1,
+    name: '나이키 아디다스 남성 여성 런닝화 조깅화 30종 헬스장 홈트 발편한 발넓은 가벼운 검정 운동화',
+    cat: '스포츠초신발 › 운동화',
+    price: 52620,
+    sellers: 2,
+    rating: 4.6,
+    reviews: 167,
+    delivery: '오늘출발',
+    img: 'https://image.enuri.info/webimage_300/13325000000/13325030000/13325037866.jpg',
+    tags_positive: ['착화감 좋음','색상 예쁨','재구매 의사 있음','가벼움','디자인 만족','발볼 늘음','발볼 넓게 나옴','쿠션감 좋음'],
+    tags_negative: ['사이즈 작게 나옴'],
+  },
+  {
+    id: 2,
+    name: '뉴발란스 574 클래식 남성 여성 캐주얼 운동화 데일리 편안한 가벼운 스니커즈',
+    cat: '스포츠 › 런닝화',
+    price: 41840,
+    sellers: 32,
+    rating: 4.3,
+    reviews: 243,
+    delivery: null,
+    img: 'https://image.enuri.info/webimage_300/13325000000/13325080000/13325087867.jpg',
+    tags_positive: ['착화감 좋음','가벼움','가성비 좋음','색상 예쁨','디자인 만족'],
+    tags_negative: ['발볼 좁음','사이즈 크게 나옴'],
+  },
+  {
+    id: 3,
+    name: '휠라 에어리보 초경량 런닝화 여성용 로우탑 쿠션감 우수 다양한 색상',
+    cat: '스포츠 › 런닝화',
+    price: 62900,
+    sellers: 15,
+    rating: 4.4,
+    reviews: 587,
+    delivery: null,
+    img: 'https://image.enuri.info/webimage_300/13325000000/13325080000/13325084323.jpg',
+    tags_positive: ['디자인 만족','쿠션감 좋음','가벼움','착화감 좋음','색상 예쁨'],
+    tags_negative: ['발볼 좁음'],
+  },
+  {
+    id: 4,
+    name: '휠라 에어리보 초경량 런닝화 남성용 로우탑 블랙 블루 화이트',
+    cat: '스포츠 › 런닝화',
+    price: 62220,
+    sellers: 13,
+    rating: 4.6,
+    reviews: 404,
+    delivery: null,
+    img: 'https://image.enuri.info/webimage_300/13325000000/13325080000/13325087850.jpg',
+    tags_positive: ['가성비 좋음','착화감 좋음','색상 예쁨','가벼움'],
+    tags_negative: ['발볼 좁음'],
+  },
+  {
+    id: 5,
+    name: '아식스 겔카야노 30 남성 런닝화 쿠션 안정성 장거리 마라톤화',
+    cat: '스포츠 › 런닝화',
+    price: 89000,
+    sellers: 8,
+    rating: 4.8,
+    reviews: 312,
+    delivery: '오늘출발',
+    img: 'https://image.enuri.info/webimage_300/13325000000/13325080000/13325087851.jpg',
+    tags_positive: ['쿠션감 좋음','착화감 좋음','가벼움','재구매 의사 있음','발볼 넓게 나옴'],
+    tags_negative: [],
+  },
+  {
+    id: 6,
+    name: '나이키 에어맥스 270 여성 운동화 데일리 패션 스니커즈 경량 에어쿠션',
+    cat: '스포츠 › 운동화',
+    price: 78500,
+    sellers: 5,
+    rating: 4.5,
+    reviews: 198,
+    delivery: null,
+    img: 'https://image.enuri.info/webimage_300/13325000000/13325080000/13325087852.jpg',
+    tags_positive: ['디자인 만족','색상 예쁨','착화감 좋음','가벼움','쿠션감 좋음'],
+    tags_negative: ['가성비 나쁨'],
+  },
+];
+
+/* ── STATE ── */
+let state = {
+  matchedTags: [],
+  activeFilters: [],
+  sort: 'popular',
+  advisorOpen: true,
+};
+
+/* ── SITUATION CHIPS ── */
+function selectSituation(el, text) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  runAdvisorWithText(text);
+}
+
+/* ── TOGGLE ── */
+function toggleAdvisor() {
+  const header = document.getElementById('advisorToggle');
+  const body = document.getElementById('advisorBody');
+  header.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+/* ── TAG KEYWORD MAP ── */
+const KEYWORD_MAP = {
+  '착화감':    ['착화감 좋음'],
+  '편한':      ['착화감 좋음','발볼 넓게 나옴'],
+  '발볼':      ['발볼 넓게 나옴','발볼 늘음'],
+  '넓':        ['발볼 넓게 나옴','발볼 늘음'],
+  '쿠션':      ['쿠션감 좋음'],
+  '가볍':      ['가벼움'],
+  '가성비':    ['가성비 좋음'],
+  '디자인':    ['디자인 만족','색상 예쁨'],
+  '색상':      ['색상 예쁨','디자인 만족'],
+  '재구매':    ['재구매 의사 있음'],
+  '조깅':      ['가벼움','쿠션감 좋음'],
+  '런닝':      ['가벼움','쿠션감 좋음'],
+  '헬스':      ['착화감 좋음','가벼움'],
+  '직장':      ['착화감 좋음','발볼 넓게 나옴'],
+  '출퇴근':    ['착화감 좋음','가벼움'],
+  '장시간':    ['착화감 좋음','발볼 넓게 나옴','쿠션감 좋음'],
+  '선물':      ['색상 예쁨','디자인 만족'],
+  '저렴':      ['가성비 좋음'],
+  '싸':        ['가성비 좋음'],
+};
+
+const TAG_PRIORITY = {
+  '착화감 좋음':3,'발볼 넓게 나옴':3,'쿠션감 좋음':3,
+  '가벼움':2,'가성비 좋음':2,
+  '디자인 만족':1,'색상 예쁨':1,'재구매 의사 있음':1,'발볼 늘음':1,
+};
+
+function extractTags(input) {
+  const matched = new Set();
+  Object.entries(KEYWORD_MAP).forEach(([kw, tags]) => {
+    if (input.includes(kw)) tags.forEach(t => matched.add(t));
+  });
+  return [...matched].sort((a,b) => (TAG_PRIORITY[b]||0) - (TAG_PRIORITY[a]||0));
+}
+
+function scoreProduct(product, tags) {
+  if (!tags.length) return 0;
+  let score = 0;
+  tags.forEach(tag => {
+    if (product.tags_positive.includes(tag)) score += (TAG_PRIORITY[tag]||1);
+  });
+  return score;
+}
+
+/* ── ADVISOR RUN ── */
+function runAdvisorWithText(input) {
+  if (!input) return;
+
+  const loading = document.getElementById('aiLoading');
+  const response = document.getElementById('aiResponse');
+  response.classList.remove('show');
+  loading.classList.add('show');
+
+  setTimeout(() => {
+    loading.classList.remove('show');
+    const tags = extractTags(input);
+    state.matchedTags = tags.length ? tags : ['착화감 좋음','가벼움'];
+    state.activeFilters = [...state.matchedTags];
+    applyAdvisorFilter();
+    showAiResponse(input, state.matchedTags);
+  }, 1200);
+}
+
+function runAdvisor() {
+  const input = (document.getElementById('advisorInput') || {value:''}).value.trim();
+  runAdvisorWithText(input);
+}
+
+function showAiResponse(input, tags) {
+  const response = document.getElementById('aiResponse');
+  const title = document.getElementById('aiResponseTitle');
+  const tagsEl = document.getElementById('aiMatchedTags');
+  const desc = document.getElementById('aiResponseDesc');
+  const countEl = document.getElementById('aiResultCount');
+
+  title.textContent = 'AI 어드바이저';
+  tagsEl.innerHTML = tags.map((t,i) =>
+    `<span class="ai-tag ${i<2?'weight-high':'weight-mid'}">${t}</span>`
+  ).join('');
+
+  const matchedCount = PRODUCTS.filter(p => scoreProduct(p, tags) > 0).length;
+
+  desc.innerHTML = `
+    입력하신 상황을 분석한 결과, 리뷰에서 <strong>${tags.slice(0,2).join('</strong>, <strong>')}</strong> 키워드가 중요한 것으로 파악했어요.<br>
+    해당 태그가 많이 언급된 상품을 우선적으로 보여드릴게요.
+  `;
+  countEl.innerHTML = `매칭된 상품 <em>${matchedCount}개</em> / 전체 ${PRODUCTS.length}개`;
+
+  response.classList.add('show');
+
+  // active filter strip
+  const strip = document.getElementById('activeFilters');
+  const tagCont = document.getElementById('activeFilterTags');
+  tagCont.innerHTML = tags.map(t =>
+    `<span class="active-filter-tag">${t}<button onclick="removeFilter('${t}')">✕</button></span>`
+  ).join('');
+  strip.style.display = 'flex';
+}
+
+function applyAdvisorFilter() {
+  renderProducts();
+  const visible = PRODUCTS.filter(p =>
+    !state.activeFilters.length || scoreProduct(p, state.activeFilters) > 0
+  ).length;
+  document.getElementById('resultCount').innerHTML = `총 <em>${visible}</em>개`;
+}
+
+function removeFilter(tag) {
+  state.activeFilters = state.activeFilters.filter(t => t !== tag);
+  state.matchedTags = state.activeFilters;
+  if (!state.activeFilters.length) {
+    resetAdvisor();
+  } else {
+    const tagCont = document.getElementById('activeFilterTags');
+    tagCont.innerHTML = state.activeFilters.map(t =>
+      `<span class="active-filter-tag">${t}<button onclick="removeFilter('${t}')">✕</button></span>`
+    ).join('');
+    applyAdvisorFilter();
+    const tagsEl = document.getElementById('aiMatchedTags');
+    tagsEl.innerHTML = state.activeFilters.map((t,i) =>
+      `<span class="ai-tag ${i<2?'weight-high':'weight-mid'}">${t}</span>`
+    ).join('');
+  }
+}
+
+function resetAdvisor() {
+  state.matchedTags = [];
+  state.activeFilters = [];
+  const inp = document.getElementById('advisorInput');
+  if (inp) inp.value = '';
+  document.getElementById('aiResponse').classList.remove('show');
+  document.getElementById('aiLoading').classList.remove('show');
+  document.getElementById('activeFilters').style.display = 'none';
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  renderProducts();
+  document.getElementById('resultCount').innerHTML = `총 <em>${PRODUCTS.length}</em>개`;
+}
+
+function setSort(btn, sort) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.sort = sort;
+  renderProducts();
+}
+
+/* ── RENDER ── */
+function renderProducts() {
+  const tags = state.matchedTags;
+  const hasFilter = tags.length > 0;
+
+  let sorted = [...PRODUCTS].map(p => ({ ...p, score: scoreProduct(p, tags) }));
+
+  if (hasFilter) {
+    sorted.sort((a,b) => b.score - a.score || b.rating - a.rating);
+  } else {
+    if (state.sort === 'price_asc') sorted.sort((a,b) => a.price - b.price);
+    else if (state.sort === 'rating') sorted.sort((a,b) => b.reviews - a.reviews);
+    else if (state.sort === 'new') sorted.sort((a,b) => b.id - a.id);
+    else sorted.sort((a,b) => b.rating*b.reviews - a.rating*a.reviews);
+  }
+
+  const maxScore = Math.max(...sorted.map(p => p.score), 1);
+
+  const list = document.getElementById('productList');
+  list.innerHTML = '';
+
+  sorted.forEach((p, idx) => {
+    const visible = !hasFilter || p.score > 0;
+    const isHighlighted = hasFilter && p.score === maxScore && idx === 0;
+    const matchPct = hasFilter ? Math.round((p.score / maxScore) * 100) : 0;
+
+    const posTagsHtml = p.tags_positive.map(t => {
+      const isMatched = tags.includes(t);
+      return `<span class="tag positive${isMatched?' matched':''}">${t}</span>`;
+    }).join('');
+    const negTagsHtml = p.tags_negative.map(t =>
+      `<span class="tag negative">${t}</span>`
+    ).join('');
+
+    const card = document.createElement('div');
+    card.className = `product-card${isHighlighted?' ai-highlighted':''}${!visible?' hidden':''}`;
+    card.innerHTML = `
+      <div class="ai-rank-badge${hasFilter && idx < 3 && p.score > 0 ? ' show':''}">${hasFilter?'AI추천 '+(idx+1):'#'+(idx+1)}</div>
+      <div class="product-img-wrap">
+        <div class="product-img" style="background:#d0d0d0;border-radius:6px;border:1px solid var(--gray-border);width:110px;height:110px;flex-shrink:0;"></div>
+        <div class="product-num">${idx+1}</div>
+      </div>
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-cat">${p.cat}</div>
+        <div class="product-rating">
+          <span class="stars">★★★★★</span>
+          <span class="rating-val">${p.rating}</span>
+          <span>(${p.reviews.toLocaleString()}개 리뷰)</span>
+        </div>
+        <div class="product-tags">
+          <span class="ai-tag-label">AI</span>
+          <span style="font-size:11px;color:#888;margin-right:2px;">리뷰에</span>
+          ${posTagsHtml}${negTagsHtml}
+          <span style="font-size:11px;color:#888;margin-left:2px;">많이 언급됐어요!</span>
+        </div>
+        <div class="match-bar-wrap${hasFilter?' show':''}">
+          <div class="match-bar-label">AI 매칭도 ${matchPct}%</div>
+          <div class="match-bar"><div class="match-bar-fill" style="width:${matchPct}%"></div></div>
+        </div>
+      </div>
+      <div class="product-price-area">
+        ${p.delivery ? `<div class="delivery-badge">🚚 ${p.delivery}</div>` : ''}
+        <div class="price">${p.price.toLocaleString()}<span class="price-unit">원</span></div>
+        <div class="price-sub">${p.sellers}개 판매처</div>
+      </div>
+    `;
+    list.appendChild(card);
+
+    if (idx < sorted.length - 1) {
+      const hr = document.createElement('hr');
+      hr.className = 'card-divider';
+      list.appendChild(hr);
+    }
+  });
+
+  // Animate match bars
+  setTimeout(() => {
+    document.querySelectorAll('.match-bar-fill').forEach(bar => {
+      const w = bar.style.width;
+      bar.style.width = '0%';
+      requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = w; }));
+    });
+  }, 50);
+}
+
+/* ── CHIP SCROLL ── */
+function scrollChips(dir) {
+  const el = document.getElementById('chipScroll');
+  el.scrollBy({ left: dir * 240, behavior: 'smooth' });
+}
+
+function updateChipNav() {
+  const el = document.getElementById('chipScroll');
+  const prevBtn = document.getElementById('chipPrev');
+  const nextBtn = document.getElementById('chipNext');
+  const fadeLeft = document.getElementById('chipFadeLeft');
+  const fadeRight = document.getElementById('chipFadeRight');
+  if (!el) return;
+
+  const atStart = el.scrollLeft <= 4;
+  const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+
+  prevBtn.disabled = atStart;
+  nextBtn.disabled = atEnd;
+  fadeLeft.classList.toggle('show', !atStart);
+  fadeRight.classList.toggle('hide', atEnd);
+}
+
+/* ── INIT ── */
+renderProducts();
+
+// 칩 스크롤 이벤트 연결
+window.addEventListener('DOMContentLoaded', () => {
+  const chipScroll = document.getElementById('chipScroll');
+  if (chipScroll) {
+    chipScroll.addEventListener('scroll', updateChipNav, { passive: true });
+    updateChipNav();
+  }
+});
+// DOMContentLoaded가 이미 지난 경우 대비
+const chipScroll = document.getElementById('chipScroll');
+if (chipScroll) {
+  chipScroll.addEventListener('scroll', updateChipNav, { passive: true });
+  updateChipNav();
+}
+</script>
+</body>
+</html>

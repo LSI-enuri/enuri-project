@@ -1,4 +1,3 @@
-[에누리 Ai리뷰요약 필터 서비스 - 아이데이션 1.htm](https://github.com/user-attachments/files/27005742/Ai.-.1.htm)
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,9 +6,7 @@
 <title>에누리 AI 쇼핑 어드바이저</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --blue: #1a70dd;
     --blue-light: #e8f1fb;
@@ -23,14 +20,12 @@
     --tag-negative: #888;
     --ai-bg: linear-gradient(135deg, #1a70dd 0%, #0d4fa8 100%);
   }
-
   body {
     font-family: 'Noto Sans KR', sans-serif;
     font-size: 13px;
     color: var(--text);
     background: #f7f8fa;
   }
-
   /* ── HEADER ── */
   .header {
     background: #fff;
@@ -79,14 +74,12 @@
   }
   .header-nav span { cursor: pointer; }
   .header-nav span:hover { color: var(--blue); }
-
   /* ── PAGE WRAP ── */
   .page-wrap {
     max-width: 1100px;
     margin: 0 auto;
     padding: 0 16px;
   }
-
   /* ── 이런 상품 어때요? 배너 ── */
   .reco-banner {
     background: #fff;
@@ -124,7 +117,6 @@
   .reco-item-price { font-size: 12px; font-weight: 700; color: var(--text); }
   .reco-item-delivery { font-size: 10px; color: #555; }
   .reco-item-stars { font-size: 10px; color: #f5a623; }
-
   /* ── 검색결과 + 필터 테이블 ── */
   .filter-table-wrap {
     background: #fff;
@@ -153,7 +145,6 @@
     border-right: 1px solid var(--gray-border);
   }
   .filter-table .f-content { font-size: 12px; }
-
   /* 카테고리 탭 */
   .cat-tabs { display: flex; gap: 5px; flex-wrap: wrap; }
   .cat-tab {
@@ -164,7 +155,6 @@
   }
   .cat-tab.active { background: var(--blue); color: #fff; border-color: var(--blue); font-weight: 700; }
   .cat-tab:hover:not(.active) { border-color: #aaa; }
-
   /* 브랜드·카드 체크박스 */
   .check-group { display: flex; flex-wrap: wrap; gap: 5px 18px; }
   .check-item {
@@ -177,7 +167,6 @@
     font-size: 11.5px; color: var(--blue); cursor: pointer;
     border: none; background: none; font-family: inherit; padding: 0; margin-left: 4px;
   }
-
   /* 가격대 버튼 */
   .price-btns { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
   .price-btn {
@@ -196,7 +185,6 @@
     background: #eee; border: 1px solid var(--gray-border); border-radius: 3px;
     padding: 3px 9px; font-size: 12px; font-family: inherit; cursor: pointer;
   }
-
   /* ── AI ADVISOR PANEL ── */
   .advisor-panel {
     background: #fff;
@@ -241,12 +229,36 @@
   }
   .advisor-header.open .toggle-icon { transform: rotate(180deg); }
 
+  /* ── 선택 뱃지 (접혔을 때 선택 항목 있으면 표시) ── */
+  .advisor-selected-badge {
+    display: none;              /* 기본 숨김 */
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.22);
+    border: 1px solid rgba(255,255,255,0.5);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  /* 접혀 있고 선택 항목 있을 때만 표시 */
+  .advisor-selected-badge.visible { display: inline-flex; }
+  .advisor-selected-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    flex-shrink: 0;
+  }
+
   .advisor-body {
     padding: 16px 18px 18px;
     display: none;
   }
   .advisor-body.open { display: block; }
-
   /* Situation Chips - 가로 스와이프 */
   .situation-label-row {
     display: flex;
@@ -338,7 +350,6 @@
     background: var(--blue);
     color: #fff;
   }
-
   /* AI Response */
   .ai-response {
     margin-top: 14px;
@@ -350,7 +361,6 @@
   }
   .ai-response.show { display: block; }
   @keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: none; } }
-
   .ai-response-header {
     display: flex;
     align-items: center;
@@ -359,7 +369,6 @@
   }
   .ai-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
   .ai-response-title { font-weight: 700; font-size: 12.5px; color: var(--blue); }
-
   .ai-matched-tags {
     display: flex;
     flex-wrap: wrap;
@@ -376,14 +385,52 @@
   }
   .ai-tag.weight-high { background: var(--blue); }
   .ai-tag.weight-mid { background: var(--blue-mid); }
-
   .ai-response-desc {
     font-size: 12px;
     color: var(--text-sub);
     line-height: 1.6;
   }
   .ai-response-desc strong { color: var(--blue); }
-
+  /* 상황 요약 문구 */
+  .ai-situation-summary {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  /* 핵심 체크포인트 */
+  .ai-checkpoint-wrap {
+    margin-bottom: 10px;
+  }
+  .ai-checkpoint-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue);
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  /* 신뢰도 표시 */
+  .ai-trust {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+    margin-bottom: 2px;
+  }
+  .ai-trust-icon {
+    font-size: 13px;
+    color: var(--blue-mid);
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .ai-trust-text {
+    font-size: 11px;
+    color: var(--gray);
+    line-height: 1.4;
+  }
   .ai-result-count {
     margin-top: 8px;
     font-size: 12px;
@@ -391,7 +438,6 @@
     font-weight: 500;
   }
   .ai-result-count em { color: var(--blue); font-style: normal; font-weight: 700; }
-
   .ai-reset {
     margin-top: 10px;
     display: inline-flex;
@@ -407,7 +453,6 @@
     font-family: inherit;
   }
   .ai-reset:hover { color: var(--blue); border-color: var(--blue); }
-
   /* ── FILTER & SORT BAR ── */
   .filter-sort-bar {
     background: #fff;
@@ -436,7 +481,6 @@
   .sort-btn.active { background: var(--gray-light); border-color: #bbb; font-weight: 700; color: var(--text); }
   .result-count { margin-left: auto; font-size: 12px; color: var(--gray); }
   .result-count em { color: var(--blue); font-style: normal; font-weight: 700; }
-
   /* Active filter strip */
   .active-filters {
     display: flex;
@@ -476,10 +520,8 @@
     font-family: inherit;
   }
   .filter-clear:hover { color: var(--blue); }
-
   /* ── PRODUCT LIST ── */
   .product-list { display: flex; flex-direction: column; gap: 0; }
-
   .product-card {
     background: #fff;
     border: 1px solid var(--gray-border);
@@ -497,7 +539,6 @@
   .product-card:hover { background: #fafcff; }
   .product-card.hidden { display: none; }
   .product-card.ai-highlighted { border-left: 3px solid var(--blue); }
-
   .ai-rank-badge {
     position: absolute;
     top: 14px;
@@ -512,7 +553,6 @@
     z-index: 1;
   }
   .ai-rank-badge.show { display: block; }
-
   .product-img-wrap {
     position: relative;
     flex-shrink: 0;
@@ -539,7 +579,6 @@
     align-items: center;
     justify-content: center;
   }
-
   .product-info { flex: 1; min-width: 0; }
   .product-name {
     font-size: 14px;
@@ -551,7 +590,6 @@
   }
   .product-name:hover { color: var(--blue); }
   .product-cat { font-size: 11.5px; color: var(--gray); margin-bottom: 6px; }
-
   .product-rating {
     display: flex;
     align-items: center;
@@ -562,7 +600,6 @@
   }
   .stars { color: #f5a623; font-size: 12px; }
   .rating-val { font-weight: 700; color: var(--text); }
-
   /* Tags */
   .product-tags {
     display: flex;
@@ -603,7 +640,6 @@
     border-color: var(--blue);
     font-weight: 700;
   }
-
   /* 가격 */
   .product-price-area {
     text-align: right;
@@ -627,7 +663,6 @@
   }
   .price-unit { font-size: 13px; }
   .price-sub { font-size: 11.5px; color: var(--gray); margin-top: 2px; }
-
   /* Match score bar */
   .match-bar-wrap {
     margin-top: 8px;
@@ -652,7 +687,6 @@
     border-radius: 2px;
     transition: width 0.6s ease;
   }
-
   /* ── LOADING ── */
   .ai-loading {
     display: none;
@@ -671,14 +705,12 @@
     animation: spin 0.7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
   /* ── DIVIDER ── */
   hr.card-divider {
     border: none;
     border-top: 1px solid var(--gray-border);
     margin: 0 0 0 142px;
   }
-
   /* Responsive */
   @media (max-width: 680px) {
     .product-img { width: 80px; height: 80px; }
@@ -688,7 +720,6 @@
 </style>
 </head>
 <body>
-
 <!-- HEADER -->
 <div class="header">
   <div class="page-wrap">
@@ -705,9 +736,7 @@
     </div>
   </div>
 </div>
-
 <div class="page-wrap" style="padding-top:10px;">
-
   <!-- ════ 이런 상품 어때요? 배너 (AI 패널 위) ════ -->
   <div class="reco-banner">
     <div class="reco-banner-header">
@@ -757,7 +786,6 @@
       </div>
     </div>
   </div><!-- /reco-banner -->
-
   <!-- 검색결과 필터 테이블 -->
   <div class="filter-table-wrap">
     <div class="filter-title-row">
@@ -838,18 +866,20 @@
       </tr>
     </table>
   </div>
-
   <!-- ════ AI ADVISOR PANEL ════ -->
   <div class="advisor-panel">
     <div class="advisor-header open" id="advisorToggle" onclick="toggleAdvisor()">
       <span class="ai-badge">AI</span>
       <span class="title">🏃 어떤 상황에서 신을 운동화를 찾고 계세요?</span>
-      <span class="subtitle">상황을 알려주시면 딱 맞는 상품을 골라드릴게요</span>
+      <!-- 접혔을 때 선택 항목이 있으면 JS로 .visible 추가됨 -->
+      <span class="advisor-selected-badge" id="advisorSelectedBadge">
+        <span class="advisor-selected-badge-dot"></span>
+        <span id="advisorSelectedBadgeText">선택됨</span>
+      </span>
+      <span class="subtitle" id="advisorSubtitle">상황을 알려주시면 딱 맞는 상품을 골라드릴게요</span>
       <span class="toggle-icon">▼</span>
     </div>
     <div class="advisor-body open" id="advisorBody">
-
-
       <div class="situation-label-row">
         <span class="situation-label">💡 자주 찾는 상황을 선택해보세요</span>
         <div class="chip-nav-btns">
@@ -857,7 +887,6 @@
           <button class="chip-nav-btn" id="chipNext" onclick="scrollChips(1)" aria-label="다음">›</button>
         </div>
       </div>
-
       <!-- 가로 스와이프 칩 영역 -->
       <div class="chip-scroll-wrap">
         <div class="chip-fade-left" id="chipFadeLeft"></div>
@@ -879,20 +908,28 @@
         </div>
         <div class="chip-fade-right" id="chipFadeRight"></div>
       </div>
-
       <div class="ai-loading" id="aiLoading">
         <div class="loader"></div>
         <span>리뷰 태그를 분석하고 있어요...</span>
       </div>
-
       <div class="ai-response" id="aiResponse">
         <div class="ai-response-header">
           <div class="ai-dot"></div>
-          <div class="ai-response-title" id="aiResponseTitle">AI 어드바이저</div>
+          <div class="ai-response-title">AI 어드바이저</div>
         </div>
-        <div class="ai-matched-tags" id="aiMatchedTags"></div>
-        <div class="ai-response-desc" id="aiResponseDesc"></div>
+        <!-- ① 상황 요약 문구 -->
+        <div class="ai-situation-summary" id="aiSituationSummary"></div>
+        <!-- ② 핵심 체크포인트 -->
+        <div class="ai-checkpoint-wrap">
+          <div class="ai-checkpoint-label">핵심 체크포인트</div>
+          <div class="ai-matched-tags" id="aiMatchedTags"></div>
+        </div>
         <div class="ai-result-count" id="aiResultCount"></div>
+        <!-- 신뢰도 표시 -->
+        <div class="ai-trust">
+          <span class="ai-trust-icon" tabindex="0" aria-label="신뢰도 안내">ⓘ</span>
+          <span class="ai-trust-text">최근 3년 이내 리뷰를 기반으로 요약했습니다.</span>
+        </div>
         <button class="ai-reset" onclick="resetAdvisor()">✕ 필터 초기화</button>
       </div>
     </div>
@@ -902,7 +939,6 @@
     <div id="activeFilterTags"></div>
     <button class="filter-clear" onclick="resetAdvisor()">전체 초기화</button>
   </div>
-
   <!-- SORT BAR -->
   <div class="filter-sort-bar">
     <span class="filter-sort-label">정렬</span>
@@ -914,12 +950,9 @@
     </div>
     <span class="result-count" id="resultCount">총 <em>6</em>개</span>
   </div>
-
   <!-- ════ PRODUCT LIST ════ -->
   <div class="product-list" id="productList"></div>
-
 </div>
-
 <script>
 /* ── DATA ── */
 const PRODUCTS = [
@@ -932,7 +965,7 @@ const PRODUCTS = [
     rating: 4.6,
     reviews: 167,
     delivery: '오늘출발',
-    img: 'https://image.enuri.info/webimage_300/13325000000/13325030000/13325037866.jpg',
+    img: '',
     tags_positive: ['착화감 좋음','색상 예쁨','재구매 의사 있음','가벼움','디자인 만족','발볼 늘음','발볼 넓게 나옴','쿠션감 좋음'],
     tags_negative: ['사이즈 작게 나옴'],
   },
@@ -945,7 +978,7 @@ const PRODUCTS = [
     rating: 4.3,
     reviews: 243,
     delivery: null,
-    img: 'https://image.enuri.info/webimage_300/13325000000/13325080000/13325087867.jpg',
+    img: '',
     tags_positive: ['착화감 좋음','가벼움','가성비 좋음','색상 예쁨','디자인 만족'],
     tags_negative: ['발볼 좁음','사이즈 크게 나옴'],
   },
@@ -958,7 +991,7 @@ const PRODUCTS = [
     rating: 4.4,
     reviews: 587,
     delivery: null,
-    img: 'https://image.enuri.info/webimage_300/13325000000/13325080000/13325084323.jpg',
+    img: '',
     tags_positive: ['디자인 만족','쿠션감 좋음','가벼움','착화감 좋음','색상 예쁨'],
     tags_negative: ['발볼 좁음'],
   },
@@ -971,7 +1004,7 @@ const PRODUCTS = [
     rating: 4.6,
     reviews: 404,
     delivery: null,
-    img: 'https://image.enuri.info/webimage_300/13325000000/13325080000/13325087850.jpg',
+    img: '',
     tags_positive: ['가성비 좋음','착화감 좋음','색상 예쁨','가벼움'],
     tags_negative: ['발볼 좁음'],
   },
@@ -984,7 +1017,7 @@ const PRODUCTS = [
     rating: 4.8,
     reviews: 312,
     delivery: '오늘출발',
-    img: 'https://image.enuri.info/webimage_300/13325000000/13325080000/13325087851.jpg',
+    img: '',
     tags_positive: ['쿠션감 좋음','착화감 좋음','가벼움','재구매 의사 있음','발볼 넓게 나옴'],
     tags_negative: [],
   },
@@ -997,7 +1030,7 @@ const PRODUCTS = [
     rating: 4.5,
     reviews: 198,
     delivery: null,
-    img: 'https://image.enuri.info/webimage_300/13325000000/13325080000/13325087852.jpg',
+    img: '',
     tags_positive: ['디자인 만족','색상 예쁨','착화감 좋음','가벼움','쿠션감 좋음'],
     tags_negative: ['가성비 나쁨'],
   },
@@ -1009,12 +1042,19 @@ let state = {
   activeFilters: [],
   sort: 'popular',
   advisorOpen: true,
+  selectedChipText: null,   // 선택된 칩의 표시 텍스트 보관
 };
 
 /* ── SITUATION CHIPS ── */
 function selectSituation(el, text) {
+  // 이미 선택된 칩을 다시 클릭하면 선택 취소
+  if (el.classList.contains('active')) {
+    resetAdvisor();
+    return;
+  }
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
+  state.selectedChipText = el.textContent.trim();
   runAdvisorWithText(text);
 }
 
@@ -1024,6 +1064,36 @@ function toggleAdvisor() {
   const body = document.getElementById('advisorBody');
   header.classList.toggle('open');
   body.classList.toggle('open');
+  state.advisorOpen = header.classList.contains('open');
+  updateSelectedBadge();
+}
+
+/* ─────────────────────────────────────────
+   선택 뱃지 업데이트
+   규칙: 패널이 접혀 있고 선택된 칩이 있을 때만 표시
+   (패널이 펼쳐져 있으면 어드바이저 결과박스가 대신 알려주므로 뱃지 숨김)
+───────────────────────────────────────── */
+function updateSelectedBadge() {
+  const badge   = document.getElementById('advisorSelectedBadge');
+  const badgeTxt = document.getElementById('advisorSelectedBadgeText');
+  const subtitle = document.getElementById('advisorSubtitle');
+
+  const hasSelection = state.selectedChipText !== null;
+  const isClosed     = !state.advisorOpen;
+  const showBadge    = isClosed && hasSelection;
+
+  badge.classList.toggle('visible', showBadge);
+
+  if (showBadge) {
+    // 이모지+앞 20자 정도만 노출 (너무 길지 않게)
+    const label = state.selectedChipText.length > 22
+      ? state.selectedChipText.slice(0, 22) + '…'
+      : state.selectedChipText;
+    badgeTxt.textContent = label;
+    subtitle.style.display = 'none';   // 뱃지와 subtitle 중복 방지
+  } else {
+    subtitle.style.display = '';
+  }
 }
 
 /* ── TAG KEYWORD MAP ── */
@@ -1048,13 +1118,11 @@ const KEYWORD_MAP = {
   '저렴':      ['가성비 좋음'],
   '싸':        ['가성비 좋음'],
 };
-
 const TAG_PRIORITY = {
   '착화감 좋음':3,'발볼 넓게 나옴':3,'쿠션감 좋음':3,
   '가벼움':2,'가성비 좋음':2,
   '디자인 만족':1,'색상 예쁨':1,'재구매 의사 있음':1,'발볼 늘음':1,
 };
-
 function extractTags(input) {
   const matched = new Set();
   Object.entries(KEYWORD_MAP).forEach(([kw, tags]) => {
@@ -1062,7 +1130,6 @@ function extractTags(input) {
   });
   return [...matched].sort((a,b) => (TAG_PRIORITY[b]||0) - (TAG_PRIORITY[a]||0));
 }
-
 function scoreProduct(product, tags) {
   if (!tags.length) return 0;
   let score = 0;
@@ -1075,12 +1142,10 @@ function scoreProduct(product, tags) {
 /* ── ADVISOR RUN ── */
 function runAdvisorWithText(input) {
   if (!input) return;
-
   const loading = document.getElementById('aiLoading');
   const response = document.getElementById('aiResponse');
   response.classList.remove('show');
   loading.classList.add('show');
-
   setTimeout(() => {
     loading.classList.remove('show');
     const tags = extractTags(input);
@@ -1088,45 +1153,64 @@ function runAdvisorWithText(input) {
     state.activeFilters = [...state.matchedTags];
     applyAdvisorFilter();
     showAiResponse(input, state.matchedTags);
+    updateSelectedBadge();
   }, 1200);
 }
-
 function runAdvisor() {
   const input = (document.getElementById('advisorInput') || {value:''}).value.trim();
   runAdvisorWithText(input);
 }
+/* ── 상황별 요약 문구 맵 ── */
+const SITUATION_SUMMARY_MAP = {
+  '장시간 서서 일하는 직장인': '장시간 서서 일하는 직장인용 운동화를 찾고 계시는군요!',
+  '매일 아침 30분씩 조깅':    '매일 아침 조깅에 적합한 운동화를 찾고 계시는군요!',
+  '헬스장 PT 받아요':         '헬스장 PT에 맞는 운동화를 찾고 계시는군요!',
+  '발볼이 넓어서':            '발볼이 넓은 분께 맞는 운동화를 찾고 계시는군요!',
+  '선물용이라':               '선물용으로 디자인이 예쁜 운동화를 찾고 계시는군요!',
+  '가성비 좋은':              '가성비 좋은 운동화를 찾고 계시는군요!',
+  '등산이나 트레킹':          '등산·트레킹에 적합한 운동화를 찾고 계시는군요!',
+  '무릎이 좋지 않아요':       '무릎 보호에 좋은 쿠션감 있는 운동화를 찾고 계시는군요!',
+  '하루 종일 걷는 여행용':    '하루 종일 걸어도 편한 여행용 운동화를 찾고 계시는군요!',
+  '초등학생 아이 운동화':     '아이를 위한 가볍고 튼튼한 운동화를 찾고 계시는군요!',
+  '비가 와도 신을':           '비에도 신을 수 있는 방수 운동화를 찾고 계시는군요!',
+  '요가나 필라테스':          '요가·필라테스에 맞는 실내화를 찾고 계시는군요!',
+  '농구나 줄넘기':            '점프 운동에 적합한 지지력 있는 운동화를 찾고 계시는군요!',
+  '편의점이나 카페 아르바이트': '오래 서 있어도 발이 편한 알바용 운동화를 찾고 계시는군요!',
+};
+function getSituationSummary(input) {
+  for (const [key, summary] of Object.entries(SITUATION_SUMMARY_MAP)) {
+    if (input.includes(key)) return summary;
+  }
+  return '딱 맞는 운동화를 찾고 계시는군요!';
+}
 
 function showAiResponse(input, tags) {
-  const response = document.getElementById('aiResponse');
-  const title = document.getElementById('aiResponseTitle');
-  const tagsEl = document.getElementById('aiMatchedTags');
-  const desc = document.getElementById('aiResponseDesc');
-  const countEl = document.getElementById('aiResultCount');
+  const response   = document.getElementById('aiResponse');
+  const summaryEl  = document.getElementById('aiSituationSummary');
+  const tagsEl     = document.getElementById('aiMatchedTags');
+  const countEl    = document.getElementById('aiResultCount');
 
-  title.textContent = 'AI 어드바이저';
-  tagsEl.innerHTML = tags.map((t,i) =>
-    `<span class="ai-tag ${i<2?'weight-high':'weight-mid'}">${t}</span>`
+  // ① 상황 요약 문구
+  summaryEl.textContent = getSituationSummary(input);
+
+  // ② 핵심 체크포인트 태그
+  tagsEl.innerHTML = tags.map((t, i) =>
+    `<span class="ai-tag ${i < 2 ? 'weight-high' : 'weight-mid'}">${t}</span>`
   ).join('');
 
   const matchedCount = PRODUCTS.filter(p => scoreProduct(p, tags) > 0).length;
-
-  desc.innerHTML = `
-    입력하신 상황을 분석한 결과, 리뷰에서 <strong>${tags.slice(0,2).join('</strong>, <strong>')}</strong> 키워드가 중요한 것으로 파악했어요.<br>
-    해당 태그가 많이 언급된 상품을 우선적으로 보여드릴게요.
-  `;
   countEl.innerHTML = `매칭된 상품 <em>${matchedCount}개</em> / 전체 ${PRODUCTS.length}개`;
 
   response.classList.add('show');
 
   // active filter strip
-  const strip = document.getElementById('activeFilters');
+  const strip   = document.getElementById('activeFilters');
   const tagCont = document.getElementById('activeFilterTags');
   tagCont.innerHTML = tags.map(t =>
     `<span class="active-filter-tag">${t}<button onclick="removeFilter('${t}')">✕</button></span>`
   ).join('');
   strip.style.display = 'flex';
 }
-
 function applyAdvisorFilter() {
   renderProducts();
   const visible = PRODUCTS.filter(p =>
@@ -1134,7 +1218,6 @@ function applyAdvisorFilter() {
   ).length;
   document.getElementById('resultCount').innerHTML = `총 <em>${visible}</em>개`;
 }
-
 function removeFilter(tag) {
   state.activeFilters = state.activeFilters.filter(t => t !== tag);
   state.matchedTags = state.activeFilters;
@@ -1152,20 +1235,20 @@ function removeFilter(tag) {
     ).join('');
   }
 }
-
 function resetAdvisor() {
   state.matchedTags = [];
   state.activeFilters = [];
+  state.selectedChipText = null;
   const inp = document.getElementById('advisorInput');
   if (inp) inp.value = '';
   document.getElementById('aiResponse').classList.remove('show');
   document.getElementById('aiLoading').classList.remove('show');
   document.getElementById('activeFilters').style.display = 'none';
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  updateSelectedBadge();
   renderProducts();
   document.getElementById('resultCount').innerHTML = `총 <em>${PRODUCTS.length}</em>개`;
 }
-
 function setSort(btn, sort) {
   document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1177,9 +1260,7 @@ function setSort(btn, sort) {
 function renderProducts() {
   const tags = state.matchedTags;
   const hasFilter = tags.length > 0;
-
   let sorted = [...PRODUCTS].map(p => ({ ...p, score: scoreProduct(p, tags) }));
-
   if (hasFilter) {
     sorted.sort((a,b) => b.score - a.score || b.rating - a.rating);
   } else {
@@ -1188,17 +1269,13 @@ function renderProducts() {
     else if (state.sort === 'new') sorted.sort((a,b) => b.id - a.id);
     else sorted.sort((a,b) => b.rating*b.reviews - a.rating*a.reviews);
   }
-
   const maxScore = Math.max(...sorted.map(p => p.score), 1);
-
   const list = document.getElementById('productList');
   list.innerHTML = '';
-
   sorted.forEach((p, idx) => {
     const visible = !hasFilter || p.score > 0;
     const isHighlighted = hasFilter && p.score === maxScore && idx === 0;
     const matchPct = hasFilter ? Math.round((p.score / maxScore) * 100) : 0;
-
     const posTagsHtml = p.tags_positive.map(t => {
       const isMatched = tags.includes(t);
       return `<span class="tag positive${isMatched?' matched':''}">${t}</span>`;
@@ -1206,7 +1283,6 @@ function renderProducts() {
     const negTagsHtml = p.tags_negative.map(t =>
       `<span class="tag negative">${t}</span>`
     ).join('');
-
     const card = document.createElement('div');
     card.className = `product-card${isHighlighted?' ai-highlighted':''}${!visible?' hidden':''}`;
     card.innerHTML = `
@@ -1241,14 +1317,12 @@ function renderProducts() {
       </div>
     `;
     list.appendChild(card);
-
     if (idx < sorted.length - 1) {
       const hr = document.createElement('hr');
       hr.className = 'card-divider';
       list.appendChild(hr);
     }
   });
-
   // Animate match bars
   setTimeout(() => {
     document.querySelectorAll('.match-bar-fill').forEach(bar => {
@@ -1264,7 +1338,6 @@ function scrollChips(dir) {
   const el = document.getElementById('chipScroll');
   el.scrollBy({ left: dir * 240, behavior: 'smooth' });
 }
-
 function updateChipNav() {
   const el = document.getElementById('chipScroll');
   const prevBtn = document.getElementById('chipPrev');
@@ -1272,10 +1345,8 @@ function updateChipNav() {
   const fadeLeft = document.getElementById('chipFadeLeft');
   const fadeRight = document.getElementById('chipFadeRight');
   if (!el) return;
-
   const atStart = el.scrollLeft <= 4;
   const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
-
   prevBtn.disabled = atStart;
   nextBtn.disabled = atEnd;
   fadeLeft.classList.toggle('show', !atStart);
@@ -1284,8 +1355,6 @@ function updateChipNav() {
 
 /* ── INIT ── */
 renderProducts();
-
-// 칩 스크롤 이벤트 연결
 window.addEventListener('DOMContentLoaded', () => {
   const chipScroll = document.getElementById('chipScroll');
   if (chipScroll) {
@@ -1293,7 +1362,6 @@ window.addEventListener('DOMContentLoaded', () => {
     updateChipNav();
   }
 });
-// DOMContentLoaded가 이미 지난 경우 대비
 const chipScroll = document.getElementById('chipScroll');
 if (chipScroll) {
   chipScroll.addEventListener('scroll', updateChipNav, { passive: true });

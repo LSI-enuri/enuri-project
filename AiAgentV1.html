@@ -153,7 +153,7 @@ body {
 .verdict-top.wait .verdict-reason { color: #BF6000; }
 .verdict-body { padding: 9px 13px; background: #fff; font-size: 11px; color: #555; line-height: 1.7; }
 
-/* ── A안 전용: 카드 그룹 ── */
+/* ── 카드 그룹 ── */
 .info-cards { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
 .info-card { border-radius: 10px; border: 1px solid #f0f0f0; background: #fff; overflow: hidden; }
 .info-card-head { display: flex; align-items: center; gap: 7px; padding: 9px 11px 7px; cursor: pointer; }
@@ -164,7 +164,7 @@ body {
 .info-card-body { padding: 0 11px 11px; }
 .info-card-main { font-size: 11px; font-weight: 600; color: #111; margin-bottom: 5px; }
 
-/* ── B안 전용: 아코디언 ── */
+/* ── 아코디언 ── */
 .accordion-group { display: flex; flex-direction: column; gap: 0; margin-bottom: 12px; border: 1px solid #ebebeb; border-radius: 12px; overflow: hidden; }
 .accordion-item { border-bottom: 1px solid #ebebeb; }
 .accordion-item:last-child { border-bottom: none; }
@@ -256,7 +256,7 @@ body {
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ── B안 대화형 전용 ── */
+/* ── 대화형 전용 ── */
 .inline-ans {
   background: #fff;
   border: 1px solid #e8e8e8;
@@ -296,94 +296,17 @@ body {
 </div>
 
 <div style="text-align:center;margin-bottom:24px">
-  <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:4px">프로토타입 비교 — A안 vs B안</div>
-  <div style="font-size:11px;color:#aaa">두 가지 UX 방향을 직접 조작하며 비교해보세요</div>
+  <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:4px">프로토타입 — 대화형 에이전트</div>
 </div>
 
 <div class="compare-wrap">
 
-<!-- ════════════════════════════
-     A안: 자동 전개형 (v3 A안)
-════════════════════════════ -->
-<div class="phone-col">
-  <div class="case-badge badge-a">A안</div>
-  <div class="case-title">자동 전개형</div>
-  <div class="case-desc">버튼을 누르면 판정과 함께 스펙·가격·리뷰 카드가<br>모두 펼쳐진 상태로 표시돼요. 아코디언으로 접을 수 있어요.</div>
-
-  <div class="phone">
-    <div class="phone-inner">
-      <div class="status-bar"><span>9:41</span><span>📶🔋</span></div>
-      <div class="nav-bar"><span style="font-size:17px;color:#555">←</span><span class="nav-title">노트북</span><span style="margin-left:auto;display:flex;gap:12px;font-size:17px;color:#555">♡ ⋯</span></div>
-      <div class="product-img">
-        <img class="product-thumb" src="https://img.danuri.io/catalog-image/642/054/074/0757ade9de274f858990e04387878dff.jpg" alt="" onerror="this.outerHTML='<div style=font-size:55px;color:#ddd>💻</div>'">
-        <div class="img-dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-      </div>
-      <div class="product-info">
-        <div class="product-brand">LG전자</div>
-        <div class="product-name">2025 그램15 15ZD90T-GX56K [SSD 256GB]</div>
-        <div class="product-rating"><span class="stars">★★★★★</span><span class="rating-text">4.9 (190건)</span></div>
-        <div><div class="original-price">출시가 2,080,000원</div><div><span class="discount-badge">20%↓</span><span class="current-price">1,653,420<span class="price-unit">원</span></span></div></div>
-        <div class="shops-info">🏪 18개 쇼핑몰 최저가 · 11번가 무료배송</div>
-      </div>
-      <div class="spec-strip"><span class="spec-chip">Core Ultra 5</span><span class="spec-chip">16GB RAM</span><span class="spec-chip">256GB SSD</span><span class="spec-chip">IPS 15인치</span><span class="spec-chip">1.12kg</span></div>
-      <div class="ai-entry-section">
-        <div class="ai-entry-btn" onclick="openA()">
-          <div class="ai-entry-icon">✨</div>
-          <div style="flex:1"><div class="ai-entry-q">이 노트북, 지금 살까요?</div><div class="ai-entry-sub">가격·스펙·리뷰를 AI가 빠르게 분석해드려요</div></div>
-          <span style="font-size:15px;color:#6B8EF5;margin-left:auto">›</span>
-        </div>
-      </div>
-      <div class="tab-bar"><span class="tab-item on">가격비교</span><span class="tab-item">스펙</span><span class="tab-item">리뷰</span><span class="tab-item">관련상품</span></div>
-      <div class="price-list-preview">
-        <div class="price-list-item"><span class="shop-badge best">최저</span><div class="shop-name">11번가</div><div><div class="shop-price">1,653,420원</div><div class="shop-ship">무료</div></div></div>
-        <div class="price-list-item"><span class="shop-badge"></span><div class="shop-name">G마켓</div><div><div class="shop-price">1,671,000원</div><div class="shop-ship">무료</div></div></div>
-        <div class="price-list-item"><span class="shop-badge"></span><div class="shop-name">쿠팡</div><div><div class="shop-price">1,679,000원</div><div class="shop-ship">무료</div></div></div>
-        <div class="scroll-hint">↓ 스크롤해서 더보기</div>
-      </div>
-      <div class="bottom-bar"><button class="btn-wish">♡ 찜</button><button class="btn-buy">최저가 구매하기</button></div>
-    </div>
-
-    <div class="ai-overlay" id="overlayA" onclick="if(event.target===this)closeA()">
-      <div class="ai-sheet">
-        <div class="sheet-handle"><div class="handle-bar"></div></div>
-        <div class="ai-header">
-          <div class="ai-avatar">✨</div>
-          <div><div class="ai-name">에누리 AI</div><div class="ai-sub" id="subA">잠깐, 살펴볼게요 🔍</div></div>
-          <span class="ai-close" onclick="closeA()">✕</span>
-        </div>
-        <div class="ai-body">
-          <div class="ai-product-mini">
-            <img class="mini-thumb" src="https://img.danuri.io/catalog-image/642/054/074/0757ade9de274f858990e04387878dff.jpg" alt="" onerror="this.outerHTML='<span style=font-size:20px>💻</span>'">
-            <div><div class="mini-name">LG 2025 그램15 15ZD90T-GX56K</div><div class="mini-lowest">현재 최저 1,653,420원 · 11번가</div></div>
-          </div>
-          <div class="loading-card" id="loadA"><div class="loading-dots"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div><div style="font-size:12px;color:#aaa">스펙 · 가격 · 리뷰 살펴보는 중이에요...</div></div>
-          <div id="resultA" style="display:none">
-            <div class="verdict-card"><div class="verdict-top"><div class="verdict-emoji">✅</div><div><div class="verdict-main">지금 사도 좋아요</div><div class="verdict-reason">3개월 평균보다 4% 저렴한 시점이에요</div></div></div><div class="verdict-body">출시 이후 꾸준히 내려왔고, 현재 가격이 최근 3개월 중 가장 낮은 구간에 있어요.</div></div>
-            <div class="info-cards">
-              <!-- 스펙 — 기본 펼침 -->
-              <div class="info-card"><div class="info-card-head" onclick="tcA('sbA',this)"><span class="info-card-icon">🔧</span><span class="info-card-label">스펙</span><span class="info-card-toggle open">⌄</span></div><div class="info-card-body" id="sbA"><div class="info-card-main">일반 사무·학습용으로 충분</div><div class="spec-table"><div class="spec-row"><div class="spec-key">CPU</div><div><div class="spec-val">Core Ultra 5</div><div class="spec-interp"><span class="ai-badge">AI</span>문서·웹·영상 충분. 고사양 게임·3D는 어려워요</div></div></div><div class="spec-row"><div class="spec-key">무게</div><div><div class="spec-val">1.12kg</div><div class="spec-interp"><span class="ai-badge">AI</span>15인치 중 최경량. 매일 들고다니기 좋아요</div></div></div><div class="spec-row"><div class="spec-key">저장공간</div><div><div class="spec-val">256GB SSD</div><div class="spec-interp"><span class="ai-badge">AI</span>기본 사무엔 충분. 파일 많다면 외장 드라이브 고려</div></div></div></div></div></div>
-              <!-- 가격 — 기본 펼침 -->
-              <div class="info-card"><div class="info-card-head" onclick="tcA('pbA',this)"><span class="info-card-icon">💰</span><span class="info-card-label">가격</span><span class="info-card-toggle open">⌄</span></div><div class="info-card-body" id="pbA"><div class="info-card-main">현재 최저 1,653,420원</div><div class="price-graph-wrap"><div class="graph-header"><span class="graph-title-txt">최저가 추이</span><div class="graph-period-tabs"><span class="graph-period-tab on">3개월</span><span class="graph-period-tab">6개월</span></div></div><div class="graph-wrap-inner"><div class="graph-y-axis"><span>200만</span><span>180만</span><span>165만</span></div><div class="graph-x-area"><svg width="100%" height="62" viewBox="0 0 200 62" preserveAspectRatio="none"><line x1="0" y1="1" x2="200" y2="1" stroke="#f0f0f0" stroke-width="1"/><line x1="0" y1="21" x2="200" y2="21" stroke="#f0f0f0" stroke-width="1"/><line x1="0" y1="42" x2="200" y2="42" stroke="#f0f0f0" stroke-width="1"/><line x1="0" y1="61" x2="200" y2="61" stroke="#f0f0f0" stroke-width="1"/><defs><linearGradient id="agA" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4A7CF7" stop-opacity="0.15"/><stop offset="100%" stop-color="#4A7CF7" stop-opacity="0.01"/></linearGradient></defs><path d="M0,4 L40,12 L80,24 L120,37 L160,49 L200,56 L200,62 L0,62 Z" fill="url(#agA)"/><path d="M0,4 L40,12 L80,24 L120,37 L160,49 L200,56" fill="none" stroke="#4A7CF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="200" cy="56" r="3.5" fill="#4A7CF7"/><circle cx="200" cy="56" r="7" fill="#4A7CF7" opacity="0.15"/></svg><div class="graph-x-labels"><span>3개월 전</span><span>2개월 전</span><span>1개월 전</span><span style="color:#4A7CF7;font-weight:700">지금</span></div></div></div><div class="graph-current-label">현재 1,653,420원 📍</div></div><div class="timing-badge timing-good">📉 3개월 평균(172만) 대비 4% 저렴</div><div class="mini-price-list"><div class="mini-price-row best-row"><span class="mini-shop best-shop">⭐ 11번가</span><span class="mini-p">1,653,420원</span><span class="mini-ship">무료</span></div><div class="mini-price-row"><span class="mini-shop">G마켓</span><span class="mini-p">1,671,000원</span><span class="mini-ship">무료</span></div></div><div class="alert-btn" onclick="taA()"><span>🔔</span><div style="flex:1"><div>더 내리면 알림 받기</div><div style="font-size:10px;color:#6B8EF5;font-weight:400;margin-top:1px">목표가 도달 시 바로 알려드려요</div></div><span id="aaA">›</span></div><div class="alert-expanded" id="aeA"><div class="alert-exp-title">🎯 목표가 설정</div><div class="alert-price-row"><input class="alert-price-input" id="aiA" type="text" value="1,550,000"><button class="alert-submit-btn" onclick="saA()">설정</button></div><div class="alert-presets"><span class="alert-preset" onclick="document.getElementById('aiA').value='1,600,000'">160만</span><span class="alert-preset" onclick="document.getElementById('aiA').value='1,550,000'">155만</span><span class="alert-preset" onclick="document.getElementById('aiA').value='1,500,000'">150만</span></div><div class="alert-note">현재 최저 1,653,420원 · 역대 최저 1,621,000원</div></div></div></div>
-              <!-- 리뷰 — 기본 펼침 -->
-              <div class="info-card"><div class="info-card-head" onclick="tcA('rbA',this)"><span class="info-card-icon">💬</span><span class="info-card-label">리뷰</span><span class="info-card-toggle open">⌄</span></div><div class="info-card-body" id="rbA"><div class="review-top-row"><div><div class="review-score">4.9</div><div class="review-stars-sm">★★★★★</div><div class="review-count">190건</div></div></div><div class="review-ai-label">✨ AI 리뷰 요약</div><div class="review-ai-summary">사양도 좋고 가볍게 들고다니기 딱이에요! 빠른 부팅에 버벅임 없고 배터리도 오래 가서 대학생이나 직장인에게 완전 추천.</div><div style="font-size:10px;color:#888;margin-bottom:4px">자주 언급된 키워드</div><div class="review-keyword-row"><span class="review-keyword pos">👍 사양 좋음</span><span class="review-keyword pos">👍 대학생 추천</span><span class="review-keyword pos">👍 휴대성</span><span class="review-keyword pos">👍 빠른 속도</span><span class="review-keyword neg">👎 저장공간 부족</span></div></div></div>
-            </div>
-            <div class="followup-section"><div class="followup-label">더 궁금한 게 있으신가요?</div><div class="followup-chips"><span class="followup-chip" onclick="hcA(this,'storage')">저장공간 256GB 괜찮아?</span><span class="followup-chip" onclick="hcA(this,'weight')">왜 이렇게 가벼워?</span><span class="followup-chip" onclick="hcA(this,'history')">언제 제일 쌌어?</span><span class="followup-chip" onclick="hcA(this,'other')">다른 노트북 추천해줘</span></div></div>
-            <div class="chat-response" id="crA"><div class="chat-response-title">✨ <span id="crtA"></span></div><div id="crbA"></div></div>
-            <div class="unavailable-card" id="ucA"><div class="unavail-title">🤔 다른 노트북 추천은 어렵지만...</div><div class="unavail-body">저는 이 상품 정보만 갖고 있어서 다른 상품을 직접 추천하기는 어려워요. 에누리 노트북 검색에서 찾아보실 수 있어요 👇</div><div class="unavail-cta" onclick="st('노트북 검색결과로 이동해요 🔍')"><span>노트북 검색결과 보러 가기</span><span>›</span></div></div>
-            <div class="ai-input-bar"><span class="ai-input-text">직접 질문해보세요</span><span class="ai-send">↑</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- ════════════════════════════
-     B안: 아코디언형 (v4)
+     대화형 에이전트
 ════════════════════════════ -->
 <div class="phone-col">
-  <div class="case-badge badge-b">B안</div>
-  <div class="case-title">대화형</div>
+  <div class="case-title" style="font-size:14px;font-weight:700;color:#222;margin-bottom:4px">대화형 에이전트 프로토타입</div>
   <div class="case-desc">판정 결과만 먼저 보여주고, 1차 질문 칩으로<br>원하는 정보를 대화하듯 꺼내요.</div>
 
   <div class="phone">
@@ -568,38 +491,7 @@ const CR = {
   history:{t:'역대 최저가는 언제였나요?',b:`<div style="font-size:11px;line-height:1.7;color:#333"><div style="padding:9px;background:#fff;border-radius:7px;border:1px solid #eee;margin-bottom:7px"><div style="font-size:10px;color:#888;margin-bottom:5px">주요 가격 히스토리</div><div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f5f5f5"><span>출시가</span><span style="font-weight:700">2,080,000원</span></div><div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f5f5f5"><span>역대 최저가</span><span style="font-weight:700;color:#4A7CF7">1,621,000원</span></div><div style="display:flex;justify-content:space-between;padding:3px 0"><span>현재</span><span style="font-weight:700;color:#2E7D32">1,653,420원</span></div></div>역대 최저보다 약 3만원 높은 수준이에요.</div>`}
 };
 
-/* ─ A안 ─ */
-function openA(){
-  document.getElementById('overlayA').classList.add('open');
-  document.getElementById('loadA').style.display='flex';
-  document.getElementById('resultA').style.display='none';
-  document.getElementById('subA').textContent='잠깐, 살펴볼게요 🔍';
-  ['crA','ucA'].forEach(id=>document.getElementById(id).classList.remove('show'));
-  document.querySelectorAll('#overlayA .followup-chip').forEach(c=>c.classList.remove('selected'));
-  setTimeout(()=>{
-    document.getElementById('loadA').style.display='none';
-    document.getElementById('resultA').style.display='block';
-    document.getElementById('subA').textContent='꼼꼼하게 살펴봤어요 ✅';
-    // 카드 전부 펼침
-    ['sbA','pbA','rbA'].forEach(id=>{
-      const b=document.getElementById(id); if(b) b.style.display='block';
-    });
-    document.querySelectorAll('#overlayA .info-card-toggle').forEach(t=>t.classList.add('open'));
-  },1300);
-}
-function closeA(){ document.getElementById('overlayA').classList.remove('open'); }
-function tcA(id,h){ const b=document.getElementById(id),t=h.querySelector('.info-card-toggle'),s=b.style.display==='none'; b.style.display=s?'block':'none'; t.classList.toggle('open',s); }
-function taA(){ const e=document.getElementById('aeA'),s=!e.classList.contains('show'); e.classList.toggle('show',s); document.getElementById('aaA').textContent=s?'⌄':'›'; }
-function saA(){ st('🔔 '+document.getElementById('aiA').value+'원 알림이 설정됐어요!'); document.getElementById('aeA').classList.remove('show'); document.getElementById('aaA').textContent='›'; }
-function hcA(el,type){
-  document.querySelectorAll('#overlayA .followup-chip').forEach(c=>c.classList.remove('selected')); el.classList.add('selected');
-  document.getElementById('crA').classList.remove('show'); document.getElementById('ucA').classList.remove('show');
-  if(type==='other'){ setTimeout(()=>{ document.getElementById('ucA').classList.add('show'); document.getElementById('ucA').scrollIntoView({behavior:'smooth',block:'nearest'}); },50); return; }
-  const r=CR[type]; document.getElementById('crtA').textContent=r.t; document.getElementById('crbA').innerHTML=r.b;
-  setTimeout(()=>{ document.getElementById('crA').classList.add('show'); document.getElementById('crA').scrollIntoView({behavior:'smooth',block:'nearest'}); },50);
-}
-
-/* ─ B안 (대화형) ─ */
+/* ─ 대화형 에이전트 ─ */
 function openB(){
   document.getElementById('overlayB').classList.add('open');
   document.getElementById('loadB').style.display='flex';
@@ -1249,49 +1141,28 @@ body {
 
   <!-- ══ 사용성 방향 ══ -->
   <div class="rp-panel" id="panel-ux">
-    <div class="sec-title">사용성 방향 — 프로토타입 비교</div>
+    <div class="sec-title">사용성 방향 — 대화형 에이전트</div>
 
     <div class="ux-flow">
-      <strong>공통</strong>: 버튼 클릭 → 로딩(~1.3초) → 판정 자동 표시 &nbsp;|&nbsp; <strong>A안</strong>: 이후 스펙·가격·리뷰 카드 자동 전개 &nbsp;|&nbsp; <strong>B안</strong>: 이후 1차 질문 칩 제공 → 답변 인라인 표시 → 2차 질문 칩
+      버튼 클릭 → 로딩(~1.3초) → <strong>판정 자동 표시</strong> → 1차 질문 칩 제공 → 답변 인라인 표시 → 2차 질문 칩
     </div>
 
-    <div class="ux-compare">
-      <div class="ux-card">
-        <div class="ux-card-head a">A안 — 자동 전개형</div>
-        <div class="ux-card-body">
-          <ul>
-            <li>판정 + 스펙·가격·리뷰 카드가 모두 펼쳐진 상태로 표시</li>
-            <li>각 카드는 접기 가능 (아코디언)</li>
-            <li>진입 즉시 핵심 정보 전달</li>
-            <li>스크롤 한 번으로 전체 파악 가능</li>
-          </ul>
-          <div style="font-size:12px;color:#E65100;margin-top:8px">⚠ 초기 정보량이 많아 스크롤 부담 가능<br>⚠ 대화형 에이전트보다는 정보 주입 에이전트 역할이 더 강함</div>
-        </div>
-      </div>
-      <div class="ux-card">
-        <div class="ux-card-head b">B안 — 대화형</div>
-        <div class="ux-card-body">
-          <ul>
-            <li>판정만 자동 표시. 나머지 정보는 질문 칩으로 꺼냄</li>
-            <li>1차 칩: "이 스펙이 내 용도에 맞을까요?" 등 구어체 질문으로 제공</li>
-            <li>칩 선택 시 해당 답변 인라인 표시 → 맥락에 맞는 2차 질문 칩 등장</li>
-            <li>사용자가 대화를 주도하는 구조</li>
-          </ul>
-          <div style="font-size:12px;color:#E65100;margin-top:8px">⚠ 칩을 선택하지 않으면 판정 외 정보 미노출</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" style="background:#F7F8FA">
-      <div class="card-body" style="font-size:13px; color:#444">
-        <strong>A안</strong>은 정보를 한 번에 제공해 빠른 파악이 가능하고, <strong>B안</strong>은 판정 후 사용자가 궁금한 것만 대화로 꺼내는 구조.<br>
-        판정·최저가 알림 설정은 두 안 공통 제공.
+    <div class="card">
+      <div class="card-title">대화형 — 판정 선제공 후 질문 칩으로 전개</div>
+      <div class="ux-card-body">
+        <ul style="padding-left:16px">
+          <li style="font-size:12px;color:#555;margin-bottom:4px;line-height:1.5">판정만 자동 표시. 나머지 정보는 질문 칩으로 꺼냄</li>
+          <li style="font-size:12px;color:#555;margin-bottom:4px;line-height:1.5">1차 칩: "이 스펙이 내 용도에 맞을까요?" 등 구어체 질문으로 제공</li>
+          <li style="font-size:12px;color:#555;margin-bottom:4px;line-height:1.5">칩 선택 시 해당 답변 인라인 표시 → 맥락에 맞는 2차 질문 칩 등장</li>
+          <li style="font-size:12px;color:#555;margin-bottom:4px;line-height:1.5">사용자가 대화를 주도하는 구조</li>
+        </ul>
+        <div style="font-size:12px;color:#E65100;margin-top:8px">⚠ 칩을 선택하지 않으면 판정 외 정보 미노출</div>
       </div>
     </div>
 
     <div class="card" style="margin-top:10px; border-left:3px solid #2D5BE3; background:#EEF3FF">
       <div class="card-title" style="color:#2D5BE3">💬 추가 고민 필요</div>
-      <div class="card-body">B안은 에이전트가 먼저 질문 칩을 제시하고 사용자가 선택하는 구조로, 대화의 주도권이 에이전트에 있음. 진정한 대화형으로 발전하려면 <strong>사용자가 자유롭게 입력한 질문에 AI가 얼마나 정확하고 유연하게 대응할 수 있는가</strong>가 관건. 예: "이거 대학원생이 써도 될까요?", "배터리 하루 종일 버텨요?" 같은 예측 불가한 질문에 에누리 데이터 기반으로 답할 수 있는 LLM 응답 품질과 범위 설계가 선행되어야 함.</div>
+      <div class="card-body">에이전트가 먼저 질문 칩을 제시하고 사용자가 선택하는 구조로, 대화의 주도권이 에이전트에 있음. 진정한 대화형으로 발전하려면 <strong>사용자가 자유롭게 입력한 질문에 AI가 얼마나 정확하고 유연하게 대응할 수 있는가</strong>가 관건. 예: "이거 대학원생이 써도 될까요?", "배터리 하루 종일 버텨요?" 같은 예측 불가한 질문에 에누리 데이터 기반으로 답할 수 있는 LLM 응답 품질과 범위 설계가 선행되어야 함.</div>
     </div>
   </div>
 

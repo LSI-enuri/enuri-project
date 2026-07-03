@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>구매 타이밍 판정</title>
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:#F1F2F4;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+:root{--hdr:112px}
+.topbar{height:var(--hdr);max-width:1180px;margin:0 auto;padding:18px 22px 0}
+.topbar h1{font-size:23px;font-weight:800;letter-spacing:-.02em;color:#1B1B26;margin:0 0 12px}
+.maintabs{display:flex;gap:6px;border-bottom:1px solid #E0E0E6}
+.maintab{appearance:none;border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;color:#9A9AA6;padding:9px 16px;border-bottom:2.5px solid transparent;margin-bottom:-1px}
+.maintab:hover{color:#5A5A66}
+.maintab.on{color:#2D5BE3;border-bottom-color:#2D5BE3}
+.frame{display:none;width:100%;height:calc(100vh - var(--hdr));border:0}
+.frame.on{display:block}
+@media (max-width:1000px){:root{--hdr:108px}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>구매 타이밍 판정</h1>
+  <div class="maintabs">
+    <button class="maintab on" id="mt-sum" onclick="show('sum')">요약</button>
+    <button class="maintab" id="mt-policy" onclick="show('policy')">로직 &amp; 정책</button>
+    <button class="maintab" id="mt-proto" onclick="show('proto')">프로토타입</button>
+  </div>
+</div>
+<iframe id="f-sum" class="frame on" title="요약" srcdoc="<!DOCTYPE html>
+<html lang=&quot;ko&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>구매 타이밍 판정 — 한눈에</title>
+<style>
+:root{--ink:#1B1B26;--muted:#8A8A96;--line:#ECECF1;--blue:#2D5BE3;--blue-bg:#EEF3FF;
+ --green:#18A957;--green-bg:#E8F5E9;--amber:#E68A00;--amber-bg:#FFF4E2;--red:#E5342A;--soft:#FAFAFB}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F1F2F4;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:var(--ink);line-height:1.65;padding:26px 20px 70px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1fr 340px;gap:26px;align-items:start}
+.doc{background:#fff;border:1px solid #E6E6EC;border-radius:14px;padding:26px 28px}
+h1{font-size:23px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.tagline{font-size:13px;color:var(--muted);margin-bottom:22px}
+h2{font-size:15px;font-weight:800;margin:22px 0 9px;padding-left:10px;border-left:3px solid var(--blue)}
+h2:first-of-type{margin-top:0}
+p{font-size:13.5px;color:#3a3a44;margin:7px 0}
+.lead{font-size:14px;background:var(--blue-bg);border:1px solid #DCE6FF;border-radius:10px;padding:13px 15px;color:#25407e;line-height:1.6}
+.lead b{color:#1a2f66}
+.states{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.st{display:flex;align-items:center;gap:11px;border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.st .b{font-size:10px;font-weight:800;padding:2px 8px;border-radius:12px;white-space:nowrap;flex-shrink:0}
+.st.good .b{background:var(--green-bg);color:#2E7D32}.st.ok .b{background:#EFEFF2;color:#555}
+.st.wait .b{background:var(--amber-bg);color:#B5670A}.st.hold .b{background:var(--blue-bg);color:#2D5BE3}
+.st .lb{font-size:13.5px;font-weight:700}
+.st .ds{font-size:12px;color:var(--muted);margin-left:auto;text-align:right}
+.flow{list-style:none;counter-reset:f;display:flex;flex-direction:column;gap:7px;margin:8px 0}
+.flow li{position:relative;padding-left:26px;font-size:13px;color:#3a3a44}
+.flow li:before{counter-increment:f;content:counter(f);position:absolute;left:0;top:1px;width:18px;height:18px;border-radius:50%;background:var(--ink);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.principles{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.pr{font-size:13px;color:#3a3a44;padding-left:16px;position:relative}
+.pr:before{content:'▪';position:absolute;left:0;color:var(--blue)}
+.pr b{color:var(--ink)}
+.pipe{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
+.pstep{flex:1;min-width:90px;background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:10px;text-align:center}
+.pstep .n{font-size:10px;font-weight:800;color:var(--blue)}
+.pstep .t{font-size:12.5px;font-weight:700;margin-top:2px}
+.pstep .d{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+.pstep .arw{color:#ccc}
+
+/* ===== 우측 BUY 패널 예시 ===== */
+.panel-col{position:sticky;top:26px}
+.panel-cap{font-size:11px;color:var(--muted);margin-bottom:8px;text-align:center}
+.side-inner{border:1px solid #E3E3E8;border-radius:12px;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,.05)}
+.side-head{display:flex;align-items:center;gap:7px;padding:13px 14px 11px;flex-wrap:wrap}
+.ai-mark{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#4A7CF7,#7B5BE3);color:#fff;font-size:10px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 1px 4px rgba(75,92,231,.35)}
+.side-title{font-size:15px;font-weight:800}
+.ai-badge{font-size:10px;font-weight:800;color:#fff;background:linear-gradient(90deg,#4A7CF7,#7B5BE3);border-radius:5px;padding:2px 7px;margin-left:auto}
+.sb{padding:12px 14px}.sb+.sb{border-top:1px solid #F2F2F5}
+.verdict{border:1px solid var(--green-bg);border-radius:11px}
+.verdict-top{display:flex;align-items:center;gap:9px;padding:11px 12px;background:var(--green-bg);border-radius:11px 11px 0 0}
+.v-emoji{font-size:20px}.v-main{font-size:14px;font-weight:800;color:#2E7D32}
+.v-reason{padding:9px 12px;font-size:11.5px;color:#444;line-height:1.6}
+.crit-link{display:inline-flex;align-items:center;gap:4px;margin:0 12px 8px;font-size:11px;font-weight:600;color:#888;background:none;border:none;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#d5d5dd}
+.crit-link .q{width:14px;height:14px;border-radius:50%;background:#E7E7EE;color:#888;font-size:9px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.cushion{margin:0 12px 11px;font-size:10.5px;color:#9A9AA6;line-height:1.5;display:flex;gap:5px}
+.period-tabs{display:flex;gap:4px;margin-bottom:10px}
+.ptab{flex:1;font-size:10.5px;font-weight:700;padding:5px 2px;border-radius:16px;border:1px solid #E2E2EA;background:#fff;color:#9A9AA6;text-align:center}
+.ptab.on{background:var(--blue-bg);border-color:#BFD2F6;color:var(--blue)}
+.legend{display:flex;gap:11px;font-size:10px;color:var(--muted);margin-bottom:6px}
+.lg{display:flex;align-items:center;gap:4px}.lg-dot{width:7px;height:7px;border-radius:50%;background:#4A7CF7}.lg-line{width:12px;border-top:2px dashed #E59AA0}
+.gauge-ends{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;margin-bottom:6px}
+.gauge-ends .c{color:var(--blue)}.gauge-ends .p{color:var(--red)}
+.gauge-bar{position:relative;height:7px;border-radius:5px;background:linear-gradient(90deg,#3B7DED 0%,#9FB6E0 38%,#D8C0C0 62%,#E5342A 100%)}
+.gauge-handle{position:absolute;top:50%;left:8%;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.2);transform:translate(-50%,-50%)}
+.gauge-cap{font-size:11px;color:#555;margin-top:8px}.gauge-cap b{color:var(--ink)}
+.alert-h{font-size:12px;font-weight:800;color:var(--blue);margin-bottom:9px}
+.alert-row{display:flex;gap:6px}
+.alert-input{flex:1;padding:8px 10px;border-radius:8px;border:1.5px solid #C9D6F5;font-size:13px;font-weight:700;color:var(--ink);min-width:0}
+.alert-set{padding:8px 12px;border-radius:8px;background:var(--blue);color:#fff;font-size:12px;font-weight:700;border:none;white-space:nowrap}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}.panel-col{position:static}}
+</style>
+</head>
+<body>
+<div class=&quot;wrap&quot;>
+  <div class=&quot;doc&quot;>
+    <h1>구매 타이밍 판정 — 한눈에</h1>
+    <div class=&quot;tagline&quot;>정책서를 다 읽지 않아도 이 페이지만으로 골자·맥락·흐름·구조가 잡히도록 요약했어요.</div>
+
+    <div class=&quot;lead&quot;><b>한 줄 골자.</b> 가격 추이 그래프 위에, <b>“지금 살 만한 가격인지”를 4단계로 판정</b>해 얹어주는 기능. 가격 데이터만으로 판단하고, <b>미래는 예측하지 않으며</b>, 최종 결정은 사용자 몫(참고 정보)이다.</div>
+
+    <h2>왜 필요한가 (맥락)</h2>
+    <p>그래프는 <b>흐름(선)</b>을 보여줄 뿐, “그래서 지금이 살 만한 때인가”라는 <b>결론</b>은 내주지 않는다. 이 기능은 그래프가 못 하는 세 가지를 한다.</p>
+    <div class=&quot;principles&quot;>
+      <div class=&quot;pr&quot;><b>신호를 종합해 결론.</b> ‘평소보다 쌈 + 하락 멈춤 + 급등 아님’을 한꺼번에 따져 BUY/기다려로 결론낸다. (싸 보여도 계속 내려가는 중이면 오히려 기다릴 때 — 사람이 놓치기 쉬운 부분)</div>
+      <div class=&quot;pr&quot;><b>기준이 정교하다.</b> 눈대중이 아니라 그 상품 분포에서 <b>하위 몇 %</b>인지로 잰다(“대충 아래쪽”이 아니라 “하위 6%”).</div>
+      <div class=&quot;pr&quot;><b>수고를 덜어준다.</b> 매번 그래프를 해석하는 대신 한 줄 결론으로 즉시 알려주고, 목표가 알림까지 연결한다.</div>
+    </div>
+
+    <h2>4단계 판정</h2>
+    <div class=&quot;states&quot;>
+      <div class=&quot;st good&quot;><span class=&quot;b&quot;>BUY</span><span class=&quot;lb&quot;>지금 가격이 좋은 편이에요</span><span class=&quot;ds&quot;>평소보다 저렴·저점, 하락 멈춤</span></div>
+      <div class=&quot;st ok&quot;><span class=&quot;b&quot;>OK</span><span class=&quot;lb&quot;>적정 가격이에요</span><span class=&quot;ds&quot;>평소 수준</span></div>
+      <div class=&quot;st wait&quot;><span class=&quot;b&quot;>WAIT</span><span class=&quot;lb&quot;>조금 더 기다려봐요</span><span class=&quot;ds&quot;>급등·오르는 중·비쌈</span></div>
+      <div class=&quot;st hold&quot;><span class=&quot;b&quot;>HOLD</span><span class=&quot;lb&quot;>아직 판단 보류</span><span class=&quot;ds&quot;>데이터 부족(경고 아님)</span></div>
+    </div>
+
+    <h2>어떻게 판정하나 (흐름)</h2>
+    <p>“평소 가격”(최근 창의 <b>중앙값</b>)을 구하고 → 지금이 얼마나 싼지·몇 번째로 싼지·오르는 중인지를 잰 뒤 → <b>위에서부터 먼저 걸리는 것</b>이 판정이 된다.</p>
+    <ul class=&quot;flow&quot;>
+      <li>데이터가 최소 기간 미만 → <b>보류(HOLD)</b></li>
+      <li>최근 급등 / 오르는 중 → <b>기다려요(WAIT)</b></li>
+      <li>평소보다 싸고 · 하위권이고 · 안 오름 → <b>좋은 편(BUY)</b></li>
+      <li>평소보다 비쌈 → <b>기다려요(WAIT)</b></li>
+      <li>그 외 → <b>적정(OK)</b></li>
+    </ul>
+
+    <h2>핵심 원칙</h2>
+    <div class=&quot;principles&quot;>
+      <div class=&quot;pr&quot;><b>상대 기준.</b> 고정 %가 아니라 그 상품 자신의 가격 분포(평소 대비 위치)로 판단.</div>
+      <div class=&quot;pr&quot;><b>예측 안 함.</b> 과거·현재 데이터만 사용, 미래 가격은 추정하지 않음.</div>
+      <div class=&quot;pr&quot;><b>단정 안 함.</b> 방어할 수 없으면 라벨로 단정하지 않고 HOLD.</div>
+      <div class=&quot;pr&quot;><b>BUY는 적극적으로.</b> 폭넓게 띄우되 <b>오르는 중일 때만</b> 차단(급등 추격 방지).</div>
+      <div class=&quot;pr&quot;><b>설명은 템플릿.</b> 문구는 매번 AI 생성이 아니라 판정 사유별 규칙 템플릿.</div>
+    </div>
+
+    <h2>단계적 도입 계획</h2>
+    <p>서비스에 바로 붙이지 않고, 검증부터 단계적으로 확장한다.</p>
+    <div class=&quot;pipe&quot;>
+      <div class=&quot;pstep&quot;><div class=&quot;n&quot;>STEP 0</div><div class=&quot;t&quot;>시뮬레이션</div><div class=&quot;d&quot;>노트북 카테고리 90일 데이터로 판정·분포 검증</div></div>
+      <div class=&quot;pstep&quot;><div class=&quot;n&quot;>STEP 1</div><div class=&quot;t&quot;>파일럿</div><div class=&quot;d&quot;>전체 카테고리의 대표 상품 N개 적용 및 가격변동 즉시 재계산</div></div>
+      <div class=&quot;pstep&quot;><div class=&quot;n&quot;>STEP 2</div><div class=&quot;t&quot;>확장</div><div class=&quot;d&quot;>선별·티어·캐시 구체화하여 대량 처리</div></div>
+    </div>
+  </div>
+
+  <div class=&quot;panel-col&quot;>
+    <div class=&quot;panel-cap&quot;>▼ 실제 화면 예시 — BUY 상태 (PDP 우측 패널)</div>
+    <div class=&quot;side-inner&quot;>
+      <div class=&quot;side-head&quot;>
+        <span class=&quot;ai-mark&quot;>AI</span>
+        <span class=&quot;side-title&quot;>지금 사도 괜찮을까요?</span>
+        <span class=&quot;ai-badge&quot;>AI 분석</span>
+      </div>
+      <div class=&quot;sb&quot;>
+        <div class=&quot;verdict&quot;>
+          <div class=&quot;verdict-top&quot;><span class=&quot;v-emoji&quot;>✅</span><span class=&quot;v-main&quot;>지금 가격이 좋은 편이에요</span></div>
+          <div class=&quot;v-reason&quot;>출시 이후 꾸준히 내려왔고, 현재가 역대 최저 수준이에요. 최근 하락도 멈췄어요.</div>
+          <button class=&quot;crit-link&quot;><span class=&quot;q&quot;>?</span>이 판정, 어떤 기준으로?</button>
+          <div class=&quot;cushion&quot;><span>💡</span><span>AI가 가격 데이터로 분석한 참고 정보예요. 최종 구매 결정은 직접 판단해 주세요.</span></div>
+        </div>
+      </div>
+      <div class=&quot;sb&quot;>
+        <div class=&quot;period-tabs&quot;><span class=&quot;ptab&quot;>1개월</span><span class=&quot;ptab on&quot;>3개월</span><span class=&quot;ptab&quot;>6개월</span><span class=&quot;ptab&quot;>12개월</span><span class=&quot;ptab&quot;>24개월</span></div>
+        <div class=&quot;legend&quot;><span class=&quot;lg&quot;><span class=&quot;lg-dot&quot;></span>최저가 추이</span><span class=&quot;lg&quot;><span class=&quot;lg-line&quot;></span>3개월 평균</span></div>
+        <svg viewBox=&quot;0 0 300 130&quot; style=&quot;width:100%;display:block&quot;>
+          <defs><linearGradient id=&quot;g&quot; x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;1&quot;><stop offset=&quot;0%&quot; stop-color=&quot;#3B7DED&quot; stop-opacity=&quot;.16&quot;/><stop offset=&quot;100%&quot; stop-color=&quot;#3B7DED&quot; stop-opacity=&quot;.01&quot;/></linearGradient></defs>
+          <line x1=&quot;0&quot; y1=&quot;30&quot; x2=&quot;300&quot; y2=&quot;30&quot; stroke=&quot;#f2f2f6&quot;/><line x1=&quot;0&quot; y1=&quot;70&quot; x2=&quot;300&quot; y2=&quot;70&quot; stroke=&quot;#f2f2f6&quot;/><line x1=&quot;0&quot; y1=&quot;110&quot; x2=&quot;300&quot; y2=&quot;110&quot; stroke=&quot;#f2f2f6&quot;/>
+          <line x1=&quot;0&quot; y1=&quot;58&quot; x2=&quot;300&quot; y2=&quot;58&quot; stroke=&quot;#E59AA0&quot; stroke-width=&quot;1.1&quot; stroke-dasharray=&quot;4 3&quot;/>
+          <path d=&quot;M8,18 L38,26 L68,36 L98,48 L128,62 L158,78 L188,92 L218,102 L248,107 L278,108&quot; fill=&quot;none&quot; stroke=&quot;#3B7DED&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/>
+          <path d=&quot;M8,18 L38,26 L68,36 L98,48 L128,62 L158,78 L188,92 L218,102 L248,107 L278,108 L278,124 L8,124 Z&quot; fill=&quot;url(#g)&quot;/>
+          <circle cx=&quot;278&quot; cy=&quot;108&quot; r=&quot;3.6&quot; fill=&quot;#fff&quot; stroke=&quot;#E5342A&quot; stroke-width=&quot;2&quot;/>
+          <circle cx=&quot;278&quot; cy=&quot;108&quot; r=&quot;5.5&quot; fill=&quot;#3B7DED&quot; opacity=&quot;.16&quot;/><circle cx=&quot;278&quot; cy=&quot;108&quot; r=&quot;3.2&quot; fill=&quot;#3B7DED&quot;/>
+        </svg>
+        <div style=&quot;display:flex;justify-content:space-between;font-size:9px;color:#aaa;margin-top:4px&quot;><span>3개월 전</span><span style=&quot;color:#3B7DED;font-weight:700&quot;>현재</span></div>
+      </div>
+      <div class=&quot;sb&quot;>
+        <div class=&quot;gauge-ends&quot;><span class=&quot;c&quot;>저렴</span><span class=&quot;p&quot;>비쌈</span></div>
+        <div class=&quot;gauge-bar&quot;><div class=&quot;gauge-handle&quot;></div></div>
+        <div class=&quot;gauge-cap&quot;>최근 90일 중 <b>하위 6%</b> — 평소보다 저렴한 구간이에요.</div>
+      </div>
+      <div class=&quot;sb&quot;>
+        <div class=&quot;alert-h&quot;>🔔 이 가격 되면 알려드릴게요</div>
+        <div class=&quot;alert-row&quot;><input class=&quot;alert-input&quot; value=&quot;1,790,000&quot; readonly><button class=&quot;alert-set&quot;>알림</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+"></iframe>
+<iframe id="f-policy" class="frame" title="로직 및 정책" srcdoc="<!DOCTYPE html>
+<html lang=&quot;ko&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>구매 타이밍 판정 — 로직 &amp; 정책</title>
+<style>
+:root{--ink:#1f1f28;--muted:#787884;--line:#E6E6EC;--bg:#fff;--soft:#FAFAFB;--blue:#185FA5;--accent:#2D5BE3}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+a.xref{color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+a.xref:hover{opacity:.7}
+body{max-width:900px;margin:0 auto;padding:40px 22px 80px;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;line-height:1.72;font-size:15px}
+h1{font-size:24px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
+h2{font-size:19px;font-weight:800;margin:40px 0 12px;padding-top:18px;border-top:2px solid var(--line);letter-spacing:-.01em}
+h3{font-size:15px;font-weight:800;margin:22px 0 8px;color:#33333d}
+p{margin:9px 0}
+.lead{background:#EEF3FF;border:1px solid #D6E0FF;border-radius:12px;padding:13px 16px;font-size:14px;margin:14px 0}
+.lead b{color:var(--accent)}
+.changelog{font-size:12px;color:var(--muted);margin:6px 0 0}
+blockquote{margin:12px 0;padding:10px 14px;background:var(--soft);border-left:3px solid #D8D8E0;border-radius:0 8px 8px 0;font-size:13.5px;color:#55555f}
+blockquote b{color:var(--ink)}
+.callout{background:#FFF8E1;border:1px solid #FAE3A0;border-radius:10px;padding:12px 15px;font-size:13.5px;margin:14px 0}
+.callout b{color:#854F0B}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:700}
+code{font-family:'SF Mono',Menlo,Consolas,monospace;font-size:12.5px;background:#F2F2F5;padding:1px 5px;border-radius:4px}
+pre{background:#1f2230;color:#e6e6ef;border-radius:10px;padding:15px 16px;overflow-x:auto;font-size:12.5px;line-height:1.65;margin:12px 0}
+pre code{background:none;color:inherit;padding:0;font-size:inherit}
+ul{margin:8px 0;padding-left:20px}li{margin:3px 0}
+dl{margin:10px 0}
+dt{font-weight:800;margin-top:12px;font-size:14px}
+dt code{font-weight:400}
+dd{margin:3px 0 0;color:#3a3a44;font-size:13.5px}
+.tag{display:inline-block;font-size:10px;font-weight:700;color:var(--blue);background:#E6F1FB;border-radius:5px;padding:2px 7px;vertical-align:middle}
+.new{color:#3B6D11;background:#EAF3DE}
+.fig{margin:14px 0;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+.fig svg{display:block;width:100%;height:auto}
+.fig-cap{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+.foot{margin-top:36px;padding-top:14px;border-top:2px solid var(--line);font-size:12px;color:var(--muted)}
+.fl text{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif}
+.fl .tt{font-size:14px;font-weight:500}
+.fl .st{font-size:12px;font-weight:400}
+.fl .box{fill:#fff;stroke:#D5D5DD;stroke-width:1}
+.fl .gray{fill:#F1EFE8;stroke:#D3D1C7;stroke-width:1}
+.fl .blue{fill:#E6F1FB;stroke:#B5D4F4;stroke-width:1}
+.fl .amber{fill:#FAEEDA;stroke:#FAC775;stroke-width:1}
+.fl .green{fill:#EAF3DE;stroke:#C0DD97;stroke-width:1}
+.fl .arr{stroke:#9a9aa4;stroke-width:1.4;fill:none}
+@media print{body{font-size:12px}pre{background:#f2f2f5;color:#222}h2{break-after:avoid}}
+.stage{display:flex;align-items:center;gap:9px;background:#EEF3FF;border-left:4px solid #2D5BE3;padding:10px 13px;border-radius:0 9px 9px 0;margin:26px 0 10px;font-size:15px;font-weight:800;color:#1f1f28}
+.stage .step{flex-shrink:0;min-width:24px;height:22px;padding:0 6px;border-radius:11px;background:#2D5BE3;color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+
+<div class=&quot;lead&quot;><b>한 줄 원칙</b> — 임계값을 고정 %로 박지 않고 <b>상품 자신의 가격 분포(백분위·변동성·추세)로 정규화</b>한다. 카테고리는 소수 파라미터만 얹고 그마저 <b>데이터에서 자동 산출</b>한다. <b>방어할 수 없는 판단은 라벨로 단정하지 않는다.</b></div>
+
+<h2>1. 판정 스케일</h2>
+<p>최종 출력은 네 가지 상태 중 하나. <code>HOLD</code>는 “나쁜 가격” 경고가 아니라 스케일 밖의 판단 보류다.</p>
+<table>
+<tr><th>상태</th><th>라벨(UI)</th><th>reason 노출</th><th>의미</th></tr>
+<tr><td><code>BUY</code></td><td>✅ 지금 가격이 좋은 편이에요</td><td>—</td><td>저점 구간</td></tr>
+<tr><td><code>OK</code></td><td>👍 적정 가격이에요</td><td>—</td><td>평균 수준</td></tr>
+<tr><td><code>WAIT</code></td><td>⏳ 조금 더 기다려봐요</td><td><b>조건부</b> (급등·오르는 중·비쌈)</td><td>지금은 사기 이른 편</td></tr>
+<tr><td><code>HOLD</code></td><td>🕒 아직 판단 보류</td><td>데이터 부족</td><td>스케일 밖(경고 아님)</td></tr>
+</table>
+
+<h2 id=&quot;s2&quot;>2. 전체 흐름 (준비 → 판정 → 출력)</h2>
+<p>로직은 두 단계로 나뉜다 — <b>준비 단계</b>(카테고리마다, 월 1회 배치)에서 파라미터를 만들어 저장해두고, <b>판정 단계</b>(상품마다)에서 그 값을 읽어 판정한다.</p>
+
+<h3>준비 단계 — <a class=&quot;xref&quot; href=&quot;#s5&quot;>카테고리 파라미터</a>를 만들어 저장</h3>
+<div class=&quot;fig&quot;>
+<svg class=&quot;fl&quot; viewBox=&quot;0 0 700 110&quot; role=&quot;img&quot; aria-label=&quot;준비 단계: 측정 → 분류 → 파라미터 채움 → 저장&quot;>
+<defs><marker id=&quot;ar2&quot; viewBox=&quot;0 0 10 10&quot; refX=&quot;8&quot; refY=&quot;5&quot; markerWidth=&quot;6&quot; markerHeight=&quot;6&quot; orient=&quot;auto-start-reverse&quot;><path d=&quot;M2 1L8 5L2 9&quot; fill=&quot;none&quot; stroke=&quot;#9a9aa4&quot; stroke-width=&quot;1.5&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/></marker></defs>
+<rect class=&quot;gray&quot; x=&quot;6&quot; y=&quot;18&quot; width=&quot;164&quot; height=&quot;66&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;88&quot; y=&quot;44&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#2C2C2A&quot;>① 표본 측정</text><text class=&quot;st&quot; x=&quot;88&quot; y=&quot;62&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#5F5E5A&quot;>cv·계절성·추세</text>
+<rect class=&quot;gray&quot; x=&quot;182&quot; y=&quot;18&quot; width=&quot;164&quot; height=&quot;66&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;264&quot; y=&quot;44&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#2C2C2A&quot;>② 유형 분류</text><text class=&quot;st&quot; x=&quot;264&quot; y=&quot;62&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#5F5E5A&quot;>감가·시세·안정·계절</text>
+<rect class=&quot;gray&quot; x=&quot;358&quot; y=&quot;18&quot; width=&quot;164&quot; height=&quot;66&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;440&quot; y=&quot;44&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#2C2C2A&quot;>③ 파라미터 채움</text><text class=&quot;st&quot; x=&quot;440&quot; y=&quot;62&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#5F5E5A&quot;>W·W_min·floor·P_buy</text>
+<rect class=&quot;gray&quot; x=&quot;534&quot; y=&quot;18&quot; width=&quot;160&quot; height=&quot;66&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;614&quot; y=&quot;44&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#2C2C2A&quot;>④ 저장</text><text class=&quot;st&quot; x=&quot;614&quot; y=&quot;62&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#5F5E5A&quot;>카테고리 테이블</text>
+<line class=&quot;arr&quot; x1=&quot;170&quot; y1=&quot;51&quot; x2=&quot;180&quot; y2=&quot;51&quot; marker-end=&quot;url(#ar2)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;346&quot; y1=&quot;51&quot; x2=&quot;356&quot; y2=&quot;51&quot; marker-end=&quot;url(#ar2)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;522&quot; y1=&quot;51&quot; x2=&quot;532&quot; y2=&quot;51&quot; marker-end=&quot;url(#ar2)&quot;/>
+</svg>
+<div class=&quot;fig-cap&quot;>측정 → 분류 → 파라미터 채움 → 저장. 유형 프로파일 표(<a class=&quot;xref&quot; href=&quot;#s5&quot;>§5</a>)는 “입력”이 아니라 ②③의 <b>출력 템플릿</b>이다.</div>
+</div>
+<p>준비 단계가 카테고리 테이블에 파라미터를 저장하면, 아래 판정 단계는 그 값을 <b>읽기만</b> 한다. 그래서 측정·분류를 매 판정마다 다시 하지 않는다.</p>
+
+<h3>판정 단계 — 저장된 파라미터로 <a class=&quot;xref&quot; href=&quot;#s3&quot;>상품을 판정</a></h3>
+<div class=&quot;fig&quot;>
+<svg class=&quot;fl&quot; viewBox=&quot;0 0 680 760&quot; role=&quot;img&quot; aria-label=&quot;판정 단계 흐름도: 대상 판별부터 BUY/OK/WAIT/HOLD 출력까지&quot;>
+<defs><marker id=&quot;ar1&quot; viewBox=&quot;0 0 10 10&quot; refX=&quot;8&quot; refY=&quot;5&quot; markerWidth=&quot;6&quot; markerHeight=&quot;6&quot; orient=&quot;auto-start-reverse&quot;><path d=&quot;M2 1L8 5L2 9&quot; fill=&quot;none&quot; stroke=&quot;#9a9aa4&quot; stroke-width=&quot;1.5&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/></marker></defs>
+
+<rect class=&quot;box&quot; x=&quot;50&quot; y=&quot;20&quot; width=&quot;250&quot; height=&quot;44&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;175&quot; y=&quot;42&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#1f1f28&quot;>상품</text>
+
+<rect class=&quot;box&quot; x=&quot;50&quot; y=&quot;92&quot; width=&quot;250&quot; height=&quot;54&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;175&quot; y=&quot;112&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#1f1f28&quot;>대상 상품인가?</text><text class=&quot;st&quot; x=&quot;175&quot; y=&quot;130&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#83838f&quot;>모델 · 선별·수동지정</text>
+
+<rect class=&quot;box&quot; x=&quot;50&quot; y=&quot;174&quot; width=&quot;250&quot; height=&quot;54&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;175&quot; y=&quot;194&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#1f1f28&quot;>데이터 충분한가?</text><text class=&quot;st&quot; x=&quot;175&quot; y=&quot;212&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#83838f&quot;>보유일수 ≥ W_min</text>
+
+<rect class=&quot;box&quot; x=&quot;50&quot; y=&quot;256&quot; width=&quot;250&quot; height=&quot;54&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;175&quot; y=&quot;276&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#1f1f28&quot;>신호 계산</text><text class=&quot;st&quot; x=&quot;175&quot; y=&quot;294&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#83838f&quot;>base·pct·기울기·변화율</text>
+
+<rect class=&quot;box&quot; x=&quot;50&quot; y=&quot;338&quot; width=&quot;250&quot; height=&quot;54&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;175&quot; y=&quot;358&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#1f1f28&quot;>최근 급등?</text><text class=&quot;st&quot; x=&quot;175&quot; y=&quot;376&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#83838f&quot;>7일 변화율 ≥ +2σ</text>
+
+<rect class=&quot;box&quot; x=&quot;50&quot; y=&quot;420&quot; width=&quot;250&quot; height=&quot;54&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;175&quot; y=&quot;440&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#1f1f28&quot;>오르는 중?</text><text class=&quot;st&quot; x=&quot;175&quot; y=&quot;458&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#83838f&quot;>최근 기울기 상승</text>
+
+<rect class=&quot;box&quot; x=&quot;50&quot; y=&quot;502&quot; width=&quot;250&quot; height=&quot;54&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;175&quot; y=&quot;522&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#1f1f28&quot;>살 만큼 싼가?</text><text class=&quot;st&quot; x=&quot;175&quot; y=&quot;540&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#83838f&quot;>평균↓·하위%·상승 아님</text>
+
+<rect class=&quot;box&quot; x=&quot;50&quot; y=&quot;584&quot; width=&quot;250&quot; height=&quot;54&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;175&quot; y=&quot;604&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#1f1f28&quot;>평소보다 비싼가?</text><text class=&quot;st&quot; x=&quot;175&quot; y=&quot;622&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#83838f&quot;>기준선 신뢰될 때만</text>
+
+<rect class=&quot;gray&quot; x=&quot;50&quot; y=&quot;666&quot; width=&quot;250&quot; height=&quot;52&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;175&quot; y=&quot;684&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#2C2C2A&quot;>적정 가격이에요</text><text class=&quot;st&quot; x=&quot;175&quot; y=&quot;702&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#5F5E5A&quot;>OK</text>
+
+<rect class=&quot;gray&quot; x=&quot;420&quot; y=&quot;93&quot; width=&quot;230&quot; height=&quot;52&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;535&quot; y=&quot;111&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#2C2C2A&quot;>판정 안 함</text><text class=&quot;st&quot; x=&quot;535&quot; y=&quot;129&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#5F5E5A&quot;>대상 아님</text>
+<rect class=&quot;blue&quot; x=&quot;420&quot; y=&quot;175&quot; width=&quot;230&quot; height=&quot;52&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;535&quot; y=&quot;193&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#0C447C&quot;>아직 판단 보류</text><text class=&quot;st&quot; x=&quot;535&quot; y=&quot;211&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#185FA5&quot;>HOLD</text>
+<rect class=&quot;amber&quot; x=&quot;420&quot; y=&quot;339&quot; width=&quot;230&quot; height=&quot;52&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;535&quot; y=&quot;357&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#854F0B&quot;>조금 더 기다려봐요</text><text class=&quot;st&quot; x=&quot;535&quot; y=&quot;375&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#A5670E&quot;>WAIT · 급등</text>
+<rect class=&quot;amber&quot; x=&quot;420&quot; y=&quot;421&quot; width=&quot;230&quot; height=&quot;52&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;535&quot; y=&quot;439&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#854F0B&quot;>조금 더 기다려봐요</text><text class=&quot;st&quot; x=&quot;535&quot; y=&quot;457&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#A5670E&quot;>WAIT · 오르는 중</text>
+<rect class=&quot;green&quot; x=&quot;420&quot; y=&quot;503&quot; width=&quot;230&quot; height=&quot;52&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;535&quot; y=&quot;521&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#3B6D11&quot;>지금 가격이 좋은 편이에요</text><text class=&quot;st&quot; x=&quot;535&quot; y=&quot;539&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#4E8C18&quot;>BUY</text>
+<rect class=&quot;amber&quot; x=&quot;420&quot; y=&quot;585&quot; width=&quot;230&quot; height=&quot;52&quot; rx=&quot;8&quot;/><text class=&quot;tt&quot; x=&quot;535&quot; y=&quot;603&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#854F0B&quot;>조금 더 기다려봐요</text><text class=&quot;st&quot; x=&quot;535&quot; y=&quot;621&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot; fill=&quot;#A5670E&quot;>WAIT · 평소보다 비쌈</text>
+
+<line class=&quot;arr&quot; x1=&quot;175&quot; y1=&quot;64&quot; x2=&quot;175&quot; y2=&quot;88&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;175&quot; y1=&quot;146&quot; x2=&quot;175&quot; y2=&quot;170&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;175&quot; y1=&quot;228&quot; x2=&quot;175&quot; y2=&quot;252&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;175&quot; y1=&quot;310&quot; x2=&quot;175&quot; y2=&quot;334&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;175&quot; y1=&quot;392&quot; x2=&quot;175&quot; y2=&quot;416&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;175&quot; y1=&quot;474&quot; x2=&quot;175&quot; y2=&quot;498&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;175&quot; y1=&quot;556&quot; x2=&quot;175&quot; y2=&quot;580&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;175&quot; y1=&quot;638&quot; x2=&quot;175&quot; y2=&quot;662&quot; marker-end=&quot;url(#ar1)&quot;/>
+
+<line class=&quot;arr&quot; x1=&quot;300&quot; y1=&quot;119&quot; x2=&quot;414&quot; y2=&quot;119&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;300&quot; y1=&quot;201&quot; x2=&quot;414&quot; y2=&quot;201&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;300&quot; y1=&quot;365&quot; x2=&quot;414&quot; y2=&quot;365&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;300&quot; y1=&quot;447&quot; x2=&quot;414&quot; y2=&quot;447&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;300&quot; y1=&quot;529&quot; x2=&quot;414&quot; y2=&quot;529&quot; marker-end=&quot;url(#ar1)&quot;/>
+<line class=&quot;arr&quot; x1=&quot;300&quot; y1=&quot;611&quot; x2=&quot;414&quot; y2=&quot;611&quot; marker-end=&quot;url(#ar1)&quot;/>
+
+<text class=&quot;st&quot; x=&quot;357&quot; y=&quot;113&quot; text-anchor=&quot;middle&quot; fill=&quot;#83838f&quot;>아니오</text>
+<text class=&quot;st&quot; x=&quot;357&quot; y=&quot;195&quot; text-anchor=&quot;middle&quot; fill=&quot;#83838f&quot;>아니오</text>
+<text class=&quot;st&quot; x=&quot;357&quot; y=&quot;359&quot; text-anchor=&quot;middle&quot; fill=&quot;#83838f&quot;>예</text>
+<text class=&quot;st&quot; x=&quot;357&quot; y=&quot;441&quot; text-anchor=&quot;middle&quot; fill=&quot;#83838f&quot;>예</text>
+<text class=&quot;st&quot; x=&quot;357&quot; y=&quot;523&quot; text-anchor=&quot;middle&quot; fill=&quot;#83838f&quot;>예</text>
+<text class=&quot;st&quot; x=&quot;357&quot; y=&quot;605&quot; text-anchor=&quot;middle&quot; fill=&quot;#83838f&quot;>예</text>
+
+<rect class=&quot;gray&quot; x=&quot;50&quot; y=&quot;732&quot; width=&quot;13&quot; height=&quot;13&quot; rx=&quot;3&quot;/><text class=&quot;st&quot; x=&quot;69&quot; y=&quot;738&quot; dominant-baseline=&quot;central&quot; fill=&quot;#5F5E5A&quot;>대상 외·적정</text>
+<rect class=&quot;blue&quot; x=&quot;178&quot; y=&quot;732&quot; width=&quot;13&quot; height=&quot;13&quot; rx=&quot;3&quot;/><text class=&quot;st&quot; x=&quot;197&quot; y=&quot;738&quot; dominant-baseline=&quot;central&quot; fill=&quot;#185FA5&quot;>보류(HOLD)</text>
+<rect class=&quot;amber&quot; x=&quot;300&quot; y=&quot;732&quot; width=&quot;13&quot; height=&quot;13&quot; rx=&quot;3&quot;/><text class=&quot;st&quot; x=&quot;319&quot; y=&quot;738&quot; dominant-baseline=&quot;central&quot; fill=&quot;#A5670E&quot;>기다려(WAIT)</text>
+<rect class=&quot;green&quot; x=&quot;438&quot; y=&quot;732&quot; width=&quot;13&quot; height=&quot;13&quot; rx=&quot;3&quot;/><text class=&quot;st&quot; x=&quot;457&quot; y=&quot;738&quot; dominant-baseline=&quot;central&quot; fill=&quot;#4E8C18&quot;>사도 좋아요(BUY)</text>
+</svg>
+<div class=&quot;fig-cap&quot;>→ 오른쪽 = 그 결과로 종료 · ↓ 아래 = 다음 판정으로. 위에서부터 먼저 걸리는 조건이 결과가 된다.</div>
+</div>
+
+<h2 id=&quot;s3&quot;>3. 판정 의사코드 <span class=&quot;tag&quot;>위 판정 단계 흐름도를 그대로 코드로</span></h2>
+<p>아래 코드의 분기 순서가 <a class=&quot;xref&quot; href=&quot;#s2&quot;>§2 판정 흐름도</a>와 1:1로 대응한다. 기호 정의는 <a class=&quot;xref&quot; href=&quot;#s4&quot;>§4</a>, 파라미터(<code>W·floor·P_buy</code>)는 <a class=&quot;xref&quot; href=&quot;#s5&quot;>§5</a> 참고.</p>
+
+<h3>먼저, 말로 풀면</h3>
+<p>이 상품의 <b>‘평소 가격’</b>부터 구한다 — 최근 관측 창(예: 90일)의 최저가를 크기순으로 줄 세운 <b>가운데 값(중앙값)</b>이다. 그리고 세 가지를 잰다: 지금 가격이 평소보다 <b>얼마나 싼지</b>, 최근 그 기간 중 <b>몇 번째로 싼지</b>(백분위), 요즘 <b>오르는 중인지</b>(기울기).</p>
+<p>그다음 <b>위에서부터 차례로</b> 따져 먼저 걸리는 것이 판정이 된다:</p>
+<ol>
+<li>데이터가 유형별 최소 기간(<code>W_min</code>)도 안 쌓였으면 → <b>아직 판단 보류</b></li>
+<li>최근 7일 새 급등했으면 → <b>조금 더 기다려봐요</b> (오른 값 추격 방지)</li>
+<li>지금 오르는 중이면 → <b>조금 더 기다려봐요</b></li>
+<li>평소보다 유의미하게 싸고 · 하위권(<code>P_buy</code> 이내)이고 · 안 오르면 → <b>지금 가격이 좋은 편이에요</b></li>
+<li>(믿을 만한 기준선에서) 평소보다 비싸면 → <b>조금 더 기다려봐요</b></li>
+<li>그 외 → <b>적정 가격이에요</b></li>
+</ol>
+<p>핵심은 <b>‘평소보다’</b>다. 고정된 몇 % 할인이 아니라 그 상품 자신의 가격 분포에서 지금이 어느 위치인지를 본다. 그래서 그래프만 봐선 애매한 “이 낮음이 의미 있는 낮음인지”를 대신 짚어준다.</p>
+
+<h3>코드로는</h3>
+<pre><code>judge(product):
+    type = profile(product)               # 카테고리 테이블에서 읽음 (없으면 전역 기본값)
+    win  = prices(product, last=type.W)
+    cur  = win.last
+
+    # ① 데이터 충분성 → 보류(스케일 밖)
+    if dataAge(product) &amp;lt; type.W_min:
+        return HOLD(&quot;아직 판단 보류&quot;)
+
+    # 신호 (정의는 §4)
+    base  = median(trusted(win))           # 평균 아닌 중앙값 + 안정화 가드
+    tb    = baseline_trusted(product, win)
+    gap   = base - cur
+    cheap = gap &amp;gt;= floor(type, win)        # 유의미 절약(노이즈 차단)
+    rising= slope(win, 30d) &amp;gt; +eps
+
+    # ② 사실 판정 먼저 (기준선 신뢰 불필요)
+    if r7(win) &amp;gt;= max(type.spikeFloor, 2*sigma_weekly(win)):
+        return WAIT(&quot;최근 급등&quot;)           # 7일 변화율 기준
+    if rising:
+        return WAIT(&quot;오르는 중&quot;)
+
+    # ③ 구매: '저렴' 필수, '최저 근접'은 메시지 부스터일 뿐
+    if cheap and pct(cur,win) &amp;lt;= type.P_buy and not rising:
+        v = BUY(&quot;지금 가격이 좋은 편이에요&quot;)
+        if near_low(cur) and abs(slope) &amp;lt;= eps:
+            v.booster = &quot;최근 최저가 부근에서 하락이 멈췄어요&quot;
+        return v
+
+    # ④ '비쌈'은 기준선이 믿을 만할 때만 단정
+    if tb and cur &amp;gt; base and not cheap:
+        return WAIT(&quot;평소보다 비쌈&quot;)
+
+    return OK(&quot;적정 가격이에요&quot;)            # 그 외 (라벨 과claim 안 함)</code></pre>
+
+<h2 id=&quot;s4&quot;>4. 상품별 자동 계산 신호</h2>
+<p>모든 신호의 재료는 <b>상품마다 “그날의 최저가”를 날짜순으로 쌓은 한 줄</b>(가격추이 그래프용 데이터)이다. 아래 기호는 전부 이 한 줄에서 나온다.</p>
+<dl>
+<dt><code>W</code> — 관측 창 길이</dt>
+<dd>며칠 치를 비교 대상으로 볼지. <a class=&quot;xref&quot; href=&quot;#s5&quot;>카테고리 파라미터(§5)</a>다. <code>win</code>은 “오늘부터 거꾸로 <code>W</code>일치 최저가”. 노트북은 <code>W=90</code>, 계절상품은 <code>365</code>처럼 길어진다.</dd>
+
+<dt><code>cur</code> — 현재 최저가</dt>
+<dd>그 줄의 <b>가장 최근 값</b>(= <code>win</code>의 마지막 원소). 새로 어디서 가져오는 게 아니라, PDP에 크게 뜨는 그 “현재 최저가” 그대로다.</dd>
+
+<dt><code>base</code> — 기준선(중앙값)</dt>
+<dd><code>win</code> 값을 크기순으로 줄 세웠을 때 <b>가운데 값</b>. <b>평균이 아니라 중앙값을 쓰는 이유</b>는, 평균은 극단값(출시 초기 비정상 저가나 일시 급등 며칠)에 끌려가지만 중앙값은 안 끌려 “이 상품의 평소 가격”을 더 정직하게 대표하기 때문이다. <b>계산</b>: 신뢰 구간만 골라(아래 안정화 가드) 정렬 → 가운데 값(짝수 개면 가운데 둘의 평균).</dd>
+
+<dt><code>gap</code> = <code>base − cur</code></dt>
+<dd>양수면 평소(중앙값)보다 그만큼 싸다는 뜻.</dd>
+
+<dt id=&quot;a-tb&quot;><code>trusted_base</code> — 기준선 신뢰 여부 (참/거짓)</dt>
+<dd>숫자가 아닌 플래그. 아래 3조건을 모두 통과해야 <code>true</code>이고, 그래야만 ‘평소보다 비쌈’을 단정한다. <b>HOLD와는 다른 층위</b> — HOLD는 “판정 자체 불가”, <code>false</code>는 “판정은 하되 *비쌈이라고 단정만* 보류(→ OK로)”.
+<table style=&quot;margin-top:6px&quot;>
+<tr><th>조건</th><th>의미</th><th>초기값(제안)</th></tr>
+<tr><td>안정화 경과</td><td>DB 진입 후 충분히 지났나</td><td>데이터 ≥ 30일 + 출시 직후 7~14일 제외</td></tr>
+<tr><td>판매처 충분</td><td>시장가를 대표하나</td><td>평균 판매처 수 ≥ 3곳</td></tr>
+<tr><td>변동성 적정</td><td>너무 출렁여 ‘평소’가 무의미하진 않나</td><td>변동계수 cv ≤ 0.15</td></tr>
+</table></dd>
+
+<dt><code>slope</code> — 추세</dt>
+<dd>최근 30일 회귀 기울기. 상승 / 안정 / 하락을 가른다.</dd>
+
+<dt><code>pct</code> — 백분위</dt>
+<dd><code>win</code> 안에서 현재가의 위치(0 = 최저). 가격대와 무관해 카테고리 간 비교가 가능하다.</dd>
+
+<dt><code>r7</code> — 최근 7일 <b>변화율</b></dt>
+<dd>이전 표의 “수익률”은 금융 용어를 잘못 빌린 것으로, 정확히는 <b>가격 변화율</b>이다. <code>r7 = (오늘 최저가 − 7일 전 최저가) / 7일 전 최저가</code>. 예: 7일 전 200만 → 오늘 220만이면 <code>+10%</code>. 양수로 크면(급등) <code>WAIT·급등</code>에 쓰인다.</dd>
+</dl>
+<h3>이 파라미터들이 의사코드에서 쓰이는 위치</h3>
+<p><code>W_min</code>·<code>P_buy</code>는 신호를 <b>계산</b>하는 값이 아니라, 만든 신호를 <b>어디서 자를지</b> 정하는 값이라 위 정의 목록엔 없었다. 실제로는 <a class=&quot;xref&quot; href=&quot;#s3&quot;>§3 의사코드</a>의 분기 조건에 들어간다.</p>
+<table>
+<tr><th>기호</th><th>종류</th><th>§3 의사코드에서 쓰이는 분기</th></tr>
+<tr><td><code>W</code></td><td>카테고리 파라미터</td><td><code>prices(last=W)</code> — 신호 계산의 입력(창 길이)</td></tr>
+<tr><td><code>W_min</code></td><td>카테고리 파라미터</td><td>① 첫 게이트 <code>if dataAge &amp;lt; W_min → HOLD</code> — 판정을 시작할지 여부</td></tr>
+<tr><td><code>P_buy</code></td><td>카테고리 파라미터</td><td>③ 구매 분기 <code>if pct ≤ P_buy → BUY</code> — 백분위를 끊는 구매 기준선</td></tr>
+</table>
+
+<h2 id=&quot;s5&quot;>5. 카테고리 파라미터 — “정하는” 게 아니라 “재서 나오는”</h2>
+<p><a class=&quot;xref&quot; href=&quot;#s2&quot;>§2 준비 단계</a>의 ①~④가 이 절의 내용이다. <b>측정이 먼저고, 유형은 측정의 결과이며, 파라미터는 유형이 정해진 다음 채워진다.</b> 따라서 아래 유형 프로파일 표는 입력이 아니라 <b>분류 후 적용할 규칙(출력 템플릿)</b>이다.</p>
+
+<h3>준비 단계 (카테고리마다, 월 1회)</h3>
+<pre><code>① 카테고리 표본을 측정       → cv·계절성·추세·표본길이
+② 측정값으로 유형 분류        → &quot;이건 감가형&quot;
+③ 유형이 정해지면 파라미터 채움
+       W, W_min : 유형이 정함 (감가형이면 W=90)
+       floor    : ①에서 잰 변동성으로 계산
+       P_buy    : 전역 1값 (유형 무관)
+④ 카테고리 테이블에 [유형 + W·W_min·floor·P_buy] 저장</code></pre>
+<p><b>판정 단계(상품마다)</b>는 위에서 저장한 값을 <b>읽기만</b> 한다. 그래서 측정·분류가 매 판정마다 돌지 않아 순환이 생기지 않는다.</p>
+
+<h3 id=&quot;a-pbuy&quot;>P_buy — 우리가 판단할 한 가지: “얼마나 자주 사라고 권할까”</h3>
+<p><code>P_buy</code>(하위 몇 %에서 BUY를 띄울지)는 데이터가 답을 주지 않는 <b>사업 판단</b>이다. 추천 빈도와 정확도의 맞교환이기 때문.</p>
+<ul>
+<li><b>느슨하게(하위 30%)</b> → BUY가 자주 뜸. 자주 보이지만 “샀더니 더 싸지던데?” 불만 위험↑.</li>
+<li><b>깐깐하게(하위 10%)</b> → 가끔 뜨지만 거의 진짜 저점. 대신 도구가 소극적으로 느껴짐.</li>
+</ul>
+<p>결정할 질문: <b>“BUY를 전체 판정의 몇 %쯤 띄울까, 한 번 틀렸을 때의 신뢰 타격을 얼마나 감수할까.”</b> <b>기본 스탠스는 적극적으로</b> — 하위 25~35%에서 시작해 BUY가 자주 나오게 넓게 잡고, 신뢰는 백테스트 적중률로 관리한다.</p>
+
+<h3 id=&quot;a-ops&quot;>파라미터 산출 운영 — 표본·주기·비용 <span class=&quot;tag new&quot;>유지</span></h3>
+<p><b>표본은 카테고리에 상품이 몇 개(N)든 무관.</b> 재는 건 통계적 성격이라 정밀도는 표본 수에만 달려 있고 모집단 N과 독립이다(5천 개든 5만 개든 잘 뽑은 수백 개면 같은 값).</p>
+<table>
+<tr><th>상황</th><th>표본</th></tr>
+<tr><td>기본</td><td>활성·대표 상품 <b>약 500개</b> (가격대 층화, 단종·신상품 제외)</td></tr>
+<tr><td>적격 ~500개 미만 소규모 카테고리</td><td>전수 (적어서 쌈)</td></tr>
+<tr><td>내부 이질 대형(30만 사무용~500만 게이밍)</td><td>표본 ↑ 금지 → <b>하위 카테고리로 분리</b></td></tr>
+</table>
+<table>
+<tr><th>대상</th><th>주기</th><th>이유</th></tr>
+<tr><td>감가형·안정형·계절형</td><td>월 1회</td><td>통계 성격이 느리게 변함</td></tr>
+<tr><td>시세/스파이크형(GPU·메모리·금)</td><td>주 1회</td><td>σ·floor가 급등 판정에 직접 쓰여 신선도 필요</td></tr>
+<tr><td>계절성·유형 분류</td><td>분기 1회</td><td>1년 창 필요, 한번 정해지면 정적</td></tr>
+<tr><td>전 유형 공통</td><td>드리프트 트리거</td><td>변동성이 저장값과 ±25% 이상 어긋나면 주기 무관 즉시 재계산</td></tr>
+</table>
+<blockquote>비용 감: <b>카테고리 ~3천 × 표본 500개 × 월 1회 ≈ 월 150만 건 읽기</b>. 그마저 원시 수집이 아니라 그래프용으로 이미 만든 일자별 최저가 집계 위에서 요약 → 야간 소형 배치 수준. <b>처음엔 전역 기본값 1개로 시작(측정 잡 자체 없음)</b>하고, 기본값이 안 맞는 상위 카테고리만 측정을 켠다.</blockquote>
+
+<h3 id=&quot;a-type&quot;>유형 프로파일 (출력 템플릿)</h3>
+<table>
+<tr><th>유형</th><th>예시</th><th>추세</th><th><code>W</code></th><th><code>W_min</code></th><th><code>P_buy</code></th></tr>
+<tr><td>감가형</td><td>노트북·폰</td><td>우하향</td><td>90일</td><td>60일</td><td>하위 30% +상승 아님</td></tr>
+<tr><td>시세/스파이크형</td><td>GPU·메모리</td><td>변동 큼</td><td>90일</td><td>30일</td><td>하위 25%</td></tr>
+<tr><td>안정·순환형</td><td>생수·생필품</td><td>회귀+행사</td><td>90일</td><td>60일</td><td>하위 30%</td></tr>
+<tr><td>계절형</td><td>에어컨·패딩</td><td>연 1주기</td><td>12~24개월</td><td>1주기</td><td>하위 30%(동월 대비)</td></tr>
+</table>
+<div class=&quot;callout&quot;><b>유형이 바뀌면 파라미터 세트가 통째로 갈린다.</b> 예를 들어 계절형(관측 창 12~24개월, ‘작년 동월’ 대비)에서 감가형(창 90일, ‘최근 90일 중앙값’ 대비)으로 재분류되면 <code>W·W_min</code>부터 비교 기준까지 바뀐다. 그래서 유형 전환은 <b>분기 재분류에서 1년 치 데이터로, 가급적 사람 확인을 거쳐 드물게</b> 일어나며, 전환 직후엔 새 창이 <code>W_min</code>만큼 다시 찰 때까지 그 카테고리를 잠깐 <code>HOLD</code>로 두어 낡은 기준의 오판을 막는다.</div>
+
+<h2>6. 구매(BUY) 신호 설계 — 적극적으로, 단 과트리거는 방지</h2>
+<p><b>스탠스: BUY를 폭넓게 띄운다.</b> 다만 제약 없이 “평균보다 싸거나 <b>또는</b> 최저가에 근접” 둘 중 하나로 띄우면, 가격이 계속 내려가는 상품(노트북 등)은 매일 신저가를 깨 “최저가 근접”이 거의 매일 참 → 매일 ‘살 만한 가격’이 떠 신뢰가 무너진다. 그래서 <b>딱 하나의 가드</b>만 둔다.</p>
+<p>BUY = <code>저렴(평균↓)</code> 그리고 <code>하위 P_buy</code> 그리고 <code>상승 아님</code>. 여기서 <code>상승 아님</code>은 <b>가격이 오르는 중일 때만</b> BUY를 막는다는 뜻이다(📉 내려가는 중·➡️ 평탄은 모두 허용, 📈 오르는 중만 차단). 오른 가격을 뒤늦게 사게 되는 것만 피하는, 느슨한 조건이라 싼 구간에선 BUY가 자주 뜬다. “최저가 근접”은 트리거가 아니라 메시지를 강화하는 보조 신호로만 쓴다.</p>
+<div class=&quot;callout&quot;><b>BUY를 더 자주 띄우기 — 레버와 파급.</b> <b>① P_buy 상향(주 레버)</b>: 하위 %를 넓히면 BUY 빈도↑. 파급은 백테스트 적중률 재보정뿐이라 가장 안전. <b>② ‘상승 아님’ 완화</b>: 이미 느슨하나 더 풀면 감가형이 매일 뜨는 문제 재발 → <b>감가형만 유지</b>. <b>③ floor(유의미 절약) 하향</b>: ‘별로 안 싼데 뜸’ 위험 → <b>유지</b>. 결론: 넓히는 건 ①로, ②·③은 그대로 둔다.</div>
+<table>
+<tr><th>상황</th><th>제약 없음</th><th>현재 설계</th></tr>
+<tr><td>매일 하락 중인 상품</td><td>매일 뜸</td><td>싼 구간이면 자주 뜨되, <b>오르는 중일 때만 차단</b></td></tr>
+<tr><td>최저 근접이나 평균보단 비쌈</td><td>뜸(오판)</td><td><code>저렴</code> 미충족 → 적정</td></tr>
+</table>
+
+<h2 id=&quot;s7&quot;>7. 상태별 화면 표기 규칙 (배지·라벨·이유·게이지)</h2>
+<p>판정 결과를 UI에서 어떻게 보여줄지의 매핑이다.</p>
+<table>
+<tr><th>상태</th><th>배지·색</th><th>라벨</th><th>reason</th><th>저렴↔비쌈 게이지</th></tr>
+<tr><td><code>BUY</code></td><td>✅ 초록</td><td>지금 가격이 좋은 편이에요</td><td>— (+최저근접 부스터)</td><td>노출</td></tr>
+<tr><td><code>OK</code></td><td>👍 회색</td><td>적정 가격이에요</td><td>—</td><td>노출</td></tr>
+<tr><td><code>WAIT</code></td><td>⏳ 주황</td><td>조금 더 기다려봐요</td><td>급등·오르는 중·(비쌈 조건부)</td><td>노출</td></tr>
+<tr><td><code>HOLD</code></td><td>🕒 중립</td><td>아직 판단 보류</td><td>데이터 부족</td><td>숨김</td></tr>
+</table>
+<h3>판정 설명 문구는 규칙 기반 템플릿으로 생성</h3>
+<p>배지 아래 1~2줄 설명은 <b>매번 AI가 생성하지 않고, 판정 유형별 템플릿</b>에 수치를 끼워 만든다. 매 가격 변동마다 LLM을 태우면 “판정은 가벼운 산수”라는 <a class=&quot;xref&quot; href=&quot;#s8&quot;>§8</a> 전제가 깨지고, 오래 다듬은 워딩 통제(“사라” 회피 등)를 벗어날 위험이 있어서다. “AI 분석”의 핵심 가치는 <b>판정(배지) 자체</b>이며, 설명은 그 근거를 거드는 보조다.</p>
+<p><b>“모든 상황”이 아니라 “판정이 근거로 삼는 사유”만 커버하면 된다.</b> 상황 조합은 무한하지만, 우리 판정이 보는 신호는 §3 분기로 한정돼 있어 <b>사유 = 로직 분기</b>다. 그래서 분기 수만큼만 템플릿을 두면 낼 수 있는 사유는 모두 커버된다.</p>
+<table>
+<tr><th>판정</th><th>대표 사유(템플릿 분기)</th></tr>
+<tr><td><code>BUY</code></td><td>역대 최저 근처 · 하락 멈춤 · 평소보다 내려옴</td></tr>
+<tr><td><code>WAIT</code></td><td>최근 급등 · 오르는 중 · 평소보다 비쌈</td></tr>
+<tr><td><code>OK</code></td><td>평소 수준</td></tr>
+<tr><td><code>HOLD</code></td><td>데이터 부족</td></tr>
+</table>
+<p><b>구멍은 두 규칙으로 흡수한다.</b> ①여러 사유가 동시에 맞으면 <b>판정 우선순위상 가장 중요한 사유 하나만</b> 문장으로 낸다. ②어느 특수 사유에도 안 맞으면 <b>판정 유형의 기본 문장</b>으로 떨어진다(예: OK → “평소와 큰 차이가 없어요”). 따라서 “문구가 안 나오는 경우”는 없다 — 특수 문장이 아니면 기본 문장이 항상 나온다.</p>
+
+<h2 id=&quot;s8&quot;>8. 계산 비용 — 상품 판정 실행 <span class=&quot;tag&quot;>주로 확장 단계</span></h2>
+<div class=&quot;callout&quot;><b>한 문장 원칙.</b> 수만 개 상품을 매 순간 다 계산하면 서버가 못 버티니, <b>계산할 가치가 있는 것만 · 가격이 바뀔 때만</b> 계산한다.</div>
+<p>판정 1건은 “가격 한 줄에서 중앙값·백분위·기울기 뽑기”라 가벼운 연산이다. 문제는 <b>대상 수 × 재계산 빈도</b>가 커질 때뿐이다.</p>
+<p><b>⚠ 아래 ‘누구를·언제’ 기준은 수만 개로 확장할 때의 설계다. 파일럿에는 적용하지 않으며, 단계적 확장 시 다룬다(<a class=&quot;xref&quot; href=&quot;#s10&quot;>§10</a>).</b></p>
+<ul>
+<li><b>누구를 계산하나</b> — 팔릴 만한 상품만(조회·검색 많고, 알림 걸려 있고, 잘 팔리는 것 우선). 판매처 하나뿐·단종·정가 고정은 제외.</li>
+<li><b>언제 다시 계산하나</b> — 판정은 가격이 바뀔 때만 달라지므로 <b>가격 변동 이벤트가 뜰 때만</b> 재계산하고, 나머지 시간엔 저장값을 보여준다.</li>
+</ul>
+<div class=&quot;callout&quot;><b>파일럿(≈100개)에는 위 장치가 필요 없다.</b> 100개 고정이면 가격이 바뀔 때마다 재계산해도 이미 도는 가격 수집에 가벼운 산수 한 줄을 얹는 수준이라 부담이 없다. 선별·티어·캐시는 전부 <b>확장 단계</b>의 과제다.</div>
+
+<h2>9. 검증(백테스트)</h2>
+<ul>
+<li>유형별 샘플 N개 매일 판정 로그 → <code>t+30/60일</code> 실제 최저가 대조.</li>
+<li>지표: BUY 적중(이후 추가 하락 없음) · WAIT 적중(이후 하락) · <b>판정 분포(BUY 비중이 목표대로인지)</b> · HOLD 해제 후 안정성.</li>
+<li><code>P_buy·floor·eps·σ배수</code> 그리드서치 보정.</li>
+</ul>
+
+<h2 id=&quot;s10&quot;>10. 파일럿 &amp;amp; 단계적 확장 <span class=&quot;tag new&quot;>신규</span></h2>
+<p>대상은 <b>모델 상품(가격추이가 저장되는 상품군)</b>으로 한정한다. 그 안에서도 수만 개라, 복잡한 선별·lazy·티어는 다음 단계로 미루되 <b>가격 변동 재계산만은 파일럿부터 넣어</b> 단순하게 시작한다.</p>
+<h3 class=&quot;stage&quot;><span class=&quot;step&quot;>전</span>파일럿 전 — 오프라인 시뮬레이션</h3>
+<p>실서비스에 붙이기 전에, 과거 가격 데이터를 받아 판정을 <b>먼저 돌려본다</b>. 판정이 상식에 맞는지, BUY가 얼마나 자주 뜨는지(적극적 스탠스의 실제 빈도)를 눈으로 확인하고 <code>P_buy·floor</code>를 실데이터로 조율하기 위함이다.</p>
+<p><b>필요한 데이터</b> — 상품별 <b>일자별 최저가 한 줄</b>이면 된다. (1차 대상: <b>노트북 카테고리(감가형)</b>, 90일 이상)</p>
+<table>
+<tr><th>컬럼</th><th>필수?</th><th>용도</th></tr>
+<tr><td><code>상품ID</code></td><td>필수</td><td>상품 구분</td></tr>
+<tr><td><code>날짜</code></td><td>필수</td><td>시계열</td></tr>
+<tr><td><code>최저가</code></td><td>필수</td><td>모든 신호의 재료</td></tr>
+<tr><td><code>판매처 수</code></td><td>선택</td><td>기준선 신뢰(<code>trusted_base</code>) 검증 — 없으면 “항상 충분”으로 가정</td></tr>
+</table>
+<p>90일이면 판정과 BUY 빈도는 충분히 확인되고, “판정 후 실제로 더 내렸나”까지 채점하려면 이력이 길수록 좋다.</p>
+<p><b>산출물</b> — 상품별 판정(BUY/OK/WAIT/HOLD)과 근거 수치 · <b>BUY 비중</b> 분포 · 가능한 범위의 백테스트 채점(BUY 뒤 추가 하락 여부 등) · 이를 바탕으로 한 <code>P_buy·floor</code> 권장값. <b>CSV(<code>상품ID, 날짜, 최저가</code>)만 주면 이 결과를 뽑는다.</b></p>
+<h3 class=&quot;stage&quot; id=&quot;a-pilot&quot;><span class=&quot;step&quot;>1</span>파일럿 — 고정 N개 + 가격 변동 즉시 재계산</h3>
+<div class=&quot;callout&quot;><b>“하루 1회”로는 부족하다.</b> 우리는 가격이 수시로 바뀌어, 낮에 최저가가 바뀌어도 판정이 어제 값이면 <b>사용자가 보는 현재가와 판정이 어긋난다</b>(현재가는 실시간, 판정만 낡음). 그래서 파일럿부터 가격 변동 재계산을 넣는다.</div>
+<ul>
+<li><b>대상</b>: 인기순 상위 <b>N개 고정 목록</b> + <b>수동 강제지정</b>(force-include). 프로모션으로 갑자기 밀기로 한 상품은 인기 N위 밖이어도 목록에 추가.</li>
+<li><b>시점</b>: 가격 수집 파이프라인이 뿌리는 <b>“최저가 변동” 이벤트가 뜨면 그 상품만 즉시 재계산</b>. 대상이 N개로 고정이라 이벤트 기반이어도 부하가 관리된다. 가격이 안 바뀌어도 관측 창이 하루씩 밀리므로 <b>야간 1회 배치로 보정</b>한다.</li>
+<li><b>캐시</b>: 최신 판정값을 저장해 같은 상품 재조회 시 재계산하지 않는다(무효화는 위 변동 이벤트가 담당). 유효기간·티어 같은 규칙은 다음 단계로.</li>
+<li><b>주의</b>: 수동 지정은 <b>대상 자격</b>만 준다. 데이터가 <code>W_min</code> 미만이면 대상이어도 결과는 <code>HOLD</code>.</li>
+</ul>
+<h3 class=&quot;stage&quot; id=&quot;a-next&quot;><span class=&quot;step&quot;>2</span>다음 단계 — 동적 확장</h3>
+<table>
+<tr><th></th><th>파일럿(지금)</th><th>다음 단계</th></tr>
+<tr><td>대상</td><td>인기 상위 N개 + 수동</td><td>+ 전환·가격대(점수 or 버킷), lazy 확대</td></tr>
+<tr><td>시점</td><td>가격 변동 이벤트 즉시 + 야간 창 보정</td><td>+ 선별 확대에 맞춘 티어별 빈도</td></tr>
+<tr><td>캐시</td><td>최신 판정값 저장(재조회 재계산 방지)</td><td>+ 유효기간(예 24h) · 티어</td></tr>
+</table>
+<p>선별 정교화 방식은 아직 확정 아님 — 임계값 한 줄(A) / 관문 두 개(B) / 점수 합산(C) / 버킷(D)을 후보로 두고, lazy를 바닥에 깔면 “미리 계산 목록”의 정교함이 덜 중요해지므로 단순하게 시작해 로그를 보고 승급한다.</p>
+
+<h2>11. 결정이 필요한 항목</h2>
+<ul>
+<li>안정화 가드 기준(초기 며칠/최소 판매처)·<a class=&quot;xref&quot; href=&quot;#a-tb&quot;><code>baseline_trusted</code> 조건</a>(30일·3곳·cv 0.15 적정?).</li>
+<li><a class=&quot;xref&quot; href=&quot;#s5&quot;><code>W_min</code>·<code>floor</code> 자동 산출 공식</a> 확정.</li>
+<li><a class=&quot;xref&quot; href=&quot;#a-pbuy&quot;><code>P_buy</code> 초기 시드값</a>(하위 25~35%, 적극적 스탠스) + <code>eps</code>·급등 σ배수.</li>
+<li><a class=&quot;xref&quot; href=&quot;#a-pilot&quot;>파일럿 <b>N</b> 값</a> · <a class=&quot;xref&quot; href=&quot;#a-next&quot;>선별 정교화 방식(A~D)</a> 선택 시점.</li>
+<li><a class=&quot;xref&quot; href=&quot;#a-next&quot;>캐시 유효기간</a>(전역 vs 카테고리별) · <a class=&quot;xref&quot; href=&quot;#a-ops&quot;>드리프트 임계(±25%)</a>.</li>
+<li><a class=&quot;xref&quot; href=&quot;#s7&quot;>HOLD에서 그래프만 노출/판정만 숨김 · 게이지와 판정 카드 표시</a> 관계.</li>
+<li><a class=&quot;xref&quot; href=&quot;#a-type&quot;>계절형 “동월 대비”</a>를 1차 범위에 포함할지.</li>
+</ul>
+
+<div class=&quot;foot&quot;>v1.3 · 가격 데이터 기반 · 미래 예측 없음 · 방어 가능한 판단만 단정 · 임계값은 백테스트로 확정</div>
+
+<script>
+document.querySelectorAll('a.xref').forEach(function(a){
+  a.addEventListener('click',function(e){
+    e.preventDefault();
+    var t=document.getElementById(this.getAttribute('href').slice(1));
+    if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+</script>
+</body>
+</html>
+"></iframe>
+<iframe id="f-proto" class="frame" title="프로토타입" srcdoc="<!DOCTYPE html>
+<html lang=&quot;ko&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>구매 타이밍 판정 — PC 프로토타입 (유형별)</title>
+<style>
+:root{
+  --blue:#2D5BE3;--blue-soft:#4A7CF7;--blue-bg:#EEF3FF;
+  --red:#E5342A;--green:#18A957;--green-bg:#E8F5E9;--amber:#E68A00;--amber-bg:#FFF4E2;
+  --ink:#1B1B26;--muted:#8A8A96;--line:#ECECF1;--bg:#F1F2F4;--soft:#FAFAFB;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:var(--ink);line-height:1.6;padding:24px 18px 60px}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:5px}
+
+/* 유형 탭 */
+.tabs-wrap{max-width:1180px;margin:0 auto 16px}
+.tabs-title{font-size:12px;color:#666;margin-bottom:9px}
+.tabs-title b{color:var(--blue);font-weight:700}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{padding:9px 16px;border-radius:22px;border:1.5px solid #DDDDE5;background:#fff;font-size:13px;font-weight:700;color:#7A7A86;display:flex;align-items:center;gap:7px}
+.tab .ico{font-size:14px}
+.tab.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.tab .vd{font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
+.tab.on .vd{background:rgba(255,255,255,.2);color:#fff}
+.tab .vd.good{background:var(--green-bg);color:#2E7D32}
+.tab .vd.wait{background:var(--amber-bg);color:#B5670A}
+.tab .vd.ok{background:#EEE;color:#666}
+
+/* PDP shell */
+.pdp{max-width:1180px;margin:0 auto;background:#fff;border:1px solid #E3E3E8;border-radius:14px;overflow:hidden}
+.gnb{display:flex;align-items:center;gap:8px;padding:11px 22px;border-bottom:1px solid var(--line);font-size:13px;color:#555}
+.gnb .logo{font-size:18px;font-weight:900;color:#1AA555;letter-spacing:-.03em;margin-right:10px}
+.gnb .crumbs{color:#999}.gnb .crumbs b{color:#555;font-weight:500}
+.gnb .spacer{flex:1}
+.gnb .mock-search{border:1.5px solid #1AA555;border-radius:6px;padding:5px 10px;color:#bbb;font-size:12px;min-width:180px}
+
+.title-row{padding:18px 22px 6px}
+.p-title{font-size:21px;font-weight:800;letter-spacing:-.01em}
+.p-sub{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7}
+.p-sub b{color:#555;font-weight:600}
+.subst-note{display:inline-block;margin-top:8px;font-size:11px;color:#B5670A;background:#FFF4E2;border:1px solid #F3DCB0;border-radius:6px;padding:3px 9px}
+
+.body{display:grid;grid-template-columns:340px 1fr 320px;gap:0;padding:8px 22px 22px}
+.col{padding:14px 18px}
+.col.img{border-right:1px solid var(--line)}
+.col.center{border-right:1px solid var(--line)}
+.col.side{padding:0}
+
+.main-img{background:#f7f7f9;border-radius:10px;height:280px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.main-img img{max-width:88%;max-height:88%;object-fit:contain}
+.thumbs{display:flex;gap:7px;margin-top:10px}
+.thumb{width:52px;height:52px;border:1px solid #E6E6EC;border-radius:7px;background:#f7f7f9;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:22px}
+.thumb img{max-width:80%;max-height:80%}
+.img-meta{font-size:11px;color:#aaa;margin-top:12px;line-height:1.7}
+.spec-box{margin-top:12px;border:1px solid var(--line);border-radius:9px;padding:11px 12px}
+.spec-box .t{font-size:12px;font-weight:700;margin-bottom:7px}
+.spec-chip{display:inline-block;font-size:11px;color:#555;background:#FAFAFB;border:1px solid #ECECEC;border-radius:14px;padding:3px 9px;margin:0 4px 5px 0}
+
+.lowest-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.lowest-label{font-size:15px;font-weight:800}
+.lowest-price{font-size:24px;font-weight:800;color:var(--red);letter-spacing:-.02em}
+.buy-btn{background:#2b2b33;color:#fff;border:none;border-radius:7px;padding:9px 15px;font-size:13px;font-weight:700;margin-left:12px;white-space:nowrap}
+.cashback{display:flex;align-items:center;gap:8px;background:#F3F8FF;border:1px solid #DBE9FF;border-radius:8px;padding:9px 12px;margin-bottom:14px;font-size:12px;color:#3A5BB5}
+.cashback .amt{margin-left:auto;font-weight:800;color:var(--blue);white-space:nowrap}
+.shops-h{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:800;margin:14px 0 9px}
+.ship-toggle{font-size:11px;color:#999;font-weight:500}
+.shop-row{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.shop-row:last-child{border-bottom:none}
+.shop-name{width:104px;font-weight:700;display:flex;align-items:center;gap:5px}
+.shop-name .cert{font-size:9px;font-weight:700;color:#5B7BD8;background:var(--blue-bg);border-radius:3px;padding:1px 4px}
+.shop-best{font-size:10px;color:var(--red);font-weight:800;margin-right:4px}
+.shop-price{flex:1;font-weight:700}
+.shop-ship{color:var(--green);font-size:11px;font-weight:600;width:64px;text-align:right}
+
+/* ===== 사이드바 모듈 ===== */
+.side-inner{border:1px solid #E3E3E8;border-radius:12px;margin:14px 14px 14px 4px;background:#fff}
+.side-head{display:flex;align-items:center;gap:7px;padding:13px 14px 11px;flex-wrap:wrap}
+.side-title{font-size:15px;font-weight:800}
+.ai-mark{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#4A7CF7,#7B5BE3);color:#fff;font-size:10px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;letter-spacing:.02em;flex-shrink:0;box-shadow:0 1px 4px rgba(75,92,231,.35)}
+.ai-badge{font-size:10px;font-weight:800;color:#fff;background:linear-gradient(90deg,#4A7CF7,#7B5BE3);border-radius:5px;padding:2px 7px;display:inline-flex;align-items:center;gap:3px;margin-left:auto}
+.side-head .bell{margin-left:auto;font-size:15px;color:#bbb}
+
+.sb{padding:12px 14px}
+.sb + .sb{border-top:1px solid #F2F2F5}
+
+.verdict{border:1px solid var(--line);border-radius:11px;position:relative}
+.verdict.good{border-color:var(--green-bg)}
+.verdict.wait{border-color:#F3E2C0}
+.verdict-top{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:11px 11px 0 0}
+.verdict.good .verdict-top{background:var(--green-bg)}
+.verdict.wait .verdict-top{background:var(--amber-bg)}
+.verdict.ok .verdict-top{background:#F2F2F4}
+.v-emoji{font-size:20px}
+.v-main{font-size:14px;font-weight:800}
+.verdict.good .v-main{color:#2E7D32}.verdict.wait .v-main{color:#B5670A}.verdict.ok .v-main{color:#555}
+.v-reason{padding:9px 12px;font-size:11.5px;color:#444;line-height:1.6}
+.crit-link{display:inline-flex;align-items:center;gap:4px;margin:0 12px 8px;font-size:11px;font-weight:600;color:#888;background:none;border:none;text-decoration:underline;text-underline-offset:2px;text-decoration-color:#d5d5dd}
+.crit-link .q{width:14px;height:14px;border-radius:50%;background:#E7E7EE;color:#888;font-size:9px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.cushion{margin:0 12px 11px;font-size:10.5px;color:#9A9AA6;line-height:1.5;display:flex;gap:5px}
+.cushion .i{flex-shrink:0}
+
+.pop{position:absolute;left:12px;right:12px;top:100%;margin-top:6px;background:#fff;border:1px solid #E0E0E8;border-radius:11px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:13px;z-index:30;display:none}
+.pop.open{display:block}
+.pop-h{display:flex;align-items:center;margin-bottom:9px}
+.pop-h .t{font-size:12.5px;font-weight:800;flex:1}
+.pop-h .x{font-size:15px;color:#aaa;cursor:pointer}
+.pop-sub{font-size:10.5px;color:#888;margin-bottom:9px;line-height:1.5}
+.crit-row{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.crit-row:last-of-type{border-bottom:none}
+.crit-row.active{margin:0 -6px;padding:7px 6px;border-radius:7px;border-bottom:none}
+.crit-row.active.good{background:var(--green-bg)}.crit-row.active.wait{background:var(--amber-bg)}.crit-row.active.ok{background:#F2F2F4}.crit-row.active.caution{background:var(--blue-bg)}
+.crit-badge{font-size:9.5px;font-weight:700;color:#fff;border-radius:4px;padding:2px 7px;white-space:nowrap;flex-shrink:0}
+.cb-green{background:#2E7D32}.cb-amber{background:#E68A00}.cb-gray{background:#777}.cb-blue{background:#2D5BE3}
+.crit-txt{font-size:10.5px;color:#555;line-height:1.45}
+.crit-txt .cond{display:block;color:#aaa;font-size:9.5px;margin-top:1px}
+.crit-now{font-size:9.5px;font-weight:800;margin-left:auto;flex-shrink:0}
+.crit-now.good{color:#2E7D32}.crit-now.wait{color:#B5670A}.crit-now.ok{color:#666}.crit-now.caution{color:#2D5BE3}
+.type-note{margin-top:9px;padding:8px 9px;background:#FAFAFB;border:1px dashed #dcdce4;border-radius:7px;font-size:10px;color:#8a8a96;line-height:1.5}
+
+.lp-label{font-size:11px;color:var(--muted)}
+.lp-row{display:flex;align-items:baseline;gap:8px;margin-top:1px;flex-wrap:wrap}
+.lp-price{font-size:22px;font-weight:800;color:var(--red);letter-spacing:-.02em}
+.lp-delta{font-size:12px;font-weight:700}
+.lp-delta.cheap{color:var(--green)}.lp-delta.pricey{color:var(--red)}.lp-delta.flat{color:#888}
+.lp-stats{display:flex;flex-wrap:wrap;gap:5px 14px;margin-top:8px;font-size:11px;color:var(--muted)}
+.lp-stats b{color:var(--ink);font-weight:700}
+
+.period-tabs{display:flex;gap:4px;margin:0 0 10px}
+.period-tab{flex:1;font-size:10.5px;font-weight:700;padding:5px 2px;border-radius:16px;border:1px solid #E2E2EA;background:#fff;color:#9A9AA6;text-align:center;white-space:nowrap}
+.period-tab.on{background:var(--blue-bg);border-color:#BFD2F6;color:var(--blue)}
+.legend{display:flex;gap:11px;font-size:10px;color:var(--muted);margin:0 0 6px}
+.lg{display:flex;align-items:center;gap:4px}
+.lg-dot{width:7px;height:7px;border-radius:50%;background:var(--blue-soft)}
+.lg-line{width:12px;border-top:2px dashed #E59AA0}
+.chart-shell{position:relative;display:flex;gap:5px}
+.y-axis{display:flex;flex-direction:column;justify-content:space-between;font-size:8.5px;color:#bbb;text-align:right;padding:2px 0 15px;min-width:32px}
+.chart-area{flex:1;position:relative}
+.chart-svg{display:block;width:100%;touch-action:none}
+.x-labels{display:flex;justify-content:space-between;font-size:9px;color:#aaa;margin-top:4px;padding-left:37px}
+.tip{position:absolute;transform:translate(-50%,-100%);pointer-events:none;background:var(--ink);color:#fff;font-size:9.5px;font-weight:600;padding:4px 7px;border-radius:6px;white-space:nowrap;opacity:0;transition:opacity .1s;z-index:5}
+.tip:after{content:'';position:absolute;left:50%;top:100%;transform:translateX(-50%);border:4px solid transparent;border-top-color:var(--ink)}
+.tip .d{font-weight:400;opacity:.75}
+.period-note{font-size:9.5px;color:#bbb;margin-top:5px;min-height:11px}
+
+.gauge-ends{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;margin-bottom:6px}
+.gauge-ends .cheap{color:var(--blue)}.gauge-ends .pricey{color:var(--red)}
+.gauge-bar{position:relative;height:7px;border-radius:5px;background:linear-gradient(90deg,#3B7DED 0%,#9FB6E0 38%,#D8C0C0 62%,#E5342A 100%)}
+.gauge-handle{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.2);transform:translate(-50%,-50%);transition:left .4s}
+.gauge-cap{font-size:11px;color:#555;margin-top:8px;line-height:1.5}
+.gauge-cap b{color:var(--ink);font-weight:700}
+
+.alert-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--blue);margin-bottom:9px}
+.alert-row{display:flex;gap:6px}
+.alert-input{flex:1;padding:8px 10px;border-radius:8px;border:1.5px solid #C9D6F5;font-size:13px;font-weight:700;outline:none;min-width:0}
+.alert-input:focus{border-color:var(--blue)}
+.alert-set{padding:8px 12px;border-radius:8px;background:var(--blue);color:#fff;font-size:12px;font-weight:700;border:none;white-space:nowrap}
+.alert-presets{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.alert-preset{font-size:10.5px;padding:4px 9px;border-radius:16px;border:1px solid #C9D6F5;background:#fff;color:#3A5BB5}
+
+.toast{position:fixed;bottom:34px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:10px 18px;border-radius:22px;opacity:0;transition:all .3s;z-index:999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.foot{max-width:1180px;margin:16px auto 0;font-size:11px;color:#999;line-height:1.7;text-align:center}
+@media (max-width:1000px){.body{grid-template-columns:1fr}.col.img,.col.center{border-right:none;border-bottom:1px solid var(--line)}.side-inner{margin:14px}}
+</style>
+</head>
+<body>
+
+<div class=&quot;tabs-wrap&quot;>
+  <div class=&quot;tabs-title&quot;>PC 프로토타입 · 다나와 PDP 우측 사이드바에 <b>구매 타이밍 판정</b> 모듈 적용 · 판정 결과별로 전환</div>
+  <div class=&quot;tabs&quot; id=&quot;tabs&quot;></div>
+</div>
+
+<div class=&quot;pdp&quot;>
+  <div class=&quot;gnb&quot;>
+    <span class=&quot;logo&quot;>다나와</span>
+    <span class=&quot;crumbs&quot; id=&quot;crumbs&quot;></span>
+    <span class=&quot;spacer&quot;></span>
+    <span class=&quot;mock-search&quot;>통합 검색</span>
+  </div>
+  <div class=&quot;title-row&quot;>
+    <div class=&quot;p-title&quot; id=&quot;pTitle&quot;></div>
+    <div class=&quot;p-sub&quot; id=&quot;pSub&quot;></div>
+    <div id=&quot;substWrap&quot;></div>
+  </div>
+  <div class=&quot;body&quot;>
+    <div class=&quot;col img&quot;>
+      <div class=&quot;main-img&quot; id=&quot;imgWrap&quot;></div>
+      <div class=&quot;thumbs&quot; id=&quot;thumbs&quot;></div>
+      <div class=&quot;img-meta&quot; id=&quot;imgMeta&quot;></div>
+      <div class=&quot;spec-box&quot;><div class=&quot;t&quot;>핵심 스펙</div><div id=&quot;specChips&quot;></div></div>
+    </div>
+    <div class=&quot;col center&quot;>
+      <div class=&quot;lowest-head&quot;>
+        <span class=&quot;lowest-label&quot;>최저가</span>
+        <span style=&quot;display:flex;align-items:center&quot;><span class=&quot;lowest-price&quot; id=&quot;cLowest&quot;></span><button class=&quot;buy-btn&quot; id=&quot;cBuy&quot;>최저가 구매하기</button></span>
+      </div>
+      <div class=&quot;cashback&quot; id=&quot;cCashback&quot;></div>
+      <div class=&quot;shops-h&quot;><span>쇼핑몰별 최저가</span><span class=&quot;ship-toggle&quot;>배송비 포함 ●</span></div>
+      <div id=&quot;shopList&quot;></div>
+    </div>
+    <div class=&quot;col side&quot;>
+      <div class=&quot;side-inner&quot;>
+        <div class=&quot;side-head&quot;>
+          <span class=&quot;ai-mark&quot; aria-hidden=&quot;true&quot;>AI</span>
+          <span class=&quot;side-title&quot;>지금 사도 괜찮을까요?</span>
+          <span class=&quot;ai-badge&quot;>AI 분석</span>
+        </div>
+        <div class=&quot;sb&quot;>
+          <div class=&quot;verdict&quot; id=&quot;verdict&quot;>
+            <div class=&quot;verdict-top&quot;><span class=&quot;v-emoji&quot; id=&quot;vdEmoji&quot;></span><span class=&quot;v-main&quot; id=&quot;vdTitle&quot;></span></div>
+            <div class=&quot;v-reason&quot; id=&quot;vdBody&quot;></div>
+            <button class=&quot;crit-link&quot; onclick=&quot;togglePop(event)&quot;><span class=&quot;q&quot;>?</span>이 판정, 어떤 기준으로?</button>
+            <div class=&quot;cushion&quot;><span class=&quot;i&quot;>💡</span><span>AI가 가격 데이터로 분석한 참고 정보예요. 최종 구매 결정은 직접 판단해 주세요.</span></div>
+            <div class=&quot;pop&quot; id=&quot;critPop&quot;>
+              <div class=&quot;pop-h&quot;><span class=&quot;t&quot;>구매 타이밍 판정 기준</span><span class=&quot;x&quot; onclick=&quot;closePop()&quot;>✕</span></div>
+              <div class=&quot;pop-sub&quot;>가격 데이터만으로 판정해요. 미래 가격은 예측하지 않습니다.</div>
+              <div id=&quot;critRows&quot;></div>
+            </div>
+          </div>
+        </div>
+        <div class=&quot;sb&quot;>
+          <div class=&quot;period-tabs&quot; id=&quot;periodTabs&quot;></div>
+          <div class=&quot;legend&quot;><span class=&quot;lg&quot;><span class=&quot;lg-dot&quot;></span>최저가 추이</span><span class=&quot;lg&quot;><span class=&quot;lg-line&quot;></span><span id=&quot;avgLegend&quot;>평균</span></span></div>
+          <div class=&quot;chart-shell&quot;>
+            <div class=&quot;y-axis&quot; id=&quot;yAxis&quot;></div>
+            <div class=&quot;chart-area&quot; id=&quot;chartArea&quot;>
+              <svg class=&quot;chart-svg&quot; id=&quot;chartSvg&quot; viewBox=&quot;0 0 260 130&quot; preserveAspectRatio=&quot;none&quot;></svg>
+              <div class=&quot;tip&quot; id=&quot;tip&quot;></div>
+            </div>
+          </div>
+          <div class=&quot;x-labels&quot; id=&quot;xLabels&quot;></div>
+          <div class=&quot;period-note&quot; id=&quot;periodNote&quot;></div>
+        </div>
+        <div class=&quot;sb&quot;>
+          <div class=&quot;gauge-ends&quot;><span class=&quot;cheap&quot;>저렴</span><span class=&quot;pricey&quot;>비쌈</span></div>
+          <div class=&quot;gauge-bar&quot;><div class=&quot;gauge-handle&quot; id=&quot;gaugeHandle&quot;></div></div>
+          <div class=&quot;gauge-cap&quot; id=&quot;gaugeCap&quot;></div>
+        </div>
+        <div class=&quot;sb&quot;>
+          <div class=&quot;alert-h&quot;>🔔 이 가격 되면 알려드릴게요</div>
+          <div class=&quot;alert-row&quot;><input class=&quot;alert-input&quot; id=&quot;alertInput&quot; type=&quot;text&quot; inputmode=&quot;numeric&quot;><button class=&quot;alert-set&quot; onclick=&quot;setAlert()&quot;>알림</button></div>
+          <div class=&quot;alert-presets&quot; id=&quot;alertPresets&quot;></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class=&quot;foot&quot;>※ 프로토타입 — 다나와 PDP 기반 시연용 예시값. 판정·게이지·평균은 가격 데이터에서 자동 계산됩니다.</div>
+<div class=&quot;toast&quot; id=&quot;toast&quot;></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=n=>Math.round(n).toLocaleString('ko-KR'), man=n=>Math.round(n/10000)+'만';
+const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
+const median=a=>{const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+
+/* ── 유형별 상품 데이터 (주간 최저가) ── */
+const PRODUCTS={
+ dep:{ tab:'지금 가격이 좋은 편이에요', ico:'✅', icon:'💻',
+   crumb:'홈 › 컴퓨터·노트북 › <b>노트북</b>',
+   title:'삼성전자 갤럭시북6 NT760VJT-A51A (SSD 256GB)',
+   sub:'AI노트북 · <b>16인치</b> · 1.74kg · 인텔 코어 울트라5 325 · NPU 46TOPS · <b>16GB</b> · 256GB SSD · 1920×1200 WUXGA',
+   meta:'등록월 2026.04 ㅣ 제조사 삼성전자 ㅣ 7개 판매처',
+   specs:['인텔 코어 울트라5 325','16GB RAM','256GB SSD','16″ WUXGA','1.74kg','프리도스'],
+   img:'https://img.danuri.io/catalog-image/012/698/122/4b024568dd574eb394b528d0f08f61b7.jpeg',
+   thumbs:['4b024568dd574eb394b528d0f08f61b7.jpeg','625473f62aa14cc1bc91e00b74fb47f8.jpg','70fffbb0edb94fc3ae125394c821c344.jpg','cb5e8e844a0947fa858b4410ed4d4066.jpg'].map(f=>'https://img.danuri.io/catalog-image/012/698/122/'+f),
+   cashback:'🎁 삼성 감사 페스티벌 · 온누리 20% 사후 환급 시|1,439,192원',
+   start:[2026,3,7], periodMax:3, avgLabel:'3개월 평균',
+   prices:[1990000,1968000,1945000,1920000,1895000,1872000,1850000,1828000,1812000,1806000,1802000,1800000,1798990],
+   shops:[['롯데ON',1798990,{best:1,fast:1}],['신세계몰',1799000,{}],['SSG.COM',1799000,{}],['이마트몰',1799000,{}],['G마켓',1849000,{cert:1}],['11번가',1849000,{}],['삼성mall',1849000,{}]],
+   typeNote:'이 상품은 출시 후 꾸준히 내려가는 흐름이에요. 매일 신저가를 깨므로 <b>하락이 멈춘 저점</b>에서만 “지금 가격이 좋은 편이에요”를 띄웁니다.' },
+
+ spike:{ tab:'조금 더 기다려봐요', ico:'⏳', icon:'🎮',
+   crumb:'홈 › 컴퓨터·노트북 › <b>그래픽카드</b>',
+   title:'ASUS ROG Astral 지포스 RTX 5090 BTF OC D7 32GB',
+   sub:'RTX 5090 · GDDR7 32GB · PCIe5.0 · 부스트 2580MHz · 4팬 · OC클럭 2610MHz · A/S 3년',
+   meta:'등록월 2025.08 ㅣ 제조사 ASUS ㅣ 1개 판매처 (현금가)',
+   specs:['RTX 5090','GDDR7 32GB','부스트 2580MHz','4팬','PCIe5.0','OC 2610MHz'],
+   img:'https://img.danuri.io/catalog-image/777/653/096/6aff3b9301b74c03aeccf30168f0a1c8.jpg',
+   thumbs:['6aff3b9301b74c03aeccf30168f0a1c8.jpg','efa8c29921624762b7f3d78688b979d2.jpg','80f194ecc37344d48dc164be7febd12c.jpg','c6c5a5a30c1c4571900605c39f728aa5.jpg'].map(f=>'https://img.danuri.io/catalog-image/777/653/096/'+f),
+   cashback:'',
+   start:[2025,7,6], periodMax:3, avgLabel:'평균가', weekly:true,
+   prices:[6450000,6380000,6520000,6300000,6150000,5980000,6100000,5900000,5850000,6050000,6250000,6150000,6000000,5950000,6100000,6200000,6300000,6280000,6350000,6450000,6900000],
+   shops:[['다올씨앤씨',6900000,{best:1,cash:1}]],
+   typeNote:'이 상품은 시세에 따라 출렁이는 흐름이에요. 변동성이 크므로 <b>최근 급등 중</b>이면 추격 구매를 막기 위해 “기다려봐요”로 안내합니다.' },
+
+ stable:{ tab:'적정 가격이에요', ico:'👍', icon:'💧',
+   crumb:'홈 › 식품 › <b>생수</b>',
+   title:'스파클 생수 무라벨 500ml (100개)',
+   sub:'먹는샘물 · 500ml × 100개 · 무라벨 · 수원지 충남 천안 · 정기배송 가능',
+   meta:'등록월 2022.11 ㅣ 제조사 스파클 ㅣ 132개 판매처',
+   specs:['500ml × 100개','무라벨','페트','정기배송'],
+   img:'https://img.danuri.io/catalog-image/353/010/017/c8c8ecc039bb4ddfa752621f187d5236.jpg',
+   thumbs:['https://img.danuri.io/catalog-image/353/010/017/c8c8ecc039bb4ddfa752621f187d5236.jpg'],
+   cashback:'',
+   start:[2026,3,7], periodMax:3, avgLabel:'3개월 평균',
+   prices:[16900,17000,16800,17100,16900,16300,17000,16900,17200,16800,17100,17000,17170],
+   shops:[['G마켓',17170,{best:1,cert:1}],['11번가',18740,{}],['롯데ON',19110,{}],['현대Hmall',19410,{}],['옥션',19570,{}]],
+   typeNote:'이 상품은 평소 가격이 잔잔하고 가끔 행사 때 내려가요. 행사 저점이면 “지금 가격이 좋은 편이에요”, 평소면 “적정”으로 안내합니다.' },
+
+ season:{ tab:'아직 판단 보류', ico:'🕒', icon:'❄️',
+   crumb:'홈 › 가전·TV › <b>에어컨</b>',
+   title:'삼성전자 Q9000 AF60F19D11GRS (2in1 에어컨)',
+   sub:'2in1 에어컨 · 냉방면적 19+6평 · 2025년형 · 인버터 · 냉방능력 7.7kW · AI운전 · 에너지 3등급',
+   meta:'등록월 2025.03 ㅣ 제조사 삼성전자 ㅣ 96개 판매처',
+   specs:['2in1 에어컨','19+6평','인버터','7.7kW','2025년형','에너지 3등급'],
+   img:'https://img.danuri.io/catalog-image/289/235/078/7819e969f775411389c35bee839994af.jpeg',
+   thumbs:['7819e969f775411389c35bee839994af.jpeg','0dc9ed04ef3a428dba08daa3419b5f84.jpeg','d5779217a7d145c79787c1332c0d961b.jpeg','757b1deed6714b518fc38a604f9d940d.jpeg'].map(f=>'https://img.danuri.io/catalog-image/289/235/078/'+f),
+   cashback:'🎁 삼성 감사 페스티벌 · 온누리 20% 사후 환급 시|1,350,608원',
+   start:[2026,4,26], periodMax:1, avgLabel:'동월 평균', monthly:false, seasonal:true, fresh:true,
+   prices:[1719000,1705000,1698000,1688260],
+   shops:[['G마켓',1688260,{best:1}],['11번가',1703100,{}],['SSG.COM',1710310,{}],['이마트몰',1725310,{}],['신세계몰',1725310,{}],['쿠팡',1928700,{cert:1}],['롯데ON',1956720,{cert:1}]],
+   seasonRef:1600000,
+   typeNote:'이 상품은 계절마다 오르내려요. 신상품이라 1년치 데이터가 쌓이기 전엔 동월 비교를 못 해 <b>판단을 보류</b>합니다.' }
+};
+const ORDER=['dep','spike','stable','season'];
+let CUR='dep', CUR_ICON='💻';
+
+/* 판정 계산 */
+function judge(d){
+  const P=d.prices, N=P.length, cur=P[N-1];
+  const allLow=Math.min(...P), allHigh=Math.max(...P);
+  if(d.fresh){ return {cur,allLow,allHigh,base:cur,dBase:0,pct:50,r7:0,cv:0,slope:0,rising:false,spike:false,flat:true,nearLow:false,tier:'hold',N}; }
+  const base=Math.round((d.seasonal?d.seasonRef:median(P))/100)*100;
+  const dBase=(base-cur)/base*100;
+  const win=P.slice(-Math.min(13,N)), below=win.filter(p=>p<cur).length;
+  const pct=Math.max(6,Math.min(96,Math.round(below/win.length*100)));
+  const r7=(cur-P[N-2])/P[N-2]*100;
+  const sd=Math.sqrt(mean(P.map(x=>(x-mean(P))**2))), cv=sd/mean(P);
+  const slope=(cur-P[Math.max(0,N-5)])/P[Math.max(0,N-5)]*100;
+  const rising=slope>1.2, spike=r7>=Math.max(3,cv*100*0.6), flat=Math.abs(slope)<=1.2;
+  const nearLow=cur<=Math.min(...P.slice(-4),allLow)*1.02;
+  let tier;
+  if(!d.seasonal&amp;&amp;spike) tier='wait_spike';
+  else if(d.seasonal&amp;&amp;cur>base*1.03) tier='wait_season';
+  else if(!d.seasonal&amp;&amp;rising) tier='wait_rise';
+  else if((dBase>=4||nearLow)&amp;&amp;!rising) tier='good';
+  else if(cur>base*1.03) tier='wait_pricey';
+  else tier='ok';
+  return {cur,allLow,allHigh,base,dBase,pct,r7,cv,slope,rising,spike,flat,nearLow,tier,N};
+}
+const VERDICT={
+ good:{cls:'good',emoji:'✅',title:'지금 가격이 좋은 편이에요',vk:'good'},
+ ok:{cls:'ok',emoji:'👍',title:'적정 가격이에요',vk:'ok'},
+ wait_spike:{cls:'wait',emoji:'⏳',title:'조금 더 기다려봐요',vk:'wait'},
+ wait_rise:{cls:'wait',emoji:'⏳',title:'조금 더 기다려봐요',vk:'wait'},
+ wait_pricey:{cls:'wait',emoji:'⏳',title:'조금 더 기다려봐요',vk:'wait'},
+ wait_season:{cls:'wait',emoji:'⏳',title:'조금 더 기다려봐요',vk:'wait'},
+ hold:{cls:'ok',emoji:'🕒',title:'아직 판단 보류',vk:'ok'}
+};
+function bodyText(d,J){
+  const dp=J.dBase.toFixed(1);
+  switch(J.tier){
+    case 'good': return d.stable?`행사로 평소보다 내려온 시점이에요. 지금 담아두기 좋아요.`
+                 :`출시 이후 꾸준히 내려왔고, 현재가 역대 최저 수준이에요.${J.flat?' 최근 하락도 멈췄어요.':''}`;
+    case 'wait_spike': return `최근 7일 새 ${J.r7.toFixed(1)}% 올랐어요. 단기 급등 구간이라 조금 지켜보는 걸 권해요.`;
+    case 'wait_rise': return `최근 가격이 오르는 중이에요. 흐름이 꺾일 때까지 지켜보는 걸 권해요.`;
+    case 'wait_season': return `지금은 성수기라 작년 같은 달보다 비싼 편이에요. 비수기에 더 내려갈 수 있어요.`;
+    case 'wait_pricey': return `평소보다 다소 비싼 편이에요. 조금 더 지켜보는 걸 권해요.`;
+    case 'hold': return `등록된 지 얼마 안 돼 가격 데이터가 충분하지 않아요. 조금 더 쌓이면 판정해 드릴게요.`;
+    default: return `평소와 큰 차이가 없어요. 지금 사도 무난한 수준이에요.`;
+  }
+}
+
+/* 기준표 */
+const TIERS=[
+ {k:'good',b:'지금 가격이 좋은 편이에요',c:'cb-green',d:'평균보다 저렴하거나 저점, 하락 멈춤',cond:'평균↓ 또는 최저 근접 + 하락 멈춤'},
+ {k:'wait',b:'조금 더 기다려봐요',c:'cb-amber',d:'평균보다 비싸거나 오르는 중·급등',cond:'평균 초과 / 상승 / 7일 급등'},
+ {k:'ok',b:'적정 가격이에요',c:'cb-gray',d:'평균과 비슷한 수준',cond:'평균의 ±몇 % 범위'},
+ {k:'caution',b:'판단 보류',c:'cb-blue',d:'데이터 부족 또는 단종',cond:'데이터 W_min 미만 / 제외'}
+];
+
+let SC={},curData=[],curP;
+const VBW=260,VBH=130,PADL=4,PADR=4,PADT=8,PADB=6;
+
+function render(){
+  const d=PRODUCTS[CUR]; CUR_ICON=d.icon||'📦';
+  const J=judge(d); const V=VERDICT[J.tier];
+
+  $('crumbs').innerHTML=d.crumb;
+  $('pTitle').textContent=d.title;
+  $('pSub').innerHTML=d.sub;
+  $('substWrap').innerHTML=d.subst?`<span class=&quot;subst-note&quot;>⚠ ${d.subst}</span>`:'';
+  $('imgMeta').textContent=d.meta;
+  $('specChips').innerHTML=d.specs.map(s=>`<span class=&quot;spec-chip&quot;>${s}</span>`).join('');
+  $('imgWrap').innerHTML = d.img
+    ? `<img src=&quot;${d.img}?shrink=360:360&quot; alt=&quot;&quot; style=&quot;max-width:88%;max-height:88%;object-fit:contain&quot; onerror=&quot;this.replaceWith(Object.assign(document.createElement('div'),{textContent:'${CUR_ICON}',style:'font-size:72px;color:#ddd'}))&quot;>`
+    : `<div style=&quot;font-size:72px;color:#ddd&quot;>${CUR_ICON}</div>`;
+  $('thumbs').innerHTML=(d.thumbs.length?d.thumbs:[null,null,null]).map(u=>u?`<div class=&quot;thumb&quot;><img src=&quot;${u}?shrink=80:80&quot; alt=&quot;&quot; onerror=&quot;this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${CUR_ICON}'}))&quot;></div>`:`<div class=&quot;thumb&quot;>${CUR_ICON}</div>`).join('');
+
+  $('cLowest').textContent=fmt(J.cur)+'원';
+  $('cBuy').onclick=()=>toast(d.shops[0][0]+'(으)로 이동해요 🛒');
+  if(d.cashback){const[t,a]=d.cashback.split('|');$('cCashback').style.display='';$('cCashback').innerHTML=`${t}<span class=&quot;amt&quot;>${a}</span>`;}else{$('cCashback').style.display='none';}
+  $('shopList').innerHTML=d.shops.map(([s,p,o])=>`<div class=&quot;shop-row&quot;><span class=&quot;shop-name&quot;>${s}${o.cert?'<span class=&quot;cert&quot;>인증</span>':''}</span>${o.best?'<span class=&quot;shop-best&quot;>최저</span>':''}<span class=&quot;shop-price&quot;>${o.cash?'현금 ':''}${fmt(p)}원</span><span class=&quot;shop-ship&quot;>무료배송</span></div>`).join('');
+
+  /* verdict */
+  $('verdict').className='verdict '+V.cls;
+  $('vdEmoji').textContent=V.emoji; $('vdTitle').textContent=V.title;
+  $('vdBody').textContent=bodyText(d,J);
+
+  /* gauge */
+  const gaugeSB=$('gaugeHandle').closest('.sb');
+  if(J.tier==='hold'){ gaugeSB.style.display='none'; }
+  else{ gaugeSB.style.display='';
+    $('gaugeHandle').style.left=J.pct+'%';
+    const w=J.pct<=25?'평소보다 저렴한':J.pct<=60?'평소와 비슷한':J.pct<=80?'평소보다 다소 비싼':'평소보다 비싼';
+    $('gaugeCap').innerHTML=d.seasonal?`작년 동월 대비 <b>${J.dBase>=0?'▼'+J.dBase.toFixed(0)+'% 저렴':'▲'+Math.abs(J.dBase).toFixed(0)+'% 비쌈'}</b>한 편이에요.`
+      :`최근 90일 중 <b>하위 ${J.pct}%</b> — ${w} 구간이에요.`; }
+
+  /* 기준표 */
+  const actK = J.tier==='hold'?'caution':(V.cls==='good'?'good':V.cls==='ok'?'ok':'wait');
+  $('critRows').innerHTML=TIERS.map(t=>`<div class=&quot;crit-row ${t.k===actK?'active '+t.k:''}&quot;><span class=&quot;crit-badge ${t.c}&quot;>${t.b}</span><div class=&quot;crit-txt&quot;>${t.d}<span class=&quot;cond&quot;>${t.cond}</span></div>${t.k===actK?`<span class=&quot;crit-now ${t.k}&quot;>◀ 현재</span>`:''}</div>`).join('');
+
+  /* alert */
+  $('alertInput').value=fmt(Math.round(J.allLow/10000)*10000);
+  $('avgLegend').textContent=d.avgLabel;
+  $('alertPresets').innerHTML=`<button class=&quot;alert-preset&quot; onclick=&quot;setPreset('${fmt(J.allLow)}')&quot;>역대 최저가</button>`+
+    [0.97,0.95].map(r=>`<button class=&quot;alert-preset&quot; onclick=&quot;setPreset('${fmt(Math.round(J.cur*r/10000)*10000)}')&quot;>${man(Math.round(J.cur*r/10000)*10000)}원</button>`).join('');
+
+  /* period tabs */
+  const PS=[1,3,6,12,24];
+  $('periodTabs').innerHTML=PS.map(p=>`<button class=&quot;period-tab&quot; data-p=&quot;${p}&quot; onclick=&quot;setPeriod(${p},this)&quot;>${p}개월</button>`).join('');
+  curP=d.periodMax; setPeriodInit(d);
+  buildTabs(J);
+}
+
+function buildTabs(curJ){
+  $('tabs').innerHTML=ORDER.map(k=>{
+    const d=PRODUCTS[k], J=judge(d), V=VERDICT[J.tier];
+    const vk=V.vk;
+    return `<button class=&quot;tab ${k===CUR?'on':''}&quot; onclick=&quot;switchTab('${k}')&quot;><span class=&quot;ico&quot;>${d.ico}</span>${d.tab}</button>`;
+  }).join('');
+}
+function switchTab(k){CUR=k;closePop();render();window.scrollTo({top:0,behavior:'smooth'});}
+
+/* ── 그래프 ── */
+function unit(d){const t=d.monthly?'month':'week';return t;}
+function sliceData(d,p){
+  const N=d.prices.length, per=d.monthly?p:Math.round(p*4.33);
+  const cnt=Math.min(N, p>=d.periodMax?N:Math.max(2,per));
+  const arr=d.prices.slice(-cnt);
+  const base=new Date(d.start[0],d.start[1],d.start[2]);
+  return arr.map((p2,i)=>{const realIdx=N-cnt+i;const dt=new Date(base);
+    if(d.monthly)dt.setMonth(dt.getMonth()+realIdx);else dt.setDate(dt.getDate()+realIdx*7);
+    return{p:p2,date:dt};});
+}
+function setPeriodInit(d){
+  document.querySelectorAll('.period-tab').forEach(t=>t.classList.toggle('on',+t.dataset.p===d.periodMax));
+  curData=sliceData(d,d.periodMax); drawNote(d,d.periodMax); renderChart();
+}
+function setPeriod(p,el){const d=PRODUCTS[CUR];curP=p;document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  curData=sliceData(d,p);drawNote(d,p);hideTip();renderChart();}
+function spanMonths(d){const N=d.prices.length;return d.monthly?N:Math.round(N/4.33);}
+function drawNote(d,p){const sm=spanMonths(d);$('periodNote').textContent = p>sm ? `· 등록 이후(약 ${sm}개월) 데이터만 표시돼요` : '';}
+
+function renderChart(){
+  const d=PRODUCTS[CUR], J=judge(d), data=curData, pr=data.map(o=>o.p);
+  const refLine = d.seasonal?d.seasonRef:J.base;
+  let lo=Math.min(...pr,refLine),hi=Math.max(...pr,refLine);const pad=(hi-lo)*0.16||10000;lo-=pad;hi+=pad;
+  const iW=VBW-PADL-PADR,iH=VBH-PADT-PADB;
+  const X=i=>PADL+(data.length===1?iW/2:(i/(data.length-1))*iW), Y=v=>PADT+(1-(v-lo)/(hi-lo))*iH;
+  SC={data,X,Y};
+  let path='';data.forEach((o,i)=>path+=(i?'L':'M')+X(i).toFixed(1)+','+Y(o.p).toFixed(1)+' ');
+  const area=path+`L${X(data.length-1).toFixed(1)},${VBH-PADB} L${X(0).toFixed(1)},${VBH-PADB} Z`;
+  let grid='';[0,.5,1].forEach(t=>{const y=(PADT+t*iH).toFixed(1);grid+=`<line x1=&quot;0&quot; y1=&quot;${y}&quot; x2=&quot;${VBW}&quot; y2=&quot;${y}&quot; stroke=&quot;#f2f2f6&quot;/>`;});
+  const yR=Y(refLine).toFixed(1);
+  const ref=`<line x1=&quot;0&quot; y1=&quot;${yR}&quot; x2=&quot;${VBW}&quot; y2=&quot;${yR}&quot; stroke=&quot;#E59AA0&quot; stroke-width=&quot;1.1&quot; stroke-dasharray=&quot;4 3&quot;/>`;
+  let mk='';const minI=pr.indexOf(Math.min(...pr));
+  if(Math.min(...pr)===J.allLow) mk+=`<circle cx=&quot;${X(minI)}&quot; cy=&quot;${Y(pr[minI])}&quot; r=&quot;3.6&quot; fill=&quot;#fff&quot; stroke=&quot;#E5342A&quot; stroke-width=&quot;2&quot;/>`;
+  const cx=X(data.length-1),cy=Y(data[data.length-1].p);
+  mk+=`<circle cx=&quot;${cx}&quot; cy=&quot;${cy}&quot; r=&quot;5.5&quot; fill=&quot;#3B7DED&quot; opacity=&quot;.16&quot;/><circle cx=&quot;${cx}&quot; cy=&quot;${cy}&quot; r=&quot;3.2&quot; fill=&quot;#3B7DED&quot;/>`;
+  $('chartSvg').innerHTML=grid+`<defs><linearGradient id=&quot;g&quot; x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;1&quot;><stop offset=&quot;0%&quot; stop-color=&quot;#3B7DED&quot; stop-opacity=&quot;.16&quot;/><stop offset=&quot;100%&quot; stop-color=&quot;#3B7DED&quot; stop-opacity=&quot;.01&quot;/></linearGradient></defs>`+
+    `<path d=&quot;${area}&quot; fill=&quot;url(#g)&quot;/>`+ref+`<path d=&quot;${path}&quot; fill=&quot;none&quot; stroke=&quot;#3B7DED&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/>`+mk+
+    `<line id=&quot;hoverLine&quot; x1=&quot;0&quot; y1=&quot;${PADT}&quot; x2=&quot;0&quot; y2=&quot;${VBH-PADB}&quot; stroke=&quot;#3B7DED&quot; stroke-width=&quot;1&quot; opacity=&quot;0&quot;/>`;
+  const fmtY=n=>{const m=n/10000;return m>=100?(m/100).toFixed(2).replace(/\.?0+$/,'')+'백만':Math.round(m)+'만';};
+  $('yAxis').innerHTML=[hi,(hi+lo)/2,lo].map(v=>`<span>${fmtY(v)}</span>`).join('');
+  const idx=data.length<=4?data.map((_,i)=>i):[0,Math.round((data.length-1)/2),data.length-1];
+  const lab=dt=>(dt.getFullYear()+'').slice(2)+'.'+(dt.getMonth()+1);
+  $('xLabels').innerHTML=idx.map(i=>{const last=i===data.length-1;return `<span${last?' style=&quot;color:#3B7DED;font-weight:700&quot;':''}>${last?'현재':lab(data[i].date)}</span>`;}).join('');
+}
+function moveTip(clientX){const r=$('chartSvg').getBoundingClientRect(),rel=(clientX-r.left)/r.width,data=SC.data;if(!data)return;
+  let i=Math.max(0,Math.min(data.length-1,Math.round(rel*(data.length-1))));
+  const xv=SC.X(i),yv=SC.Y(data[i].p),tip=$('tip');
+  tip.style.left=(xv/VBW*r.width)+'px';tip.style.top=(yv/VBH*r.height-12)+'px';
+  tip.innerHTML=`${fmt(data[i].p)}원<span class=&quot;d&quot;> · ${(data[i].date.getMonth()+1)}.${data[i].date.getDate()}</span>`;tip.style.opacity='1';
+  const hl=$('hoverLine');if(hl){hl.setAttribute('x1',xv);hl.setAttribute('x2',xv);hl.setAttribute('opacity','.4');}}
+function hideTip(){$('tip').style.opacity='0';const hl=$('hoverLine');if(hl)hl.setAttribute('opacity','0');}
+
+/* 팝오버/알림/토스트 */
+function togglePop(e){e.stopPropagation();$('critPop').classList.toggle('open');}
+function closePop(){$('critPop').classList.remove('open');}
+function setPreset(v){$('alertInput').value=v;}
+function setAlert(){toast('🔔 '+$('alertInput').value+'원 알림이 설정됐어요');}
+let tT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),2400);}
+
+document.addEventListener('click',e=>{if(!$('critPop').contains(e.target)&amp;&amp;!e.target.closest('.crit-link'))closePop();});
+window.addEventListener('DOMContentLoaded',()=>{
+  $('chartArea').addEventListener('pointermove',e=>moveTip(e.clientX));
+  $('chartArea').addEventListener('pointerdown',e=>moveTip(e.clientX));
+  $('chartArea').addEventListener('pointerleave',hideTip);
+  render();
+});
+</script>
+</body>
+</html>
+"></iframe>
+<script>
+function show(k){
+  ['sum','policy','proto'].forEach(function(x){
+    document.getElementById('f-'+x).classList.toggle('on',x===k);
+    document.getElementById('mt-'+x).classList.toggle('on',x===k);
+  });
+}
+</script>
+</body>
+</html>

@@ -1,4 +1,3 @@
-[구매_타이밍_판정_통합_v0_1_v0_2.html](https://github.com/user-attachments/files/29831909/_._._._v0_1_v0_2.html)
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -348,7 +347,7 @@ details.acc .acc-body ul{margin:9px 0;padding-left:20px}
 <tr><td>하락</td><td>하락률 ≥ 카테고리 % <b>AND</b> 하락액 ≥ 가격대 최소금액</td></tr>
 <tr><td>상승</td><td>상승률 ≥ 카테고리 % <b>AND</b> 상승액 ≥ 가격대 최소금액</td></tr>
 </table>
-<p><b>우리(분포 기준) 방식</b>은 기준선이 평균이 아니라 <b>중앙값(median)</b>이고, 관문도 다르다 — 중앙값 대비 <code>floor%</code> 이상 싼지(거리)에 더해 <b>분포에서 하위 몇 %인지(순위)</b>와 <b>오르는 중인지(추세)</b>를 본다.</p>
+<p><b>우리(분포 기준) 방식</b>은 기준선이 평균이 아니라 <b>중앙값(median)</b>이고, 관문도 다르다 — 중앙값 대비 <code>floor%</code> 이상 싼지(거리)에 더해 <b>분포에서 하위 몇 %인지(순위)</b>를 본다. (추세는 판정엔 쓰지 않고 서브 문구로만.)</p>
 <p>중요: <b>명백히 싼 상품(쉬운 케이스)에선 두 방식이 같은 답을 낸다.</b> 차이는 애매한 상품·특가 노이즈·대규모 확장에서만 벌어진다. 그래서 평소엔 “비슷해 보이는” 게 정상이다.</p>
 </div>
 </details>
@@ -390,13 +389,6 @@ details.acc .acc-body ul{margin:9px 0;padding-left:20px}
 </details>
 
 <details class=&quot;acc&quot;>
-<summary>이점 4 · 추세를 본다 (고정 임계엔 없음)</summary>
-<div class=&quot;acc-body&quot;>
-<p>우리 BUY엔 “오르는 중이면 차단”이 있다. 계속 내려가다 반등을 시작한 상품을, 고정 임계 방식은 “아직 평균보단 싸니 하락!”으로 잡을 수 있지만 우리는 <code>rising</code> 때문에 BUY를 막는다. <b>분포 + 추세를 함께</b> 본다.</p>
-</div>
-</details>
-
-<details class=&quot;acc&quot;>
 <summary>공정하게 — 저 방식이 우리보다 앞선 한 가지</summary>
 <div class=&quot;acc-body&quot;>
 <p>저 표의 <b>‘절대금액 AND’ 관문은 우리보다 앞서 있다.</b> 우리 <code>floor</code>는 “중앙값 대비 몇 %”만 있고 <b>금액 하한이 없어서</b>, 저가 상품에서 푼돈 변동을 못 거르는 빈틈이 있다. 저 표는 “% AND 금액” 두 관문으로 이 빈틈을 이미 막았다.</p>
@@ -407,7 +399,7 @@ details.acc .acc-body ul{margin:9px 0;padding-left:20px}
 <details class=&quot;acc&quot;>
 <summary>한 줄 결론</summary>
 <div class=&quot;acc-body&quot;>
-<p>분포 기준의 이점은 <b>“지금 더 정확하다”가 아니라 “상품마다 공정하고, 특가에 안 흔들리고, 확장해도 안 무너진다”</b>이다. 세 축으로 앞선다 — <b>순위(거리 아님) · 중앙값(평균 아님) · 추세.</b> 저 방식의 유일한 강점인 ‘금액 하한’은 우리가 흡수 가능하다.</p>
+<p>분포 기준의 이점은 <b>“지금 더 정확하다”가 아니라 “상품마다 공정하고, 특가에 안 흔들리고, 확장해도 안 무너진다”</b>이다. 두 축으로 앞선다 — <b>순위(거리 아님) · 중앙값(평균 아님).</b> 저 방식의 유일한 강점인 ‘금액 하한’은 우리가 흡수 가능하다.</p>
 </div>
 </details>
 

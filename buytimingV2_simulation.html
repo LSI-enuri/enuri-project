@@ -44,6 +44,20 @@ h2{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-sp
 .pline .k{flex-shrink:0;font-weight:700;width:60px}
 .pline.prob .k{color:var(--rd-tx)} .pline.fix .k{color:var(--ok-tx)} .pline.res .k{color:var(--muted)}
 .pline .v{color:var(--body)} .pline .v b{color:var(--ink)}
+.spec{margin-top:16px;border:1px solid var(--ok-bd);border-radius:12px;padding:16px 18px;background:var(--ok-bg)}
+.spec-title{font-size:13px;font-weight:800;color:var(--ok-tx);margin-bottom:6px}
+.spec-legend{font-size:11px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.spec-legend .chg-dot{display:inline-block;width:9px;height:9px;border-radius:2px;background:#EF9F27}
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.spec-item{background:#fff;border:1px solid var(--ok-bd);border-radius:9px;padding:11px 13px}
+.spec-item.changed{border-color:#EDB24D;background:#FFFBF3}
+.spec-item .sk{font-size:11px;font-weight:800;color:var(--ok-tx);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.spec-item.changed .sk{color:#9A6700}
+.spec-item .sk .tag-new{font-size:9px;font-weight:700;background:#EF9F27;color:#fff;padding:1px 5px;border-radius:3px}
+.spec-item .sv{font-size:12px;color:var(--body);line-height:1.55}
+.spec-item .sv b{color:var(--ink);font-weight:700}
+.spec-note{font-size:11px;color:var(--muted);margin-top:11px;line-height:1.5}
+@media(max-width:640px){.spec-grid{grid-template-columns:1fr}}
 .checktable{width:100%;border-collapse:collapse;font-size:12.5px}
 .checktable th{font-size:11px;color:var(--muted);font-weight:700;padding:8px 6px;border-bottom:1.5px solid var(--line);text-align:center}
 .checktable th.l{text-align:left}
@@ -102,6 +116,57 @@ h2{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-sp
 </div>
 
 <section>
+  <h2>시뮬레이션에서 로직을 두 번 다듬었습니다</h2>
+  <div class="h2sub">기존(1차) 로직을 실제 데이터에 적용하며 발견한 개선점</div>
+  <div class="phase">
+    <div class="head"><span class="badge b1">1차</span><span class="ptitle">기존 로직 적용 &amp; 완화 여지 관찰</span></div>
+    <div class="pline prob"><span class="k">관찰</span><span class="v"><b>LOWEST·BUY 같은 긍정 판정을 더 끌어낼 여지가 있었음.</b> '중앙값보다 4% 이상 싸야 한다'는 floor에 근소하게 못 미쳐 OK로 분류되는 모델들이 있어, floor을 완화해보기로 함.</span></div>
+  </div>
+  <div class="phase">
+    <div class="head"><span class="badge b2">2차</span><span class="ptitle">floor 완화 + 저가 안전장치</span></div>
+    <div class="pline fix"><span class="k">개선</span><span class="v">BUY floor을 <b>4%&rarr;2.5%로 완화</b>하고, 저가 상품의 푼돈 하락을 거르는 <b>가격대별 최소 금액하한</b>을 추가.</span></div>
+    <div class="pline prob"><span class="k">부작용</span><span class="v">BUY와 WAIT의 floor이 하나로 묶여 있어, BUY를 넓히자 WAIT도 함께 늘어남.</span></div>
+  </div>
+  <div class="phase">
+    <div class="head"><span class="badge b3">3차</span><span class="ptitle">floor 분리 (현재 단계)</span></div>
+    <div class="pline fix"><span class="k">개선</span><span class="v"><b>BUY용 floor(2.5%)과 WAIT용 floor(4%)을 분리</b>해, BUY만 완화하고 WAIT은 기존 기준 유지.</span></div>
+    <div class="pline res"><span class="k">결과</span><span class="v">BUY는 넓어지고 2차의 WAIT 증가도 해소. 이 3차 로직으로 8개 케이스를 검증했습니다.</span></div>
+  </div>
+
+  <div class="spec">
+    <div class="spec-title">현재(3차) 로직 상세</div>
+    <div class="spec-legend"><span class="chg-dot"></span>표시 항목은 1차 대비 개선된 부분입니다</div>
+    <div class="spec-grid">
+      <div class="spec-item">
+        <div class="sk">기준선</div>
+        <div class="sv"><b>중앙값(median)</b> — 최근 90일 최저가의 중앙값을 '평소 가격'으로 삼음. 평균이 아닌 중앙값이라 하루짜리 특가에 휘둘리지 않음.</div>
+      </div>
+      <div class="spec-item">
+        <div class="sk">판정 상태 5종</div>
+        <div class="sv"><b>LOWEST</b>(역대 최저가) · <b>BUY</b>(지금 좋은 편) · <b>OK</b>(적정) · <b>WAIT</b>(평소보다 비쌈) · <b>HOLD</b>(데이터 부족 시 미노출)</div>
+      </div>
+      <div class="spec-item changed">
+        <div class="sk">BUY 조건 <span class="tag-new">1차 대비 변경</span></div>
+        <div class="sv">아래 <b>세 가지를 모두</b> 충족<br>① 중앙값보다 <b>2.5% 이상</b> 저렴(BUY floor, <b>1차 4%→2.5% 완화</b>)<br>② 하락액이 <b>가격대별 최소 금액하한 이상</b>(1차 없던 조건)<br>③ 최근 분포에서 <b>하위 30%(P_buy) 이내</b> 순위</div>
+      </div>
+      <div class="spec-item changed">
+        <div class="sk">WAIT 조건 <span class="tag-new">1차 대비 변경</span></div>
+        <div class="sv">중앙값보다 <b>4% 이상 비쌀</b> 때(WAIT floor). BUY floor(2.5%)와 <b>분리</b>되어, 한쪽을 조정해도 다른 쪽에 영향 없음. <b>(1차는 BUY·WAIT이 floor 하나를 공유)</b></div>
+      </div>
+      <div class="spec-item changed">
+        <div class="sk">금액 하한 <span class="tag-new">1차 대비 신규</span></div>
+        <div class="sv">가격대별로 최소 절약액을 다르게 적용(예: 10~30만원대는 5,000원). <b>저가 상품에서 몇백 원 하락이 BUY로 잡히는 것을 방지.</b> (1차에는 없던 안전장치)</div>
+      </div>
+      <div class="spec-item">
+        <div class="sk">관측 기간</div>
+        <div class="sv">최대 <b>90일(W)</b> 관찰. <b>60일(W_min) 미만</b>이면 데이터 부족으로 <b>HOLD</b> 처리(판정 미노출).</div>
+      </div>
+    </div>
+    <div class="spec-note">※ floor·P_buy·금액하한 수치는 현재의 '출발값'이며, 파일럿 실사용 데이터로 조정·확정 예정입니다.</div>
+  </div>
+</section>
+
+<section>
   <h2>판정 상태는 실제로 이렇게 나옵니다</h2>
   <div class="h2sub">8개 케이스(2개 플랫폼 × 4개 카테고리)의 상태값 분포 · 3차 로직 기준</div>
   <div class="legend">
@@ -130,25 +195,6 @@ h2{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-sp
       <div class="vh">✅ 그래도 로직은 동일</div>
       <div class="it">분포 숫자는 케이스마다 달라도, <b>로직은 8개 전부에서 같은 방식으로 판정</b>했습니다. 분포 차이는 로직이 각 데이터를 <b>정직하게 반영</b>한 결과이지, 로직이 불안정한 신호가 아닙니다.</div>
     </div>
-  </div>
-</section>
-
-<section>
-  <h2>시뮬레이션에서 로직을 두 번 다듬었습니다</h2>
-  <div class="h2sub">기존(1차) 로직을 실제 데이터에 적용하며 발견한 개선점</div>
-  <div class="phase">
-    <div class="head"><span class="badge b1">1차</span><span class="ptitle">기존 로직 적용 &amp; 완화 여지 관찰</span></div>
-    <div class="pline prob"><span class="k">관찰</span><span class="v"><b>LOWEST·BUY 같은 긍정 판정을 더 끌어낼 여지가 있었음.</b> '중앙값보다 4% 이상 싸야 한다'는 문턱에 근소하게 못 미쳐 OK로 분류되는 모델들이 있어, 문턱을 완화해보기로 함.</span></div>
-  </div>
-  <div class="phase">
-    <div class="head"><span class="badge b2">2차</span><span class="ptitle">문턱 완화 + 저가 안전장치</span></div>
-    <div class="pline fix"><span class="k">개선</span><span class="v">BUY 문턱을 <b>4%&rarr;2.5%로 완화</b>하고, 저가 상품의 푼돈 하락을 거르는 <b>가격대별 최소 금액하한</b>을 추가.</span></div>
-    <div class="pline prob"><span class="k">부작용</span><span class="v">BUY와 WAIT의 문턱이 하나로 묶여 있어, BUY를 넓히자 WAIT도 함께 늘어남.</span></div>
-  </div>
-  <div class="phase">
-    <div class="head"><span class="badge b3">3차</span><span class="ptitle">문턱 분리 (현재 단계)</span></div>
-    <div class="pline fix"><span class="k">개선</span><span class="v"><b>BUY용 문턱(2.5%)과 WAIT용 문턱(4%)을 분리</b>해, BUY만 완화하고 WAIT은 기존 기준 유지.</span></div>
-    <div class="pline res"><span class="k">결과</span><span class="v">BUY는 넓어지고 2차의 WAIT 증가도 해소. 이 3차 로직으로 8개 케이스를 검증했습니다.</span></div>
   </div>
 </section>
 
@@ -192,7 +238,7 @@ h2{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-sp
     </div>
     <div class="vcard vwn">
       <div class="vh">&#9888;&#65039; 남은 점 (파일럿에서)</div>
-      <div class="it"><b>파라미터 수치</b> — 문턱·P_buy는 아직 출발값. 실사용 데이터로 조정 필요.</div>
+      <div class="it"><b>파라미터 수치</b> — floor·P_buy는 아직 출발값. 실사용 데이터로 조정 필요.</div>
       <div class="it"><b>카테고리·플랫폼별 편차</b> — 분포 편차가 큼. 파라미터를 유형별로 나눌지 판단 필요.</div>
       <div class="it"><b>경계 케이스</b> — 금액하한 경계(수십~수백 원 차) 하한값 적정성 관찰.</div>
     </div>
@@ -203,7 +249,7 @@ h2{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-sp
   <h2>다음 스텝</h2>
   <ol class="steps-next">
     <li><b>파일럿 출발값 고정</b> — 3차 로직과 현재 파라미터를 '출발값'으로 두고 파일럿 1 시작.</li>
-    <li class="hl"><b>파일럿 데이터로 파라미터 조정</b> — 판정 대비 실제 클릭아웃 반응을 보고 <b>카테고리별 P_buy·문턱</b>을 튜닝.</li>
+    <li class="hl"><b>파일럿 데이터로 파라미터 조정</b> — 판정 대비 실제 클릭아웃 반응을 보고 <b>카테고리별 P_buy·floor</b>을 튜닝.</li>
     <li class="hl"><b>파일럿 2·확장 — 파라미터 조절 체계</b> — 카테고리·플랫폼별 파라미터(P_buy 등) 조절 방안을 로드맵에 반영. 조절 실험은 <a href="https://claude.ai/artifacts/latest/d48b5811-61a8-4b45-a76f-5dd7f28c83f7" target="_blank">시뮬레이터</a>에서 수행하고, 결론 난 값만 서비스에 반영.</li>
     <li>확정된 로직·파라미터를 <b>로직·정책 문서</b>에 반영.</li>
   </ol>

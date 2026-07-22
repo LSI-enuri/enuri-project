@@ -1,0 +1,260 @@
+[구매타이밍판정_교차검증_종합보고_최종.html](https://github.com/user-attachments/files/30254483/_._._.html)
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>구매 타이밍 판정 — 1~3차 시뮬레이션 종합보고</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+:root{
+  --key:#0092FF;--key-d:#0072C6;--key-bg:#EAF5FF;--key-line:#CDE8FF;
+  --ink:#15161C;--body:#3A3B44;--muted:#8A8B95;--line:#ECEDF1;--bg:#F5F6F8;--card:#FFF;
+  --ok-bg:#E7F6ED;--ok-tx:#0C7A3E;--ok-bd:#BFE6CE;
+  --wn-bg:#FEF6E7;--wn-tx:#9A6700;--wn-bd:#F2DCA8;
+  --rd-tx:#C0392B;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--body);font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;line-height:1.7;padding:40px 20px 80px;font-size:14px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-.03em;margin-bottom:5px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:16px}
+h2{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-spacing:-.01em}
+.h2sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+.intro{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin-bottom:16px}
+.intro p{font-size:13px;color:var(--body);line-height:1.7}
+.intro b{color:var(--key-d)}
+.scope{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:4px 12px;color:var(--body)}
+.chip b{color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:13px;margin-bottom:12px;font-size:11.5px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:4px}
+.dot{width:10px;height:10px;border-radius:2px}
+.platform-label{font-size:12.5px;font-weight:700;color:var(--key-d);margin:16px 0 6px}
+.platform-label.d{color:#7A5CC8}
+.chartbox{position:relative;width:100%;height:250px}
+.phase{border:1px solid var(--line);border-radius:12px;padding:15px 18px;margin-bottom:11px}
+.phase:last-child{margin-bottom:0}
+.phase .head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.phase .badge{flex-shrink:0;font-size:12px;font-weight:800;padding:4px 12px;border-radius:20px}
+.b1{background:#EFF0F3;color:#6C6D77} .b2{background:var(--wn-bg);color:var(--wn-tx)} .b3{background:var(--ok-bg);color:var(--ok-tx)}
+.phase .ptitle{font-size:13.5px;font-weight:700;color:var(--ink)}
+.pline{display:flex;gap:8px;font-size:12.5px;line-height:1.6;margin-top:6px}
+.pline .k{flex-shrink:0;font-weight:700;width:60px}
+.pline.prob .k{color:var(--rd-tx)} .pline.fix .k{color:var(--ok-tx)} .pline.res .k{color:var(--muted)}
+.pline .v{color:var(--body)} .pline .v b{color:var(--ink)}
+.checktable{width:100%;border-collapse:collapse;font-size:12.5px}
+.checktable th{font-size:11px;color:var(--muted);font-weight:700;padding:8px 6px;border-bottom:1.5px solid var(--line);text-align:center}
+.checktable th.l{text-align:left}
+.checktable td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:center}
+.checktable td.l{text-align:left;font-weight:700}
+.checktable tr.pe td.l{color:var(--key-d)} .checktable tr.pd td.l{color:#7A5CC8}
+.ck{color:var(--ok-tx);font-weight:800;font-size:14px}
+.dash{color:var(--muted);font-size:11.5px}
+.ptag{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;margin-right:5px}
+.tpe{background:var(--key-bg);color:var(--key-d)} .tpd{background:#EEE9F8;color:#7A5CC8}
+.allpass{background:var(--ok-bg);border-radius:8px;padding:11px 14px;margin-top:12px;font-size:12.5px;color:var(--ok-tx);font-weight:700;text-align:center}
+.concl{background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:14px;padding:20px 24px;margin-bottom:16px}
+.concl .verdict{font-size:17px;font-weight:800;color:var(--ok-tx);margin-bottom:8px;letter-spacing:-.02em}
+.concl .bd{font-size:13.5px;color:var(--ink);line-height:1.65}
+.concl .bd b{color:var(--ok-tx)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vcard{border-radius:12px;padding:14px 16px}
+.vok{background:var(--card);border:1px solid var(--ok-bd)}
+.vwn{background:var(--card);border:1px solid var(--wn-bd)}
+.vcard .vh{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;margin-bottom:10px}
+.vok .vh{color:var(--ok-tx)} .vwn .vh{color:var(--wn-tx)}
+.vcard .it{font-size:12.5px;color:var(--ink);line-height:1.6;margin-bottom:8px}
+.vcard .it:last-child{margin-bottom:0}
+.vcard .it b{font-weight:700}
+.steps-next{list-style:none;counter-reset:s}
+.steps-next li{position:relative;padding-left:26px;margin-bottom:10px;font-size:13px;color:var(--body);counter-increment:s;line-height:1.6}
+.steps-next li:last-child{margin-bottom:0}
+.steps-next li:before{content:counter(s);position:absolute;left:0;top:1px;width:18px;height:18px;border-radius:50%;background:var(--key);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.steps-next li b{color:var(--ink);font-weight:700}
+.steps-next li.hl{background:var(--key-bg);border-radius:8px;padding:8px 10px 8px 26px;margin-left:-4px}
+.steps-next li.hl:before{left:4px;top:9px}
+.steps-next a{color:var(--key-d);text-decoration:underline}
+.linkgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lkcard{border:1px solid var(--line);border-radius:9px;padding:11px 13px}
+.lkcard .cat{font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.lkcard a{font-size:11px;color:var(--key-d);text-decoration:none;font-weight:600;padding:2px 7px;border:1px solid var(--key-line);border-radius:5px;background:var(--key-bg);display:inline-block;margin:1px 2px 1px 0}
+.lkcard a:hover{background:#DCEEFF}
+.lkcard a.pd{border-color:#E0D6F5;background:#F1ECFA;color:#7A5CC8}
+.foot{text-align:center;font-size:11.5px;color:var(--muted);margin-top:24px}
+@media(max-width:640px){.two,.linkgrid{grid-template-columns:1fr}h1{font-size:20px}body{padding:26px 14px 60px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>구매 타이밍 판정 - 시뮬레이션 리포트</h1>
+<div class="sub">앞서 공유한 <a href="https://lsi-enuri.github.io/enuri-project/buytimingV2.html" target="_blank" style="color:var(--key-d);text-decoration:underline">로직·정책 및 프로토타입</a>을 실제 가격 데이터로 검증한 결과입니다</div>
+
+<div class="intro">
+  <p>앞서 정의한 판정 로직을 <b>에누리·다나와의 실제 90일 가격 데이터에 적용</b>해, ① 각 판정 상태(LOWEST·BUY·OK·WAIT·HOLD)가 실제로 <b>어떤 비율로 나오는지</b> 확인하고 ② 로직이 여러 카테고리·플랫폼에서 <b>의도대로 작동하는지</b> 검증했습니다. 검증 과정에서 1차 로직의 개선점을 발견해 3차까지 다듬었습니다.</p>
+  <div class="scope">
+    <span class="chip">플랫폼 <b>에누리 · 다나와</b></span>
+    <span class="chip">카테고리 <b>청소기·세탁기·건강기능식품·스포츠화</b></span>
+    <span class="chip">각 <b>100개 모델 · 90일</b></span>
+  </div>
+</div>
+
+<section>
+  <h2>판정 상태는 실제로 이렇게 나옵니다</h2>
+  <div class="h2sub">8개 케이스(2개 플랫폼 × 4개 카테고리)의 상태값 분포 · 3차 로직 기준</div>
+  <div class="legend">
+    <span><span class="dot" style="background:#378ADD"></span>LOWEST 역대 최저가</span>
+    <span><span class="dot" style="background:#639922"></span>BUY 지금 좋은 편</span>
+    <span><span class="dot" style="background:#E4E3DC"></span>OK 적정</span>
+    <span><span class="dot" style="background:#EF9F27"></span>WAIT 평소보다 비쌈</span>
+    <span><span class="dot" style="background:#888780"></span>HOLD 미노출</span>
+  </div>
+  <div class="platform-label">■ 에누리</div>
+  <div class="chartbox"><canvas id="enuriC" role="img" aria-label="에누리 4개 카테고리 판정 상태 분포"></canvas></div>
+  <div class="platform-label d">■ 다나와</div>
+  <div class="chartbox"><canvas id="danawaC" role="img" aria-label="다나와 4개 카테고리 판정 상태 분포"></canvas></div>
+</section>
+
+<section>
+  <h2>카테고리마다, 플랫폼마다 분포가 다릅니다</h2>
+  <div class="h2sub">데이터가 다르므로 분포가 다른 것은 자연스러운 현상입니다</div>
+  <div class="two">
+    <div class="vcard vwn" style="border-color:var(--line)">
+      <div class="vh" style="color:var(--body)">📊 왜 다른가</div>
+      <div class="it">카테고리마다 가격 흐름이 달라 분포도 갈립니다 — 스포츠화는 BUY·LOWEST 비율과 변동성(CV)이 상대적으로 높고, 청소기는 WAIT 비율이 높은 식입니다. (원인은 데이터만으로 단정하지 않으며, 분포·변동성은 관찰된 사실입니다.)</div>
+      <div class="it">또한 에누리·다나와는 <b>데이터 추출 시점(에누리 4/16~7/14, 다나와 4/22~7/20)과 인기순위 기준이 달라, 추출된 모델 자체가 서로 다릅니다.</b> 같은 '세탁기'라도 보고 있는 상품이 달라 분포도 다릅니다.</div>
+    </div>
+    <div class="vcard vok">
+      <div class="vh">✅ 그래도 로직은 동일</div>
+      <div class="it">분포 숫자는 케이스마다 달라도, <b>로직은 8개 전부에서 같은 방식으로 판정</b>했습니다. 분포 차이는 로직이 각 데이터를 <b>정직하게 반영</b>한 결과이지, 로직이 불안정한 신호가 아닙니다.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>시뮬레이션에서 로직을 두 번 다듬었습니다</h2>
+  <div class="h2sub">기존(1차) 로직을 실제 데이터에 적용하며 발견한 개선점</div>
+  <div class="phase">
+    <div class="head"><span class="badge b1">1차</span><span class="ptitle">기존 로직 적용 &amp; 완화 여지 관찰</span></div>
+    <div class="pline prob"><span class="k">관찰</span><span class="v"><b>LOWEST·BUY 같은 긍정 판정을 더 끌어낼 여지가 있었음.</b> '중앙값보다 4% 이상 싸야 한다'는 문턱에 근소하게 못 미쳐 OK로 분류되는 모델들이 있어, 문턱을 완화해보기로 함.</span></div>
+  </div>
+  <div class="phase">
+    <div class="head"><span class="badge b2">2차</span><span class="ptitle">문턱 완화 + 저가 안전장치</span></div>
+    <div class="pline fix"><span class="k">개선</span><span class="v">BUY 문턱을 <b>4%&rarr;2.5%로 완화</b>하고, 저가 상품의 푼돈 하락을 거르는 <b>가격대별 최소 금액하한</b>을 추가.</span></div>
+    <div class="pline prob"><span class="k">부작용</span><span class="v">BUY와 WAIT의 문턱이 하나로 묶여 있어, BUY를 넓히자 WAIT도 함께 늘어남.</span></div>
+  </div>
+  <div class="phase">
+    <div class="head"><span class="badge b3">3차</span><span class="ptitle">문턱 분리 (현재 단계)</span></div>
+    <div class="pline fix"><span class="k">개선</span><span class="v"><b>BUY용 문턱(2.5%)과 WAIT용 문턱(4%)을 분리</b>해, BUY만 완화하고 WAIT은 기존 기준 유지.</span></div>
+    <div class="pline res"><span class="k">결과</span><span class="v">BUY는 넓어지고 2차의 WAIT 증가도 해소. 이 3차 로직으로 8개 케이스를 검증했습니다.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>3차 로직, 8개 케이스에서 정상 작동</h2>
+  <div class="h2sub">서로 다른 데이터인데도 로직이 일관되게 판정했습니다</div>
+  <table class="checktable">
+    <thead><tr>
+      <th class="l">케이스</th>
+      <th>판정 정상 산출</th>
+      <th>금액하한 작동<br><span style="font-weight:400">(저가 상품)</span></th>
+      <th>CV(변동성)</th>
+    </tr></thead>
+    <tbody>
+      <tr class="pe"><td class="l"><span class="ptag tpe">에누리</span>청소기</td><td class="ck">&#10003;</td><td class="dash">해당없음(고가)</td><td>0.044</td></tr>
+      <tr class="pe"><td class="l"><span class="ptag tpe">에누리</span>세탁기</td><td class="ck">&#10003;</td><td class="dash">해당없음(고가)</td><td>0.038</td></tr>
+      <tr class="pe"><td class="l"><span class="ptag tpe">에누리</span>건강기능식품</td><td class="ck">&#10003;</td><td class="ck">&#10003; 1건</td><td>0.037</td></tr>
+      <tr class="pe"><td class="l"><span class="ptag tpe">에누리</span>스포츠화</td><td class="ck">&#10003;</td><td class="ck">&#10003; 2건</td><td>0.085</td></tr>
+      <tr class="pd"><td class="l"><span class="ptag tpd">다나와</span>청소기</td><td class="ck">&#10003;</td><td class="ck">&#10003; 1건</td><td>0.049</td></tr>
+      <tr class="pd"><td class="l"><span class="ptag tpd">다나와</span>세탁기</td><td class="ck">&#10003;</td><td class="ck">&#10003; 1건</td><td>0.045</td></tr>
+      <tr class="pd"><td class="l"><span class="ptag tpd">다나와</span>건강기능식품</td><td class="ck">&#10003;</td><td class="ck">&#10003; 3건</td><td>0.030</td></tr>
+      <tr class="pd"><td class="l"><span class="ptag tpd">다나와</span>스포츠화</td><td class="ck">&#10003;</td><td class="ck">&#10003; 3건</td><td>0.046</td></tr>
+    </tbody>
+  </table>
+  <div class="allpass">&#9654; 8개 케이스 전부 정상 작동 · 금액하한은 저가 6개 케이스에서 실작동, 고가 2개는 조건 미해당</div>
+</section>
+
+<div class="concl">
+  <div class="verdict">&#9989; 결론 — 3차 로직으로 파일럿을 준비해도 됩니다</div>
+  <div class="bd">서로 다른 데이터로 구성된 8개 케이스 전부에서 로직이 정상 작동했고, 각 상태값 분포도 상품 특성에 맞게 합리적으로 산출됐습니다. <b>3차 로직을 기반으로 파일럿을 준비</b>할 수 있습니다. 단, 파라미터 수치(특히 카테고리별 P_buy)는 <b>파일럿의 실사용 데이터로 조정하며 확정</b>하는 것을 전제로 합니다(아래 다음 스텝 2~3번).</div>
+</div>
+
+<section>
+  <h2>확인된 점 · 남은 점</h2>
+  <div class="two">
+    <div class="vcard vok">
+      <div class="vh">&#9989; 확인된 점</div>
+      <div class="it"><b>상태값 분포 산출</b> — 8개 케이스에서 각 상태 비율이 상품 특성에 맞게 나옴.</div>
+      <div class="it"><b>플랫폼 무관성</b> — 데이터가 다른 두 플랫폼에서 동일 로직 작동.</div>
+      <div class="it"><b>저가 안전장치</b> — 금액하한이 저가 6개 케이스에서 작동, 고가는 대기.</div>
+    </div>
+    <div class="vcard vwn">
+      <div class="vh">&#9888;&#65039; 남은 점 (파일럿에서)</div>
+      <div class="it"><b>파라미터 수치</b> — 문턱·P_buy는 아직 출발값. 실사용 데이터로 조정 필요.</div>
+      <div class="it"><b>카테고리·플랫폼별 편차</b> — 분포 편차가 큼. 파라미터를 유형별로 나눌지 판단 필요.</div>
+      <div class="it"><b>경계 케이스</b> — 금액하한 경계(수십~수백 원 차) 하한값 적정성 관찰.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>다음 스텝</h2>
+  <ol class="steps-next">
+    <li><b>파일럿 출발값 고정</b> — 3차 로직과 현재 파라미터를 '출발값'으로 두고 파일럿 1 시작.</li>
+    <li class="hl"><b>파일럿 데이터로 파라미터 조정</b> — 판정 대비 실제 클릭아웃 반응을 보고 <b>카테고리별 P_buy·문턱</b>을 튜닝.</li>
+    <li class="hl"><b>파일럿 2·확장 — 파라미터 조절 체계</b> — 카테고리·플랫폼별 파라미터(P_buy 등) 조절 방안을 로드맵에 반영. 조절 실험은 <a href="https://claude.ai/artifacts/latest/d48b5811-61a8-4b45-a76f-5dd7f28c83f7" target="_blank">시뮬레이터</a>에서 수행하고, 결론 난 값만 서비스에 반영.</li>
+    <li>확정된 로직·파라미터를 <b>로직·정책 문서</b>에 반영.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>상세 분석 데이터 <span style="font-weight:500;color:var(--muted);font-size:12px">카테고리별 1~3차 전체 결과</span></h2>
+  <div class="linkgrid">
+    <div class="lkcard"><div class="cat">청소기</div>
+      <a href="https://docs.google.com/spreadsheets/d/1H3qeNI93w2Acd1uKeQ3nM9Sz6hk1u_Ji8CBE9SCEbTA/edit" target="_blank">에누리 &#8599;</a>
+      <a class="pd" href="https://docs.google.com/spreadsheets/d/1U9-VpdLqouQYfbLeoghS-pAQGINQZedtjecnd6ZDS_c/edit" target="_blank">다나와 &#8599;</a></div>
+    <div class="lkcard"><div class="cat">세탁기</div>
+      <a href="https://docs.google.com/spreadsheets/d/1UVNhtAfPfEx6OPtzbchyC6P2KCtkyUlBIZ2qX_9C_9k/edit" target="_blank">에누리 &#8599;</a>
+      <a class="pd" href="https://docs.google.com/spreadsheets/d/15jxdjBTvnoP8250i-P_QkcUebuRSoM6W9YVcPUDkVr4/edit" target="_blank">다나와 &#8599;</a></div>
+    <div class="lkcard"><div class="cat">건강기능식품</div>
+      <a href="https://docs.google.com/spreadsheets/d/1coQsnmYGX8J__81E9i8sQxeRB-9YN3_Uy_ZfEvEpx9U/edit" target="_blank">에누리 &#8599;</a>
+      <a class="pd" href="https://docs.google.com/spreadsheets/d/1fe7m_aacexzaqB5GiKvSGaSaS7oo6OwnWXAUr-2msnA/edit" target="_blank">다나와 &#8599;</a></div>
+    <div class="lkcard"><div class="cat">스포츠화</div>
+      <a href="https://docs.google.com/spreadsheets/d/1rvSfV4T3OhUiCaXVBRSuirG1xK2AKX4nE-wuS0FK5Ms/edit" target="_blank">에누리 &#8599;</a>
+      <a class="pd" href="https://docs.google.com/spreadsheets/d/1SW56PP697Lhn2wMARDMAfl2oiBoeq5TFvpeiLB2uVXE/edit" target="_blank">다나와 &#8599;</a></div>
+  </div>
+</section>
+
+<div class="foot">구매 타이밍 판정 · 1~3차 시뮬레이션 종합보고 (에누리·다나와) · 에누리</div>
+</div>
+
+<script>
+const C={lowest:'#378ADD',buy:'#639922',ok:'#E4E3DC',wait:'#EF9F27',hold:'#888780'};
+function mkChart(id,data){
+  new Chart(document.getElementById(id),{
+    type:'bar',plugins:[ChartDataLabels],
+    data:{labels:['청소기','세탁기','건강기능식품','스포츠화'],
+      datasets:[
+        {label:'LOWEST',data:data.map(d=>d[0]),backgroundColor:C.lowest,barThickness:30},
+        {label:'BUY',data:data.map(d=>d[1]),backgroundColor:C.buy,barThickness:30},
+        {label:'OK',data:data.map(d=>d[2]),backgroundColor:C.ok,barThickness:30},
+        {label:'WAIT',data:data.map(d=>d[3]),backgroundColor:C.wait,barThickness:30},
+        {label:'HOLD',data:data.map(d=>d[4]),backgroundColor:C.hold,barThickness:30}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>c.dataset.label+' '+c.parsed.x+'%'}},
+        datalabels:{display:c=>c.dataset.data[c.dataIndex]>=5,formatter:v=>v,
+          color:c=>{const t=c.dataset.label;return(t==='OK'||t==='HOLD')?'#5F5F5A':'#fff';},
+          font:{size:11,weight:'700'}}},
+      scales:{x:{stacked:true,max:100,ticks:{callback:v=>v+'%',color:'#898781'},grid:{color:'#ECEDF1'}},
+        y:{stacked:true,grid:{display:false},ticks:{color:'#5F5F68',font:{size:12}}}}}
+  });
+}
+mkChart('enuriC',[[3,6,43,36,12],[9,7,48,26,10],[5,9,68,18,0],[13,29,37,15,6]]);
+mkChart('danawaC',[[14,17,42,20,7],[7,20,63,7,3],[24,8,48,17,3],[21,18,37,10,13]]);
+</script>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>구매 타이밍 판정 — 시뮬레이터</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --key:#0092FF;--key-d:#0072C6;--key-bg:#EAF5FF;--key-line:#CDE8FF;
+  --ink:#15161C;--body:#3A3B44;--muted:#8A8B95;--line:#ECEDF1;--bg:#F5F6F8;--card:#FFF;
+  --lowest:#378ADD;--buy:#639922;--ok:#888780;--wait:#EF9F27;--hold:#E4E3DC;
+  --lowest-bg:#E6F1FB;--buy-bg:#EAF3DE;--ok-bg:#F1F1F4;--wait-bg:#FAEEDA;--hold-bg:#F7F7F7;
+  --lowest-tx:#042C53;--buy-tx:#173404;--ok-tx:#3A3A44;--wait-tx:#412402;--hold-tx:#999;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--body);font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;line-height:1.6;font-size:13px;-webkit-font-smoothing:antialiased;padding:0}
+.top{background:var(--card);border-bottom:1px solid var(--line);padding:16px 24px;position:sticky;top:0;z-index:10}
+.top h1{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.top .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 24px 60px}
+.layout{display:grid;grid-template-columns:290px 1fr;gap:20px;align-items:start}
+
+/* 좌측 패널 */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;position:sticky;top:90px}
+.panel h2{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.drop{border:1.5px dashed var(--key-line);border-radius:10px;padding:18px 12px;text-align:center;cursor:pointer;transition:.15s;background:var(--key-bg)}
+.drop:hover{border-color:var(--key);background:#DEEFFF}
+.drop .ic{font-size:22px}
+.drop .t{font-size:12px;font-weight:700;color:var(--key-d);margin-top:4px}
+.drop .s{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+.filename{font-size:11.5px;color:var(--key-d);font-weight:600;margin-top:8px;word-break:break-all}
+.tmpl-btn{width:100%;margin-top:10px;padding:8px;font-size:11.5px;font-weight:600;color:var(--key-d);background:#fff;border:1px solid var(--key-line);border-radius:7px;cursor:pointer;transition:.15s}
+.tmpl-btn:hover{background:var(--key-bg)}
+
+.param{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.pgroup{margin-bottom:16px}
+.plabel{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.plabel .nm{font-size:12px;font-weight:700;color:var(--ink)}
+.plabel .vl{font-size:12px;font-weight:800;color:var(--key-d)}
+.plabel .desc{font-size:10.5px;color:var(--muted);font-weight:400;display:block;margin-top:1px}
+input[type=range]{width:100%;accent-color:var(--key);height:4px;cursor:pointer}
+.amt-table{font-size:11px;margin-top:4px}
+.amt-table summary{cursor:pointer;color:var(--key-d);font-weight:600;font-size:11px;padding:4px 0}
+.amt-row{display:flex;justify-content:space-between;padding:2px 0;color:var(--body)}
+.amt-row input{width:70px;font-size:11px;padding:2px 5px;border:1px solid var(--line);border-radius:4px;text-align:right}
+.reset{width:100%;margin-top:8px;padding:7px;font-size:11.5px;font-weight:600;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:7px;cursor:pointer}
+.reset:hover{background:#EEE}
+
+/* 우측 결과 */
+.empty{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:60px 20px;text-align:center;color:var(--muted)}
+.empty .ic{font-size:40px;opacity:.4}
+.empty .t{font-size:14px;font-weight:700;margin-top:10px;color:var(--body)}
+.empty .s{font-size:12px;margin-top:4px}
+
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.mcard{flex:1;min-width:100px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.mcard .l{font-size:11px;color:var(--muted)}
+.mcard .v{font-size:20px;font-weight:800;color:var(--ink);margin-top:2px}
+
+.sec{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.sec h3{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:14px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;font-size:11.5px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:4px}
+.dot{width:10px;height:10px;border-radius:2px}
+.chartbox{position:relative;width:100%;height:150px}
+
+.dist-bars{display:flex;flex-direction:column;gap:8px}
+.dbar{display:flex;align-items:center;gap:10px}
+.dbar .nm{width:64px;font-size:11.5px;font-weight:700;flex-shrink:0}
+.dbar .track{flex:1;height:22px;background:var(--bg);border-radius:5px;overflow:hidden;position:relative}
+.dbar .fill{height:100%;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#fff;min-width:24px;transition:width .3s}
+.dbar .cnt{width:80px;font-size:11.5px;color:var(--body);flex-shrink:0;text-align:right}
+
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{position:sticky;top:0;background:var(--card)}
+th{text-align:center;font-size:10.5px;color:var(--muted);font-weight:700;padding:6px 5px;border-bottom:1.5px solid var(--line);white-space:nowrap}
+td{padding:6px 5px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+td.l{text-align:left}
+.tbl-scroll{max-height:440px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.badge{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px}
+.flag{background:#FFF0F0;color:#C0392B;font-size:10px;padding:1px 6px;border-radius:4px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{padding:6px 14px;font-size:12px;font-weight:600;border:1px solid var(--line);border-radius:7px;cursor:pointer;background:var(--card);color:var(--muted)}
+.tab.on{background:var(--key);color:#fff;border-color:var(--key)}
+.hint{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.panel{position:static}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>구매 타이밍 판정 — 시뮬레이터</h1>
+  <div class="sub">기획팀 내부 도구 · 파라미터를 조절하며 판정 결과를 실시간 확인 · 데이터는 저장되지 않음</div>
+</div>
+
+<div class="wrap">
+<div class="layout">
+
+  <!-- 좌측: 업로드 + 파라미터 -->
+  <div class="panel">
+    <h2>📁 데이터</h2>
+    <div class="drop" id="drop">
+      <div class="ic">⬆️</div>
+      <div class="t">엑셀·CSV 올리기</div>
+      <div class="s">모델번호 · 일자 · 최저가<br>(3개 컬럼 고정)</div>
+    </div>
+    <input type="file" id="file" accept=".xlsx,.xls,.csv" style="display:none">
+    <div class="filename" id="fname"></div>
+    <button class="tmpl-btn" id="tmplBtn">⬇ 엑셀 양식 다운받기</button>
+
+    <div class="param" id="paramPanel" style="display:none">
+      <h2>⚙️ 파라미터</h2>
+
+      <div class="pgroup">
+        <div class="plabel"><span class="nm">BUY floor</span><span class="vl" id="v_fb">2.5%</span></div>
+        <span class="desc" style="font-size:10.5px;color:var(--muted)">중앙값보다 이만큼 싸야 BUY 후보</span>
+        <input type="range" id="fb" min="0" max="10" step="0.1" value="2.5">
+      </div>
+
+      <div class="pgroup">
+        <div class="plabel"><span class="nm">WAIT floor</span><span class="vl" id="v_fw">4.0%</span></div>
+        <span class="desc" style="font-size:10.5px;color:var(--muted)">중앙값보다 이만큼 비싸면 WAIT</span>
+        <input type="range" id="fw" min="0" max="10" step="0.1" value="4">
+      </div>
+
+      <div class="pgroup">
+        <div class="plabel"><span class="nm">P_buy (하위 %)</span><span class="vl" id="v_pb">30%</span></div>
+        <span class="desc" style="font-size:10.5px;color:var(--muted)">분포 하위 몇 % 안에 들어야 BUY</span>
+        <input type="range" id="pb" min="5" max="60" step="1" value="30">
+      </div>
+
+      <div class="pgroup">
+        <div class="plabel"><span class="nm">W (관측기간)</span><span class="vl" id="v_w">90일</span></div>
+        <span class="desc" style="font-size:10.5px;color:var(--muted)">최대 며칠까지 볼지</span>
+        <input type="range" id="w" min="30" max="180" step="5" value="90">
+      </div>
+
+      <div class="pgroup">
+        <div class="plabel"><span class="nm">W_min (최소기간)</span><span class="vl" id="v_wm">60일</span></div>
+        <span class="desc" style="font-size:10.5px;color:var(--muted)">이보다 적으면 HOLD(미노출)</span>
+        <input type="range" id="wm" min="10" max="120" step="5" value="60">
+      </div>
+
+      <details class="amt-table">
+        <summary>가격대별 금액하한 ▾</summary>
+        <div id="amtRows" style="margin-top:6px"></div>
+      </details>
+
+      <button class="reset" id="reset">파라미터 초기화 (3차 최종값)</button>
+    </div>
+  </div>
+
+  <!-- 우측: 결과 -->
+  <div id="result">
+    <div class="empty">
+      <div class="ic">📊</div>
+      <div class="t">데이터를 올려주세요</div>
+      <div class="s">엑셀(xlsx)이나 CSV를 올리면 판정 결과가 여기 표시됩니다</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const DEFAULTS={fb:2.5,fw:4.0,pb:30,w:90,wm:60};
+const AMT=[[10000,0],[30000,700],[50000,1000],[100000,2000],[300000,5000],[500000,8000],[1000000,15000],[3000000,30000],[5000000,50000],[10000000,80000],[Infinity,150000]];
+const AMT_LABELS=['~1만','1~3만','3~5만','5~10만','10~30만','30~50만','50~100만','100~300만','300~500만','500~1000만','1000만~'];
+let amtValues=AMT.map(a=>a[1]);
+const LEAD={LOWEST:'역대 최저가예요',BUY:'지금 가격이 좋은 편이에요',OK:'적정 가격이에요',WAIT:'평소보다 비싼 편이에요',HOLD:'(미노출)'};
+const TIERS=['LOWEST','BUY','OK','WAIT','HOLD'];
+const TCOLOR={LOWEST:'#378ADD',BUY:'#639922',OK:'#888780',WAIT:'#EF9F27',HOLD:'#E4E3DC'};
+let rawData=null, chart=null, curTab='all';
+
+// 금액하한 표 UI
+function buildAmtRows(){
+  const box=document.getElementById('amtRows');
+  box.innerHTML=AMT_LABELS.map((lab,i)=>
+    `<div class="amt-row"><span>${lab}</span><input type="number" data-i="${i}" value="${amtValues[i]}" step="100"></div>`
+  ).join('');
+  box.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',e=>{
+    amtValues[+e.target.dataset.i]=+e.target.value||0; run();
+  }));
+}
+function minAmount(price){
+  for(let i=0;i<AMT.length;i++){ if(price<AMT[i][0]) return amtValues[i]; }
+  return amtValues[amtValues.length-1];
+}
+function median(arr){const s=[...arr].sort((a,b)=>a-b);const n=s.length,m=n>>1;return n%2?s[m]:(s[m-1]+s[m])/2;}
+
+function judge(P,p){
+  const N=P.length,cur=P[N-1];
+  if(N<p.wm) return {tier:'HOLD',N,cur};
+  const allLow=Math.min(...P);
+  const base=Math.round(median(P)/100)*100;
+  const gap=base-cur, dBase=gap/base*100;
+  const win=P.slice(-Math.min(p.w,N));
+  const below=win.filter(x=>x<cur).length;
+  const pct=Math.max(4,Math.min(96,Math.round(below/win.length*100)));
+  const mean=P.reduce((a,b)=>a+b,0)/N;
+  const sd=Math.sqrt(P.reduce((a,b)=>a+(b-mean)**2,0)/N), cv=sd/mean;
+  const slope=(cur-P[N-Math.min(5,N)])/P[N-Math.min(5,N)]*100;
+  const rising=slope>1.2;
+  const minamt=minAmount(base);
+  const isLowest=cur<=allLow;
+  const cheap=(dBase>=p.fb)&&(gap>=minamt);
+  const inRank=pct<=p.pb;
+  const expensive=dBase<=-p.fw;
+  let tier;
+  if(isLowest) tier='LOWEST';
+  else if(cheap&&inRank) tier='BUY';
+  else if(expensive) tier='WAIT';
+  else tier='OK';
+  const flags=[];
+  if(tier==='BUY'&&rising) flags.push('오르는추세');
+  if(tier==='BUY'&&gap<minamt&&dBase>=p.fb) flags.push('금액하한미달');
+  if(tier==='BUY'&&Math.abs(dBase-p.fb)<0.5) flags.push('floor경계');
+  return {tier,N,cur,base,dBase:+dBase.toFixed(2),gap:Math.round(gap),minamt,pct,cv:+cv.toFixed(3),isLowest,cheap,inRank,rising,flags:flags.join(',')};
+}
+
+function getParams(){
+  return {fb:+document.getElementById('fb').value,fw:+document.getElementById('fw').value,
+    pb:+document.getElementById('pb').value,w:+document.getElementById('w').value,wm:+document.getElementById('wm').value};
+}
+
+function run(){
+  if(!rawData) return;
+  const p=getParams();
+  const rows=[];
+  for(const [model,prices] of rawData){ rows.push({model,...judge(prices,p)}); }
+  render(rows,p);
+}
+
+function render(rows,p){
+  const dist={LOWEST:0,BUY:0,OK:0,WAIT:0,HOLD:0};
+  rows.forEach(r=>dist[r.tier]++);
+  const total=rows.length;
+  const flagged=rows.filter(r=>r.flags).length;
+  const cvVals=rows.filter(r=>r.cv!=null&&r.tier!=='HOLD').map(r=>r.cv);
+  const cvMed=cvVals.length?median(cvVals).toFixed(3):'-';
+
+  let filtered=rows;
+  if(curTab==='flag') filtered=rows.filter(r=>r.flags);
+  else if(curTab!=='all') filtered=rows.filter(r=>r.tier===curTab);
+
+  const html=`
+    <div class="meta">
+      <div class="mcard"><div class="l">모델 수</div><div class="v">${total}</div></div>
+      <div class="mcard"><div class="l">BUY판정 비율</div><div class="v">${Math.round(dist.BUY/total*100)}%</div></div>
+      <div class="mcard"><div class="l">HOLD(미노출)</div><div class="v">${Math.round(dist.HOLD/total*100)}%</div></div>
+      <div class="mcard"><div class="l">CV 중앙값</div><div class="v">${cvMed}</div></div>
+      <div class="mcard"><div class="l">의심 플래그</div><div class="v" style="color:${flagged?'#C0392B':'var(--ink)'}">${flagged}</div></div>
+    </div>
+
+    <div class="sec">
+      <h3>판정 분포</h3>
+      <div class="dist-bars">
+        ${TIERS.map(t=>{
+          const c=dist[t],pctv=(c/total*100);
+          return `<div class="dbar"><span class="nm" style="color:${TCOLOR[t]==='#E4E3DC'?'#999':TCOLOR[t]}">${t}</span>
+            <div class="track"><div class="fill" style="width:${Math.max(pctv,3)}%;background:${TCOLOR[t]};color:${t==='HOLD'?'#777':'#fff'}">${c>0?c:''}</div></div>
+            <span class="cnt">${c}개 · ${Math.round(pctv)}%</span></div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="sec">
+      <h3>모델별 판정 <span style="font-weight:500;color:var(--muted);font-size:11px">· ${filtered.length}개 표시</span></h3>
+      <div class="tabs">
+        <div class="tab ${curTab==='all'?'on':''}" data-t="all">전체</div>
+        ${TIERS.map(t=>`<div class="tab ${curTab===t?'on':''}" data-t="${t}">${t} ${dist[t]}</div>`).join('')}
+        <div class="tab ${curTab==='flag'?'on':''}" data-t="flag" style="${flagged?'':'opacity:.4'}">⚑ 의심 ${flagged}</div>
+      </div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th class="l">모델번호</th><th>관측일</th><th>현재가</th><th>중앙값</th><th>중앙값대비</th>
+            <th>하락액</th><th>금액하한</th><th>하위%</th><th>CV</th><th>판정</th><th>의심</th>
+          </tr></thead>
+          <tbody>
+          ${filtered.map(r=>{
+            if(r.tier==='HOLD') return `<tr><td class="l">${r.model}</td><td>${r.N}</td><td>${fmt(r.cur)}</td><td colspan="6" style="color:var(--muted)">데이터 부족 (관측 ${r.N}일 &lt; ${p.wm}일)</td><td><span class="badge" style="background:var(--hold-bg);color:var(--hold-tx)">HOLD</span></td><td></td></tr>`;
+            return `<tr>
+              <td class="l">${r.model}</td><td>${r.N}</td><td>${fmt(r.cur)}</td><td>${fmt(r.base)}</td>
+              <td style="color:${r.dBase>0?'#639922':(r.dBase<0?'#C0392B':'inherit')}">${r.dBase}%</td>
+              <td>${fmt(r.gap)}</td><td style="color:var(--muted)">${fmt(r.minamt)}</td>
+              <td>${r.pct}%</td><td>${r.cv}</td>
+              <td><span class="badge" style="background:var(--${r.tier.toLowerCase()}-bg);color:var(--${r.tier.toLowerCase()}-tx)">${r.tier}</span></td>
+              <td>${r.flags?`<span class="flag">${r.flags}</span>`:''}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="hint">※ 중앙값대비 +는 중앙값보다 쌈, −는 비쌈 · 하락액=중앙값−현재가 · 하위%=분포 내 순위(작을수록 저가) · CV=변동계수(클수록 변동 큼)</div>
+    </div>
+  `;
+  document.getElementById('result').innerHTML=html;
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{curTab=t.dataset.t;run();}));
+}
+function fmt(n){return n==null?'-':n.toLocaleString();}
+
+// 파라미터 이벤트
+function bindParams(){
+  const map={fb:'v_fb',fw:'v_fw',pb:'v_pb',w:'v_w',wm:'v_wm'};
+  const suf={fb:'%',fw:'%',pb:'%',w:'일',wm:'일'};
+  Object.keys(map).forEach(id=>{
+    const el=document.getElementById(id);
+    el.addEventListener('input',()=>{
+      let v=el.value; if(id==='fw'||id==='fb') v=(+v).toFixed(1);
+      document.getElementById(map[id]).textContent=v+suf[id];
+      run();
+    });
+  });
+  document.getElementById('reset').addEventListener('click',()=>{
+    Object.entries(DEFAULTS).forEach(([k,v])=>{document.getElementById(k).value=v;});
+    amtValues=AMT.map(a=>a[1]); buildAmtRows();
+    document.getElementById('v_fb').textContent='2.5%';document.getElementById('v_fw').textContent='4.0%';
+    document.getElementById('v_pb').textContent='30%';document.getElementById('v_w').textContent='90일';document.getElementById('v_wm').textContent='60일';
+    run();
+  });
+}
+
+// 파일 처리
+function handleFile(file){
+  document.getElementById('fname').textContent='📄 '+file.name;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const wb=XLSX.read(e.target.result,{type:'binary'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const arr=XLSX.utils.sheet_to_json(ws,{header:1});
+    // 헤더 스킵, [모델번호, 일자, 최저가]
+    const grouped=new Map();
+    for(let i=1;i<arr.length;i++){
+      const row=arr[i]; if(!row||row.length<3) continue;
+      const model=String(row[0]).trim(), price=+row[2];
+      if(!model||isNaN(price)) continue;
+      if(!grouped.has(model)) grouped.set(model,[]);
+      grouped.get(model).push({d:row[1],p:price});
+    }
+    // 일자 정렬 후 가격 배열
+    rawData=[];
+    for(const [model,items] of grouped){
+      items.sort((a,b)=>String(a.d)<String(b.d)?-1:1);
+      rawData.push([model,items.map(x=>x.p)]);
+    }
+    document.getElementById('paramPanel').style.display='block';
+    run();
+  };
+  reader.readAsBinaryString(file);
+}
+
+// 엑셀 양식 다운로드 (SheetJS로 즉석 생성)
+document.getElementById('tmplBtn').addEventListener('click',e=>{
+  e.stopPropagation();
+  const rows=[['모델번호','일자','일자별최저가'],['118440457','2026-04-16',467150]];
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:14},{wch:14},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'카테고리명');
+  XLSX.writeFile(wb,'구매타이밍판정_시뮬레이터_양식.xlsx');
+});
+
+const drop=document.getElementById('drop'),fileInput=document.getElementById('file');
+drop.addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.style.borderColor='var(--key)';});
+drop.addEventListener('dragleave',()=>drop.style.borderColor='var(--key-line)');
+drop.addEventListener('drop',e=>{e.preventDefault();drop.style.borderColor='var(--key-line)';if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
+
+buildAmtRows();
+bindParams();
+</script>
+</body>
+</html>

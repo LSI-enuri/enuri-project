@@ -123,8 +123,8 @@ h2{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-sp
     <div class="pline prob"><span class="k">관찰</span><span class="v"><b>LOWEST·BUY 같은 긍정 판정을 더 끌어낼 여지가 있었음.</b> '중앙값보다 4% 이상 싸야 한다'는 floor에 근소하게 못 미쳐 OK로 분류되는 모델들이 있어, floor을 완화해보기로 함.</span></div>
   </div>
   <div class="phase">
-    <div class="head"><span class="badge b2">2차</span><span class="ptitle">floor 완화 + 저가 안전장치</span></div>
-    <div class="pline fix"><span class="k">개선</span><span class="v">BUY floor을 <b>4%&rarr;2.5%로 완화</b>하고, 저가 상품의 푼돈 하락을 거르는 <b>가격대별 최소 금액하한</b>을 추가.</span></div>
+    <div class="head"><span class="badge b2">2차</span><span class="ptitle">floor 완화 + 금액하한 보강</span></div>
+    <div class="pline fix"><span class="k">개선</span><span class="v">BUY floor을 <b>4%&rarr;2.5%로 완화</b>하고, floor 완화로 인해 <b>비율은 넘겼으나 하락폭이 어중간한 BUY 후보</b>가 생기는 것을 막기 위해 <b>가격대별 최소 금액하한</b>을 함께 추가.</span></div>
     <div class="pline prob"><span class="k">부작용</span><span class="v">BUY와 WAIT의 floor이 하나로 묶여 있어, BUY를 넓히자 WAIT도 함께 늘어남.</span></div>
   </div>
   <div class="phase">
@@ -155,7 +155,7 @@ h2{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-sp
       </div>
       <div class="spec-item changed">
         <div class="sk">금액 하한 <span class="tag-new">1차 대비 신규</span></div>
-        <div class="sv">가격대별로 최소 절약액을 다르게 적용(예: 10~30만원대는 5,000원). <b>저가 상품에서 몇백 원 하락이 BUY로 잡히는 것을 방지.</b> (1차에는 없던 안전장치)</div>
+        <div class="sv">가격대별로 최소 하락액을 다르게 적용(예: 10~30만원대는 5,000원, 100만원대는 30,000원). floor(비율)를 완화한 뒤 <b>비율은 넘겼으나 하락폭이 어중간한 BUY 후보를 절대 금액으로 보강 차단</b>. 금액하한이 floor보다 높은 중·고가 구간에서 주로 작동. (1차에는 없던 조건)</div>
       </div>
       <div class="spec-item">
         <div class="sk">관측 기간</div>
@@ -205,12 +205,12 @@ h2{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-sp
     <thead><tr>
       <th class="l">케이스</th>
       <th>판정 정상 산출</th>
-      <th>금액하한 작동<br><span style="font-weight:400">(저가 상품)</span></th>
+      <th>금액하한 작동<br><span style="font-weight:400">(BUY 후보 중 하락액 부족분 차단)</span></th>
       <th>CV(변동성)</th>
     </tr></thead>
     <tbody>
-      <tr class="pe"><td class="l"><span class="ptag tpe">에누리</span>청소기</td><td class="ck">&#10003;</td><td class="dash">해당없음(고가)</td><td>0.044</td></tr>
-      <tr class="pe"><td class="l"><span class="ptag tpe">에누리</span>세탁기</td><td class="ck">&#10003;</td><td class="dash">해당없음(고가)</td><td>0.038</td></tr>
+      <tr class="pe"><td class="l"><span class="ptag tpe">에누리</span>청소기</td><td class="ck">&#10003;</td><td class="ck">&#10003; 2건</td><td>0.044</td></tr>
+      <tr class="pe"><td class="l"><span class="ptag tpe">에누리</span>세탁기</td><td class="ck">&#10003;</td><td class="dash">0건</td><td>0.038</td></tr>
       <tr class="pe"><td class="l"><span class="ptag tpe">에누리</span>건강기능식품</td><td class="ck">&#10003;</td><td class="ck">&#10003; 1건</td><td>0.037</td></tr>
       <tr class="pe"><td class="l"><span class="ptag tpe">에누리</span>스포츠화</td><td class="ck">&#10003;</td><td class="ck">&#10003; 2건</td><td>0.085</td></tr>
       <tr class="pd"><td class="l"><span class="ptag tpd">다나와</span>청소기</td><td class="ck">&#10003;</td><td class="ck">&#10003; 1건</td><td>0.049</td></tr>
@@ -219,7 +219,7 @@ h2{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-sp
       <tr class="pd"><td class="l"><span class="ptag tpd">다나와</span>스포츠화</td><td class="ck">&#10003;</td><td class="ck">&#10003; 3건</td><td>0.046</td></tr>
     </tbody>
   </table>
-  <div class="allpass">&#9654; 8개 케이스 전부 정상 작동 · 금액하한은 저가 6개 케이스에서 실작동, 고가 2개는 조건 미해당</div>
+  <div class="allpass">&#9654; 8개 케이스 전부 정상 작동 · 금액하한은 8개 중 7개 케이스에서 실작동(총 13건 차단), floor를 넘겼으나 하락폭이 어중간한 BUY 후보를 중·고가 구간에서 보강 차단</div>
 </section>
 
 <div class="concl">
@@ -234,7 +234,7 @@ h2{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:5px;letter-sp
       <div class="vh">&#9989; 확인된 점</div>
       <div class="it"><b>상태값 분포 산출</b> — 8개 케이스에서 각 상태 비율이 상품 특성에 맞게 나옴.</div>
       <div class="it"><b>플랫폼 무관성</b> — 데이터가 다른 두 플랫폼에서 동일 로직 작동.</div>
-      <div class="it"><b>저가 안전장치</b> — 금액하한이 저가 6개 케이스에서 작동, 고가는 대기.</div>
+      <div class="it"><b>금액하한 보강</b> — floor(비율)를 완화한 뒤 하락폭이 어중간한 BUY 후보를 절대 금액으로 차단. 8개 중 7개 케이스에서 작동(총 13건), 중·고가 구간에서 주로 기능.</div>
     </div>
     <div class="vcard vwn">
       <div class="vh">&#9888;&#65039; 남은 점 (파일럿에서)</div>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>에누리 Vip(원부상세) · 우측 패널 — 구매 타이밍 판정 + 가격 알림 (PC 프로토타입)</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  /* 에누리 디자인 토큰 (Figma: 에누리_데스크탑 / 03 Vip) */
+  --key:#1a70dd;         /* Color/brand/primary */
+  --key-d:#155bb5;
+  --key2:#3588f3;        /* Color/brand/secondary */
+  --key-bg:#eef4fd;      /* 연한 브랜드 배경 */
+  --key-line:#cfe0f7;
+  --red:#ee2c40;         /* 최저가 가격 레드 */
+  --green:#1aaa30;       /* Color/brand/green */
+  --teal:#01c0c7;        /* Semantic_ranking */
+  --yellow:#ffb313;      /* Color/brand/yellow */
+  --ink:#222222;         /* text/primary */
+  --body:#444444;        /* text/secondary */
+  --sub:#666666;         /* text/tertiary */
+  --muted:#888888;       /* text/sub */
+  --light:#aaaaaa;
+  --line:#eeeeee;        /* border/light */
+  --line2:#e3e3e6;
+  --bg:#f4f4f4;          /* background/gray */
+  --soft:#f8f9fb;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f0f1f3;color:var(--ink);
+  font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  line-height:1.4;letter-spacing:-0.3px;padding:20px 16px 90px;-webkit-font-smoothing:antialiased}
+button,input{font-family:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--key);outline-offset:2px;border-radius:4px}
+.shell{max-width:1340px;margin:0 auto}
+/* ── 프리뷰 컨트롤 (개발용, 실제 화면 아님) ── */
+.head h1{font-size:18px;font-weight:800;letter-spacing:-0.02em}
+.head .ver{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;color:var(--key-d);background:var(--key-bg);border:1px solid var(--key-line);border-radius:5px;padding:2px 8px;margin-left:8px;vertical-align:2px}
+.head .desc{font-size:12px;color:var(--sub);margin-top:7px}
+.head .desc b{color:var(--ink)}
+.ctrls{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin:14px 0 18px;padding:12px 15px;background:#fff;border:1px solid var(--line2);border-radius:10px}
+.grp{display:flex;flex-direction:column;gap:6px}
+.grp .lb{font-size:10px;font-weight:800;color:#9a9aa6;letter-spacing:.02em}
+.grp .row{display:flex;gap:5px;flex-wrap:wrap}
+.chip{padding:6px 11px;border-radius:16px;border:1.5px solid #dddde5;background:#fff;font-size:11.5px;font-weight:700;color:#7a7a86}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip.dash{border-style:dashed}
+.sep{width:1px;align-self:stretch;background:var(--line)}
+.frame-lb{font-size:12px;font-weight:800;color:var(--muted);margin:20px 0 8px;display:flex;align-items:center;gap:8px}
+.frame-lb i{flex:1;height:1px;background:#dfdfe6;font-style:normal}
+/* ── 에누리 PDP 프레임 ── */
+.pdp{background:#fff;border:1px solid var(--line2);border-radius:6px}
+.gnb{display:flex;align-items:center;gap:10px;padding:12px 24px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--sub);border-radius:6px 6px 0 0}
+.gnb .logo{font-size:22px;font-weight:900;color:var(--key);letter-spacing:-.04em;margin-right:6px}
+.gnb .crumbs{color:var(--light)}
+.gnb .spacer{flex:1}
+.gnb .search{border:1.5px solid var(--key);border-radius:5px;padding:6px 12px;color:#c4c4ce;font-size:12px;min-width:230px;display:flex;justify-content:space-between}
+.title-row{padding:18px 24px 14px;border-bottom:1px solid var(--line)}
+.p-title{font-size:22px;font-weight:800;letter-spacing:-.01em}
+.p-summary{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-top:11px}
+.spec-lines{min-width:0}
+.spec-line{font-size:12px;color:var(--muted);line-height:1.75}
+.spec-line i{font-style:normal;color:#dcdce0;margin:0 8px}
+.spec-more{font-size:11.5px;color:var(--muted);font-weight:600;background:none;border:none;white-space:nowrap;align-self:flex-end;padding-bottom:1px}
+/* 3-column: 갤러리 / 본문 / 우측 — 컬럼 사이 구분선(Figma) */
+.pbody{display:grid;grid-template-columns:328px minmax(0,1fr) 361px;gap:0;padding:22px 24px 28px}
+.col.gallery{padding-right:28px;border-right:1px solid var(--line)}
+.col.main{padding:0 28px;border-right:1px solid var(--line)}
+.col.side{padding-left:29px}
+/* ── Col1 갤러리 ── */
+.gal-main{position:relative;background:var(--soft);border:1px solid var(--line);border-radius:8px;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;color:#c2c4cc;font-size:12px;overflow:hidden}
+.gal-badge{position:absolute;left:12px;top:12px;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:4px}
+.gal-cap{position:absolute;left:12px;bottom:12px;font-size:11px;color:var(--sub);background:rgba(255,255,255,.9);padding:3px 8px;border-radius:4px}
+.gal-thumbs{display:flex;align-items:center;gap:6px;margin-top:10px}
+.gal-thumbs .nav{width:18px;height:18px;flex-shrink:0;color:#bcbcc6;font-size:13px}
+.gal-thumbs i{width:52px;height:52px;border-radius:6px;background:var(--soft);border:1px solid var(--line);display:block}
+.gal-thumbs i:first-of-type{border-color:var(--key);border-width:1.5px}
+.ewg{margin-top:16px;border:1px solid var(--line);border-radius:8px;padding:12px 13px}
+.ewg-h{display:flex;align-items:center;font-size:12.5px;font-weight:700;color:var(--ink)}
+.ewg-h .q{width:14px;height:14px;border-radius:50%;background:#e7e7ee;color:#9a9aa6;font-size:9px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-left:5px}
+.ewg-h .more{margin-left:auto;font-size:11px;color:var(--muted);font-weight:600}
+.ewg-grade{display:flex;gap:6px;margin-top:11px}
+.ewg-grade .g{flex:1;text-align:center}
+.ewg-grade .n{font-size:15px;font-weight:800;color:#fff;border-radius:6px;padding:5px 0}
+.ewg-grade .l{font-size:10px;color:var(--muted);margin-top:5px}
+.g1 .n{background:#1aaa30}.g2 .n{background:#ffb313}.g3 .n{background:#ee5a3a}.g4 .n{background:#b9bac3}
+.ewg-dots{display:flex;gap:4px;justify-content:center;margin-top:11px}
+.ewg-dots i{width:5px;height:5px;border-radius:50%;background:#dcdce4}
+.ewg-dots i:first-child{background:var(--key)}
+/* ── Col2 본문 ── */
+.price-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.price-left{min-width:0}
+.price-main{display:flex;align-items:center;gap:8px;color:var(--red);white-space:nowrap}
+.price-main .lbl{font-size:20px;font-weight:600;line-height:26px}
+.price-main .num{font-size:26px;font-weight:800;line-height:30px;letter-spacing:-0.13px}
+.price-main .won{font-size:24px;font-weight:800;line-height:26px}
+.price-main .per{font-size:13px;color:var(--light);font-weight:400;align-self:flex-end;margin-bottom:3px}
+.price-sub{font-size:13px;color:var(--sub);margin-top:6px}
+.buy-btn{background:var(--key);border:1px solid rgba(0,0,0,.02);color:#fff;border-radius:4px;height:54px;width:160px;flex-shrink:0;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.promo{display:flex;align-items:center;gap:10px;margin-top:16px;background:linear-gradient(90deg,#eef4fd,#f4f8ff);border:1px solid var(--key-line);border-radius:8px;padding:11px 14px}
+.promo .pi{width:26px;height:26px;border-radius:6px;background:var(--key);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.promo .pt{font-size:12.5px;color:var(--body);font-weight:600;line-height:1.5}
+.promo .pt b{color:var(--ink)}
+.promo .pp{margin-left:auto;font-size:15px;font-weight:800;color:var(--key);white-space:nowrap}
+.epoint{display:flex;align-items:center;gap:8px;margin-top:9px;background:var(--key-bg);border-radius:6px;padding:9px 13px;font-size:12px;color:var(--body)}
+.epoint b{color:var(--key);font-weight:800}
+.epoint .info{margin-left:auto;font-size:11px;color:var(--muted);font-weight:600}
+.store-row{display:flex;align-items:center;gap:9px;padding:11px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.store-row .lg{font-weight:800;color:var(--ink);font-size:12.5px}
+.badge-off{font-size:10px;font-weight:700;color:var(--key);background:var(--key-bg);border-radius:3px;padding:2px 5px}
+.badge-hot{font-size:10px;font-weight:700;color:#fff;background:var(--red);border-radius:3px;padding:2px 5px}
+.store-row .pr{margin-left:auto;font-weight:800;color:var(--ink)}
+.store-row .sh{color:var(--muted);font-size:11px;font-weight:600;width:56px;text-align:right}
+.store-row .go{border:1px solid var(--line2);border-radius:4px;padding:6px 10px;font-size:11.5px;font-weight:700;color:var(--sub);background:#fff}
+.opt-wrap{margin-top:18px}
+.opt-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-bottom:8px}
+.opt-h .all{margin-left:auto;font-size:11.5px;color:var(--key);font-weight:600}
+.opt-tabs{display:flex;gap:6px}
+.opt-tab{flex:1;border:1px solid var(--line2);border-radius:5px;padding:9px 0;text-align:center;font-size:12.5px;font-weight:700;color:var(--sub);background:#fff}
+.opt-tab.on{border-color:var(--key);color:var(--key);background:var(--key-bg)}
+.mall-h{display:flex;align-items:center;justify-content:space-between;margin:22px 0 4px}
+.mall-h .t{font-size:15px;font-weight:800}
+.mall-tgls{display:flex;gap:14px}
+.tgl{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--muted);background:none;border:none;padding:2px 0}
+.tgl .track{width:34px;height:18px;border-radius:10px;background:#dcdce4;position:relative;transition:.2s;flex-shrink:0}
+.tgl .track i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.2s}
+.tgl.on .track{background:var(--key)}
+.tgl.on .track i{left:18px}
+.tgl.on{color:var(--key-d)}
+.mall-row{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.mall-row .lg{width:96px;font-weight:800;color:var(--ink);font-size:12px}
+.mall-row .best{font-size:10px;color:var(--red);font-weight:800;margin-right:2px}
+.mall-row .pr{font-weight:800;color:var(--ink)}
+.mall-row .note{margin-left:auto;color:var(--muted);font-size:11px;font-weight:600}
+.mall-row .go{border:1px solid var(--line2);border-radius:4px;padding:6px 10px;font-size:11.5px;font-weight:700;color:var(--sub);background:#fff}
+.cashback{margin-top:12px;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:10px 13px;font-size:12px;color:var(--body)}
+.cashback b{color:var(--key);font-weight:800}
+/* ══════════ Col3 우측 패널 (플러시 섹션, 좌측 구분선으로 구획) ══════════ */
+.side{display:flex;flex-direction:column}
+.rev-sec{padding:2px 0 20px}
+/* 상품리뷰 (유지) */
+.rev-head{display:flex;align-items:center;gap:4px}
+.rev-t{font-size:15px;font-weight:800}
+.rev-star{color:var(--yellow);font-size:15px;margin-left:2px}
+.rev-score{font-size:15px;font-weight:800}
+.rev-cnt{font-size:12px;color:var(--muted);font-weight:600;margin-left:1px}
+.rev-head .more{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:600}
+.rev-tabs{display:flex;border:1px solid var(--line2);border-radius:6px;padding:3px;margin-top:12px;background:var(--soft)}
+.rt{flex:1;border:none;background:none;border-radius:4px;padding:7px 0;font-size:12.5px;font-weight:700;color:var(--muted)}
+.rt.on{background:#fff;color:var(--key);border:1px solid var(--key-line);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.rev-sum{font-size:12.5px;color:var(--body);line-height:1.65;margin-top:13px}
+.rev-sum b{color:var(--key);font-weight:600}
+.rev-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.rev-chips span{font-size:11.5px;font-weight:600;color:var(--key-d);background:var(--key-bg);border-radius:14px;padding:5px 11px}
+/* ── AI 모듈 (플러시) ── */
+.mod{padding:18px 0 0;border-top:1px solid var(--line)}
+.mod-head{display:flex;align-items:center;gap:7px;padding:0 0 10px}
+.ai-mark{width:21px;height:21px;border-radius:6px;background:linear-gradient(135deg,#1a70dd,#3588f3);color:#fff;font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.mod-title{font-size:14.5px;font-weight:800}
+.basis-tx{margin-left:auto;font-size:10.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.sb{padding:11px 0 12px}
+.sb + .sb{border-top:1px solid var(--line)}
+.blk-h{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.blk-h .t{font-size:12.5px;font-weight:800}
+.blk-h .ic{flex-shrink:0;display:block}
+/* 판정 배지 */
+.v-badge{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:6px}
+.v-badge.LOWEST{background:var(--key-bg);color:var(--key-d)}
+.v-badge.BUY{background:#e8f6ea;color:#158a28}
+.v-badge.OK{background:#f4f4f4;color:var(--ink)}
+.v-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:currentColor}
+.v-main{font-size:14px;font-weight:800}
+.verdict{position:relative}
+.vg{padding:10px 2px 0}
+.vg-row{display:flex;align-items:center;gap:8px}
+.vg-end{font-size:10px;font-weight:700;flex-shrink:0}
+.vg-end.c{color:var(--key)}.vg-end.p{color:var(--red)}
+.vg-bar{position:relative;flex:1;height:6px;border-radius:4px;background:linear-gradient(90deg,#1a70dd 0%,#8fb6e8 42%,#e6b7bd 66%,#ee2c40 100%)}
+.vg-h{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--key);box-shadow:0 1px 3px rgba(0,0,0,.22);transform:translate(-50%,-50%);transition:left .35s}
+.vg-cap{font-size:11px;color:var(--sub);margin-top:8px;line-height:1.45;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.vg-cap b{color:var(--ink);font-weight:700}
+.cap-q{width:15px;height:15px;flex-shrink:0;border-radius:50%;border:none;background:#e7e7ee;color:var(--muted);font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1}
+.cap-q:hover{background:var(--key-bg);color:var(--key-d)}
+.cushion{margin-top:7px;font-size:10.5px;color:var(--light);line-height:1.45}
+.pop{position:absolute;left:0;right:0;top:100%;margin-top:6px;background:#fff;border:1px solid var(--line2);border-radius:10px;box-shadow:0 10px 32px rgba(0,0,0,.16);padding:12px;z-index:30;display:none}
+.pop.open{display:block}
+.pop-h{display:flex;align-items:center;margin-bottom:5px}
+.pop-h .t{font-size:12.5px;font-weight:800;flex:1}
+.pop-h .x{font-size:15px;color:#aaa;background:none;border:none}
+.pop-sub{font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.5}
+.crit-row{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.crit-row:last-of-type{border-bottom:none}
+.crit-row.active{margin:0 -6px;padding:6px;border-radius:6px;border-bottom:none}
+.crit-row.active.LOWEST{background:var(--key-bg)}
+.crit-row.active.BUY{background:#e8f6ea}
+.crit-row.active.OK{background:#f4f4f4}
+.crit-badge{font-size:9.5px;font-weight:700;color:#fff;border-radius:4px;padding:2px 7px;white-space:nowrap;flex-shrink:0}
+.cb-LOWEST{background:var(--key)}.cb-BUY{background:var(--green)}.cb-OK{background:#888}
+.crit-txt{font-size:10.5px;color:var(--sub);line-height:1.4}
+.crit-now{font-size:9.5px;font-weight:800;margin-left:auto;flex-shrink:0;color:var(--sub)}
+/* 그래프 */
+.period-tabs{display:flex;gap:5px;margin:0 0 8px}
+.period-tab{flex:1;font-size:10.5px;font-weight:700;padding:5px 2px;border-radius:14px;border:1px solid var(--line2);background:#fff;color:var(--muted);text-align:center}
+.period-tab.on{background:var(--key-bg);border-color:var(--key-line);color:var(--key-d)}
+.period-tab:disabled{opacity:.4;cursor:not-allowed}
+.chart-area{position:relative;min-width:0;touch-action:none}
+.chart-area svg{display:block;width:100%;height:104px}
+.chart-tip{position:absolute;transform:translate(-50%,-100%);pointer-events:none;background:var(--ink);color:#fff;font-size:10px;font-weight:700;padding:5px 8px;border-radius:6px;white-space:nowrap;opacity:0;transition:opacity .1s;z-index:6}
+.chart-tip:after{content:'';position:absolute;left:50%;top:100%;transform:translateX(-50%);border:4px solid transparent;border-top-color:var(--ink)}
+.chart-tip .d{font-weight:400;opacity:.72;margin-right:4px}
+.chart-tip .al{color:#7ff0f5;font-weight:700}
+.x-labels{display:flex;justify-content:space-between;font-size:9px;color:#b9bac3;margin-top:2px}
+.x-labels .now{color:var(--sub);font-weight:700}
+.legend-mint{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--teal);font-weight:700}
+.legend-mint i{width:6px;height:6px;border-radius:50%;background:var(--teal);display:block}
+.empty{text-align:center;padding:16px 8px 14px}
+.empty .ic{width:30px;height:30px;border-radius:50%;border:1.8px solid #dcdce4;color:#b0b0ba;font-size:17px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px}
+.empty .t{font-size:12px;font-weight:700;color:var(--sub);line-height:1.45}
+/* 알림 */
+.al-desc{font-size:11.5px;color:var(--sub);line-height:1.5;margin-bottom:8px}
+.al-desc b{color:var(--ink)}
+.al-saved{margin-left:auto;font-size:10.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.al-stack{display:flex;flex-direction:column;gap:6px}
+.al-btn{width:100%;height:42px;border-radius:4px;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px}
+.al-btn.pri{background:var(--key);color:#fff;border:1px solid var(--key)}
+.al-btn.pri.on{background:var(--key-bg);color:var(--key-d);border-color:var(--key-line)}
+.al-btn.sec{background:#fff;color:var(--sub);border:1px solid var(--line2);font-weight:700;font-size:12.5px;justify-content:flex-start;padding:0 13px}
+.al-btn.sec .lb{flex:1;text-align:center}
+.al-btn.sec.set{border-color:var(--key-line);color:var(--key-d);background:var(--key-bg)}
+.chev{margin-left:auto;transition:transform .18s;flex-shrink:0}
+.chev.up{transform:rotate(180deg)}
+.goal-wrap{position:relative}
+/* 목표가 = 버튼과 일체형으로 바로 아래에 붙어 열리는 레이어(오버레이) */
+.al-btn.sec.open{border:1.5px solid var(--key-line);border-bottom:none;border-bottom-left-radius:0;border-bottom-right-radius:0;color:var(--key-d);background:#fff}
+.al-goal{position:absolute;left:0;right:0;top:100%;z-index:40;background:#fff;border:1.5px solid var(--key-line);border-top:none;border-radius:0 0 4px 4px;box-shadow:0 16px 30px rgba(20,40,70,.13);padding:11px 12px 13px}
+.al-goal .done-note{font-size:10.5px;color:#158a28;background:#e8f6ea;border-radius:6px;padding:6px 8px;margin-bottom:8px;line-height:1.45}
+.al-row{display:flex;gap:6px}
+.al-input{flex:1;height:38px;padding:0 11px;border-radius:4px;border:1px solid #dde7f0;font-size:13px;font-weight:700;background:#fff;min-width:0;text-align:right;color:var(--ink)}
+.al-input.err{border-color:var(--red);background:#fff7f7}
+.al-set{height:38px;padding:0 12px;border-radius:4px;background:var(--key);color:#fff;font-size:12px;font-weight:700;border:none;white-space:nowrap}
+.al-set.off{background:#fff;color:var(--muted);border:1px solid var(--line2)}
+.al-err{margin-top:6px;font-size:10.5px;color:var(--red);line-height:1.4}
+.al-presets{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.al-preset{font-size:10.5px;font-weight:600;padding:4px 10px;border-radius:14px;border:1px solid var(--line2);background:#fff;color:var(--sub)}
+.al-preset.on{border-color:var(--key-line);background:var(--key-bg);color:var(--key-d);font-weight:700}
+.foot{font-size:11px;color:var(--muted);margin-top:26px;padding-top:16px;border-top:1px solid #dfdfe6;line-height:1.7}
+.toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,14px);background:var(--ink);color:#fff;font-size:12.5px;font-weight:600;padding:11px 18px;border-radius:22px;opacity:0;transition:.22s;pointer-events:none;z-index:60;display:flex;align-items:center;gap:10px}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast .act{font-weight:800;color:#8fd0ff;text-decoration:underline;text-underline-offset:2px}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+    <h1>에누리 Vip(원부상세) · 우측 패널 프로토타입<span class="ver">PC</span></h1>
+    <div class="desc">기존 우측 패널의 <b>상품리뷰</b>는 유지하고, 그 아래 <b>최저가 추이 · 함께 찾아본 상품</b>을 <b>구매 타이밍 판정 + 가격 알림</b> 모듈로 교체했습니다. 좌측/본문 및 간격은 Figma <b>03 Vip</b> 기준 유지. 아래 컨트롤은 판정·알림 상태 미리보기용입니다(실제 화면 아님).</div>
+  </div>
+  <div class="ctrls">
+    <div class="grp">
+      <span class="lb">판정 상태</span>
+      <div class="row" id="caseRow"></div>
+    </div>
+    <div class="sep"></div>
+    <div class="grp">
+      <span class="lb">알림 상태</span>
+      <div class="row">
+        <button class="chip" data-al="off" onclick="setAl('off')">모두 OFF</button>
+        <button class="chip" data-al="on" onclick="setAl('on')">기본 ON</button>
+        <button class="chip" data-al="goal" onclick="setAl('goal')">목표가 펼침</button>
+        <button class="chip" data-al="set" onclick="setAl('set')">목표가 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame-lb">PC · 컨텐츠 1280px<i></i></div>
+  <div class="pdp">
+    <div class="gnb">
+      <span class="logo">에누리</span><span class="crumbs">건강식품 &gt; 홍삼 &gt; 홍삼정</span>
+      <span class="spacer"></span>
+    </div>
+    <div class="title-row">
+      <div class="p-title">천지인 홍삼정 골드 8.0 240g (모델명 예시)</div>
+      <div class="p-summary">
+        <div class="spec-lines">
+          <p class="spec-line">제조사: 천지인<i>|</i>브랜드: 천지인<i>|</i>품목: 홍삼액<i>|</i>형태: 액상형<i>|</i>섭취방법: 1일 2회, 1.5g<i>|</i>등록일: 2023.10<i>|</i>년수: 6년근<i>|</i>진세노사이드 1일 함량: 24mg</p>
+          <p class="spec-line">섭취대상: 성인남녀<i>|</i>총 복용기간: 80일분<i>|</i>년수: 6년근<i>|</i>효능: 면역력, 항산화, 혈행개선, 뇌건강</p>
+        </div>
+        <button class="spec-more">더보기 ›</button>
+      </div>
+    </div>
+    <div class="pbody">
+      <!-- Col1 갤러리 -->
+      <div class="col gallery">
+        <div class="gal-main">
+          <span class="gal-badge">30일 내 최저가</span>
+          상품 이미지
+          <span class="gal-cap">최근 30일 기준, 배송비 포함 최저가!</span>
+        </div>
+        <div class="gal-thumbs"><span class="nav">‹</span><i></i><i></i><i></i><i></i><span class="nav">›</span></div>
+      </div>
+
+      <!-- Col2 본문 -->
+      <div class="col main">
+        <div class="price-row">
+          <div class="price-left">
+            <div class="price-main">
+              <span class="lbl">최저가</span>
+              <span class="num" id="pcNum"></span><span class="won">원</span>
+              <span class="per">100g당 1,000원</span>
+            </div>
+            <div class="price-sub" id="pcShipNote"></div>
+          </div>
+          <button class="buy-btn">최저가 구매하기</button>
+        </div>
+        <div class="epoint">enuri <b>6,000P 적립</b> · 에누리 접속 앱에서 구매 시<span class="info">적립안내 ⓘ</span></div>
+        <div style="margin-top:6px">
+          <div class="store-row"><span class="lg">삼성물산몰</span><span class="badge-off">공식</span><span class="pr">64,000원</span><span class="sh">무료배송</span><button class="go">구매하기</button></div>
+        </div>
+        <div class="opt-wrap">
+          <div class="opt-h"><span>옵션: 1개</span><span class="all">14개 옵션 전체 보기 ›</span></div>
+          <div class="opt-tabs">
+            <div class="opt-tab on">1개</div><div class="opt-tab">2개</div><div class="opt-tab">3개</div><div class="opt-tab">4개</div>
+          </div>
+        </div>
+        <div class="mall-h">
+          <span class="t">쇼핑몰별 최저가</span>
+          <div class="mall-tgls">
+            <button class="tgl on" id="mallShip" onclick="toggleBasis()"><span class="track"><i></i></span><span id="mallShipTx">배송비 포함</span></button>
+            <button class="tgl"><span class="track"><i></i></span><span>카드 할인</span></button>
+          </div>
+        </div>
+        <div id="pcShops"></div>
+        <div class="cashback">enuri <b>66,000원</b> · 하이마트 애플페이 캐시백</div>
+      </div>
+
+      <!-- Col3 우측 패널 (구분선으로 분리된 컬럼 · 플러시 섹션) -->
+      <div class="col side">
+        <!-- 상품리뷰 (유지) -->
+        <div class="rev-sec">
+          <div class="rev-head"><span class="rev-t">상품리뷰</span><span class="rev-star">★</span><span class="rev-score">4.8</span><span class="rev-cnt">(242)</span><span class="more">더보기 ›</span></div>
+          <div class="rev-tabs"><button class="rt on">AI 리뷰요약</button><button class="rt">쇼핑몰 리뷰</button></div>
+          <p class="rev-sum">저는 이 제품을 재구매할 정도로 만족스러웠습니다. 이 제품은 면역력을 개선해주고 <b>진세노사이드</b> 함량이 높아 가성비도 좋고, 상품 만족도도 높아서 강력히 추천합니다. 이 제품을 통해 건강하고 활기찬 삶을 누리실 수 있을 거예요.</p>
+          <div class="rev-chips"><span>콜레스테롤 감소</span><span>다이어트 효과</span><span>포장 불량</span></div>
+        </div>
+        <!-- 구매 타이밍 판정 + 가격 알림 (신규) -->
+        <div class="mod" id="pcSide"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    에누리 Vip(원부상세) 우측 패널 프로토타입 · PC · 구매 타이밍 판정 + 가격 알림<br>
+    디자인 토큰은 Figma 「에누리_데스크탑 / 03 Vip」 기준(Pretendard · 브랜드 #1a70dd · 최저가 #ee2c40). 판정값은 예시이며 실제 로직을 태우지 않았습니다.
+  </div>
+</div>
+<div class="toast" id="toast"><span id="toastTx"></span><span class="act" id="toastAct" style="display:none">관심상품 보기</span></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString('ko-KR');
+const digits = s => (s || '').replace(/[^0-9]/g, '');
+let CASE = 'BUY', INC = true, PERIOD = 1;
+let AL_ON = false, G_OPEN = false, G_SET = false, G_DONE = false;
+let GOAL = null, DRAFT = '', ERR = '', PRESET = null;
+let SAVED_BASIS = null;
+const ALERT_DAYS = 14;
+const FEE = 5000;
+const TODAY = new Date(2026, 7, 3);
+const CASES = {
+  LOWEST:{ pct:{inc:0, exc:0},  days:90, cur:{inc:118000, exc:113000}, span:90, shape:[0,-1,1,-3,-2,-5,-4,-8,-7,-11,-13] },
+  BUY:   { pct:{inc:18,exc:24}, days:90, cur:{inc:129000, exc:124000}, span:90, shape:[0,2,-1,3,-2,1,-4,-3,-6,-5,-7] },
+  OK:    { pct:{inc:45,exc:52}, days:78, cur:{inc:136000, exc:131000}, span:78, shape:[0,-2,2,-1,1,-3,2,0,-1,1,0] },
+  WAIT:  { pct:{inc:82,exc:88}, days:90, cur:{inc:147000, exc:142000}, span:90, shape:[0,-3,-1,1,-1,3,2,6,5,8,10] },
+  HOLD:  { pct:null, days:null, cur:{inc:132000, exc:127000}, span:24, shape:[0,-1,2,1,3,2,4,3,2,4,3] },
+  수집전:{ pct:null, days:null, cur:{inc:132000, exc:127000}, span:0, shape:null },
+  일시품절:{ pct:null, days:null, cur:{inc:null, exc:null}, last:{inc:134000, exc:129000},
+           span:86, endGap:4, shape:[0,-2,1,-1,2,0,3,1,2,0,1] }
+};
+const HEADLINE = { LOWEST:'역대 최저가예요', BUY:'지금 가격이 좋은 편이에요', OK:'적정 가격이에요' };
+const CRITERIA = [
+  { k:'LOWEST', label:'역대 최저가예요',          desc:'관측 기간 중 지금이 가장 낮은 가격' },
+  { k:'BUY',    label:'지금 가격이 좋은 편이에요', desc:'평소 가격보다 충분히 낮은 구간' },
+  { k:'OK',     label:'적정 가격이에요',           desc:'평소 가격과 큰 차이 없음' }
+];
+const CUSHION = 'AI 분석 결과로 정확하지 않을 수 있어요.';
+const ICON_CHART = '<svg class="ic" width="14" height="14" viewBox="0 0 14 14" fill="none">' +
+  '<rect x="1" y="8" width="3" height="5" rx="1" fill="#1a70dd" opacity=".45"/>' +
+  '<rect x="5.5" y="4.5" width="3" height="8.5" rx="1" fill="#1a70dd" opacity=".72"/>' +
+  '<rect x="10" y="1.5" width="3" height="11.5" rx="1" fill="#1a70dd"/></svg>';
+const basisTx = inc => inc ? '배송비 포함' : '배송비 미포함';
+const cur = () => CASES[CASE].cur[INC ? 'inc' : 'exc'];
+const px  = () => cur() ?? CASES[CASE].last[INC ? 'inc' : 'exc'];
+const hasPrice = () => cur() !== null;
+const endGap = () => CASES[CASE].endGap || 0;
+const pct = () => CASES[CASE].pct ? CASES[CASE].pct[INC ? 'inc' : 'exc'] : null;
+const defGoal = () => Math.round(px() * .93 / 1000) * 1000;
+const alertLive = () => AL_ON || G_SET;
+const hasChart = () => CASES[CASE].span > 0;
+const hasVerdict = () => CASES[CASE].pct !== null;
+$('caseRow').innerHTML = Object.keys(CASES).map(k =>
+  '<button class="chip' + (CASES[k].pct === null ? ' dash' : '') + '" data-case="' + k + '" onclick="setCase(\'' + k + '\')">' + k + '</button>').join('');
+function setCase(k){ CASE = k; if (CASES[k].span < 60) PERIOD = 1; ERR = ''; render(); }
+function toggleBasis(){ INC = !INC; ERR = ''; render(); toast(basisTx(INC) + ' 기준으로 바꿨어요'); }
+function setPeriod(p){ PERIOD = p; render(); }
+function setAl(m){
+  ERR = '';
+  if (m === 'off'){ AL_ON = false; G_OPEN = false; G_SET = false; G_DONE = false; GOAL = null; DRAFT = ''; SAVED_BASIS = null; PRESET = null; }
+  if (m === 'on'){ AL_ON = true; if (SAVED_BASIS === null) SAVED_BASIS = INC; }
+  if (m === 'basicOff'){ AL_ON = false; if (!G_SET) SAVED_BASIS = null; }
+  if (m === 'goal'){ G_OPEN = true; PRESET = null; if (!DRAFT) DRAFT = String(G_SET ? GOAL : defGoal()); }
+  if (m === 'goalClose'){ G_OPEN = false; }
+  if (m === 'set'){ G_SET = true; G_OPEN = true; G_DONE = false; GOAL = GOAL || defGoal(); DRAFT = String(GOAL); PRESET = null; if (SAVED_BASIS === null) SAVED_BASIS = INC; }
+  if (m === 'setOff'){ G_SET = false; G_DONE = false; GOAL = null; DRAFT = ''; PRESET = null; if (!AL_ON) SAVED_BASIS = null; }
+  render();
+  if (m === 'on') toast('가격이 내려가면 알려드릴게요. 관심상품에도 담았어요.', true);
+  if (m === 'basicOff') toast('알림을 해제했어요');
+  if (m === 'set') toast('가격이 내려가면 알려드릴게요. 관심상품에도 담았어요.', true);
+  if (m === 'setOff') toast('알림을 해제했어요');
+  if (m === 'off') toast('알림을 해제했어요');
+}
+function onDraft(el){ DRAFT = digits(el.value); el.value = DRAFT ? fmt(+DRAFT) : ''; PRESET = null; document.querySelectorAll('.al-preset.on').forEach(function(x){ x.classList.remove('on'); }); }
+function saveGoal(){
+  const v = +digits(DRAFT);
+  if (!v) { ERR = '1원 이상 입력해 주세요.'; render(); return; }
+  if (v >= cur()) { ERR = '현재 최저가보다 낮은 금액을 입력해 주세요.'; render(); return; }
+  GOAL = v; ERR = ''; G_SET = true; G_DONE = false;
+  if (SAVED_BASIS === null) SAVED_BASIS = INC;
+  render(); toast('가격이 내려가면 알려드릴게요. 관심상품에도 담았어요.', true);
+}
+function preset(pctDown){
+  PRESET = pctDown;
+  DRAFT = String(Math.round(cur() * (1 - pctDown / 100) / 1000) * 1000);
+  ERR = ''; render();
+}
+let tT;
+function toast(m, act){
+  $('toastTx').textContent = m; $('toastAct').style.display = act ? '' : 'none';
+  $('toast').classList.add('on'); clearTimeout(tT); tT = setTimeout(() => $('toast').classList.remove('on'), 2400);
+}
+function togglePop(btn){
+  const p = btn.closest('.verdict').querySelector('.pop'), open = p.classList.contains('open');
+  document.querySelectorAll('.pop').forEach(x => x.classList.remove('open'));
+  if (!open) p.classList.add('open');
+}
+function closePop(btn){ btn.closest('.pop').classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (!e.target.closest('.pop') && !e.target.closest('.cap-q')) document.querySelectorAll('.pop').forEach(x => x.classList.remove('open'));
+});
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function series(){
+  const C = CASES[CASE], n = C.span, sh = C.shape, rnd = mulberry32(CASE.length * 977 + (INC ? 13 : 71));
+  const raw = [];
+  for (let i = 0; i < n; i++){
+    const t = i / (n - 1) * (sh.length - 1), i0 = Math.floor(t), f = t - i0;
+    raw.push(sh[i0] + ((sh[i0 + 1] ?? sh[i0]) - sh[i0]) * f + (rnd() * 2 - 1) * .5);
+  }
+  const last = raw[n - 1], c = px();
+  let P = raw.map(v => Math.round(c * (1 + (v - last) / 100) / 10) * 10);
+  if (CASE === 'LOWEST') P = P.map((v, i) => i === n - 1 ? c : Math.max(v, c + 200));
+  P[n - 1] = c;
+  return PERIOD === 1 ? P.slice(-Math.min(30, n)) : P;
+}
+const dLabel = back => { const d = new Date(TODAY); d.setDate(d.getDate() - back); return (d.getMonth() + 1) + '/' + String(d.getDate()).padStart(2, '0'); };
+function drawChart(area, P, gap){
+  const n = P.length, w = area.clientWidth || 288, h = 104;
+  const pl = 3, pr = 7, pt = 12, pb = 12;
+  const avg = P.reduce((a, b) => a + b, 0) / n;
+  const half = Math.max(Math.max(...P) - avg, avg - Math.min(...P)) * 1.18 || 1000;
+  const lo = avg - half, hi = avg + half;
+  const X = i => pl + i * (w - pl - pr) / (n - 1 + gap);
+  const Y = v => pt + (hi - v) / (hi - lo) * (h - pt - pb);
+  const pts = P.map((v, i) => X(i).toFixed(1) + ',' + Y(v).toFixed(1)).join(' ');
+  const li = P.indexOf(Math.min(...P));
+  const ai = alertLive() ? n - 1 - Math.min(ALERT_DAYS, n - 1) : -1;
+  area.innerHTML =
+    '<svg viewBox="0 0 ' + w + ' ' + h + '">' +
+      '<polyline points="' + pl + ',' + (h - pb) + ' ' + pts + ' ' + (w - pr) + ',' + (h - pb) + '" fill="rgba(26,112,221,.08)" stroke="none"/>' +
+      '<polyline points="' + pts + '" fill="none" stroke="#1a70dd" stroke-width="1.8" stroke-linejoin="round"/>' +
+      (li !== n - 1 ? '<circle cx="' + X(li).toFixed(1) + '" cy="' + Y(P[li]).toFixed(1) + '" r="3" fill="#fff" stroke="#9a9aa6" stroke-width="1.4"/>' : '') +
+      (ai > 0 && ai !== n - 1 ? '<circle cx="' + X(ai).toFixed(1) + '" cy="' + Y(P[ai]).toFixed(1) + '" r="4" fill="#01c0c7" stroke="#fff" stroke-width="1.6"/>' : '') +
+      '<line class="gd" x1="0" y1="' + pt + '" x2="0" y2="' + (h - pb) + '" stroke="#cfe0f7" stroke-width="1" opacity="0"/>' +
+      '<circle class="hd" r="4" fill="#1a70dd" stroke="#fff" stroke-width="2" opacity="0"/>' +
+      '<circle cx="' + X(n - 1).toFixed(1) + '" cy="' + Y(P[n - 1]).toFixed(1) + '" r="3.6" fill="' + (gap ? '#b0b0ba' : '#1a70dd') + '"/>' +
+    '</svg><div class="chart-tip"></div>';
+  const svg = area.querySelector('svg'), gd = svg.querySelector('.gd'), hd = svg.querySelector('.hd'), tip = area.querySelector('.chart-tip');
+  const move = e => {
+    const r = area.getBoundingClientRect();
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+    const i = Math.max(0, Math.min(n - 1, Math.round((cx - pl) / (w - pl - pr) * (n - 1 + gap))));
+    const xx = X(i), yy = Y(P[i]);
+    gd.setAttribute('x1', xx); gd.setAttribute('x2', xx); gd.setAttribute('opacity', 1);
+    hd.setAttribute('cx', xx); hd.setAttribute('cy', yy); hd.setAttribute('opacity', 1);
+    const mk = (i === n - 1 && !gap ? '(현재' + (i === ai ? '/알림' : '') + ')' : (i === ai ? '(알림)' : ''));
+    tip.innerHTML = '<span class="d">' + dLabel(n - 1 - i) + (i !== ai ? mk : '') + '</span>' +
+      (i === ai ? '<span class="al">' + mk + ' </span>' : '') + fmt(P[i]) + '원';
+    tip.style.left = Math.max(38, Math.min(w - 38, xx)) + 'px';
+    tip.style.top = (yy - 8) + 'px'; tip.style.opacity = 1;
+  };
+  const out = () => { gd.setAttribute('opacity', 0); hd.setAttribute('opacity', 0); tip.style.opacity = 0; };
+  area.onmousemove = move; area.onmouseleave = out;
+  area.ontouchstart = move; area.ontouchmove = move; area.ontouchend = out;
+}
+function sideHTML(){
+  const C = CASES[CASE], p = pct();
+  const capTx = !hasVerdict() ? '' : '최근 ' + C.days + '일 가격과 비교했어요.';
+  const handle = CASE === 'LOWEST' ? 0 : Math.min(96, Math.max(4, p === null ? 50 : p));
+  let h = '';
+  if (hasVerdict()){
+    h += '<div class="mod-head"><span class="ai-mark">AI</span>' +
+      '<span class="mod-title">지금 사도 괜찮을까요?</span>' +
+      '<span class="basis-tx">' + basisTx(INC) + '</span></div>';
+    h += '<div class="sb"><div class="verdict">' +
+      (CASE === 'WAIT' ? '' : '<div class="v-badge ' + CASE + '"><span class="v-dot"></span><span class="v-main">' + HEADLINE[CASE] + '</span></div>') +
+      '<div class="vg"><div class="vg-row"><span class="vg-end c">저렴</span>' +
+        '<span class="vg-bar"><span class="vg-h" style="left:' + handle + '%"></span></span>' +
+        '<span class="vg-end p">비쌈</span></div>' +
+        '<div class="vg-cap"><span>' + capTx + '</span>' +
+          '<button class="cap-q" onclick="togglePop(this)" aria-label="AI 분석 기준">?</button></div>' +
+      '</div>' +
+      '<div class="cushion">' + CUSHION + '</div>' +
+      '<div class="pop"><div class="pop-h"><span class="t">AI 분석 기준</span>' +
+        '<button class="x" onclick="closePop(this)">✕</button></div>' +
+        '<div class="pop-sub">관측 기간 중 최저가 가격 데이터를 기반으로 분석해요. 앞으로의 가격은 예측하지 않아요.</div>' +
+        CRITERIA.map(t => '<div class="crit-row ' + (t.k === CASE ? 'active ' + t.k : '') + '">' +
+          '<span class="crit-badge cb-' + t.k + '">' + t.label + '</span>' +
+          '<div class="crit-txt">' + t.desc + '</div>' +
+          (t.k === CASE ? '<span class="crit-now">◀ 현재</span>' : '') + '</div>').join('') +
+      '</div></div></div>';
+  }
+  /* 최저가 추이 */
+  h += '<div class="sb"><div class="blk-h">' + ICON_CHART +
+      '<span class="t">최저가 추이</span>' +
+      (alertLive() && hasChart() ? '<span class="legend-mint" style="margin-left:2px"><i></i>알림 켠 날</span>' : '') +
+      '<span class="basis-tx">' + basisTx(INC) + '</span></div>';
+  if (!hasChart()){
+    h += '<div class="empty"><div><span class="ic">!</span></div>' +
+      '<div class="t">최저가 추이 데이터를<br>수집할 예정인 상품이에요</div></div>';
+  } else {
+    h += '<div class="period-tabs">' +
+      [[1,'1개월'],[3,'3개월'],[6,'6개월'],[12,'12개월']].map(([v,t]) =>
+        '<button class="period-tab' + (PERIOD === v ? ' on' : '') + '"' +
+        (v > 1 && v * 30 > C.span ? ' disabled' : ' onclick="setPeriod(' + v + ')"') + '>' + t + '</button>').join('') +
+      '</div><div class="chart-area"></div><div class="x-labels"></div>';
+  }
+  h += '</div>';
+  if (!hasPrice()) return h;
+  h += '<div class="sb"><div class="blk-h"><span class="t">🔔 가격 알림</span>' +
+      (SAVED_BASIS === null
+        ? '<button class="tgl' + (INC ? ' on' : '') + '" style="margin-left:auto;font-size:10.5px" onclick="toggleBasis()">' +
+          '<span class="track" style="width:28px;height:15px"><i style="width:11px;height:11px' + (INC ? ';left:15px' : '') + '"></i></span><span>' + basisTx(INC) + '</span></button>'
+        : '<span class="al-saved">' + basisTx(SAVED_BASIS) + ' 기준 저장</span>') +
+    '</div>' +
+    '<div class="al-desc">지금보다 내려가면 <b>앱푸시·카카오톡</b>으로 알려드려요.</div>' +
+    '<div class="al-stack">' +
+      '<button class="al-btn pri' + (AL_ON ? ' on' : '') + '" onclick="setAl(\'' + (AL_ON ? 'basicOff' : 'on') + '\')">' +
+        (AL_ON ? '✓ 알림 받는 중' : '가격 알림 받기') + '</button>' +
+    '<div class="goal-wrap" style="margin-top:6px">' +
+      '<button class="al-btn sec' + (G_OPEN ? ' open' : (G_SET ? ' set' : '')) + '" onclick="setAl(\'' + (G_OPEN ? 'goalClose' : 'goal') + '\')">' +
+        '<span class="lb">' + (G_SET ? '✓ 목표가 ' + fmt(GOAL) + '원' : '원하는 가격에 알림 받기') + '</span>' +
+        '<svg class="chev' + (G_OPEN ? ' up' : '') + '" width="11" height="7" viewBox="0 0 11 7" fill="none">' +
+          '<path d="M1 1L5.5 5.5L10 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>' +
+      '</button>' +
+      (G_OPEN ?
+        '<div class="al-goal">' +
+        '<div class="al-row"><input class="al-input' + (ERR ? ' err' : '') + '" value="' + (DRAFT ? fmt(+DRAFT) : '') +
+          '" inputmode="numeric" placeholder="목표가 입력" oninput="onDraft(this)">' +
+        (G_SET ? '<button class="al-set off" onclick="setAl(\'setOff\')">알림 해제</button>'
+               : '<button class="al-set" onclick="saveGoal()">이 가격에 알림 받기</button>') + '</div>' +
+        (ERR ? '<div class="al-err">' + ERR + '</div>' : '') +
+        '<div class="al-presets">' +
+          [3,5,7].map(function(v){ return '<span class="al-preset' + (PRESET === v ? ' on' : '') + '" onclick="preset(' + v + ')">−' + v + '%</span>'; }).join('') +
+        '</div>' +
+        '</div>' : '') +
+    '</div>' +
+    '</div></div>';
+  return h;
+}
+function render(){
+  document.querySelectorAll('[data-case]').forEach(b => b.classList.toggle('on', b.dataset.case === CASE));
+  const act = { off: !AL_ON && !G_OPEN && !G_SET && !G_DONE, on: AL_ON, goal: G_OPEN, set: G_SET, done: G_DONE };
+  document.querySelectorAll('[data-al]').forEach(b => b.classList.toggle('on', !!act[b.dataset.al]));
+  const c = cur();
+  $('pcNum').textContent = c === null ? '일시품절' : fmt(c);
+  $('pcNum').style.color = c === null ? '#888' : '';
+  document.querySelector('.price-main .won').style.display = c === null ? 'none' : '';
+  document.querySelector('.price-main .per').style.display = c === null ? 'none' : '';
+  $('pcShipNote').textContent = c === null ? '판매 중인 쇼핑몰이 없어요'
+    : (INC ? '배송비 3,000원 포함+카드할인가 포함' : '배송비 미포함 · 카드할인가 포함');
+  $('mallShip').classList.toggle('on', INC);
+  $('mallShipTx').textContent = basisTx(INC);
+  const shops = c === null ? [] : [['LG전자',0,true,'무료배송'],['CJ온스타일',2100,false,'무료배송'],['AUCTION',3750,false,'3,500원'],['Gmarket',3750,false,'무료배송'],['SSG.COM',3750,false,'무료배송']];
+  if (c === null){ $('pcShops').innerHTML = '<div class="mall-row" style="color:#aaa;justify-content:center">등록된 판매처가 없어요</div>'; }
+  else $('pcShops').innerHTML = shops.map(([s,d,best,note]) =>
+    '<div class="mall-row"><span class="lg">' + (best ? '<span class="best">최저</span>' : '') + s + '</span>' +
+    '<span class="pr">' + fmt(c + d) + '원</span>' +
+    '<span class="note">' + (INC ? note : '+' + fmt(FEE) + '원') + '</span>' +
+    '<button class="go">구매하기</button></div>').join('');
+  $('pcSide').innerHTML = sideHTML();
+  if (hasChart()){
+    const P = series(), root = $('pcSide');
+    drawChart(root.querySelector('.chart-area'), P, endGap());
+    const n = P.length + endGap(), slots = 4, step = Math.floor((n - 1) / slots);
+    let lb = '';
+    for (let k = 0; k < slots; k++) lb += '<span>' + dLabel(n - 1 - k * step) + '</span>';
+    root.querySelector('.x-labels').innerHTML = lb + '<span class="now">현재</span>';
+  }
+}
+render();
+let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(render, 150); });
+</script>
+</body>
+</html>

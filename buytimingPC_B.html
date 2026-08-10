@@ -99,6 +99,7 @@ button{cursor:pointer}
 .price-main .per{font-size:13px;color:var(--light);font-weight:400;align-self:flex-end;margin-bottom:3px}
 .price-sub{font-size:13px;color:var(--sub);margin-top:6px}
 .buy-btn{background:var(--key);border:1px solid rgba(0,0,0,.02);color:#fff;border-radius:4px;height:54px;width:160px;flex-shrink:0;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.buy-btn.restock{background:var(--yellow);color:#3d2e00}
 .promo{display:flex;align-items:center;gap:10px;margin-top:16px;background:linear-gradient(90deg,#eef4fd,#f4f8ff);border:1px solid var(--key-line);border-radius:8px;padding:11px 14px}
 .promo .pi{width:26px;height:26px;border-radius:6px;background:var(--key);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .promo .pt{font-size:12.5px;color:var(--body);font-weight:600;line-height:1.5}
@@ -184,17 +185,19 @@ button{cursor:pointer}
 .vg-end.c{color:var(--key)}.vg-end.p{color:var(--red)}
 .vg-bar{position:relative;flex:1;height:6px;border-radius:4px;background:linear-gradient(90deg,#1a70dd 0%,#8fb6e8 42%,#e6b7bd 66%,#ee2c40 100%)}
 .vg-h{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--key);box-shadow:0 1px 3px rgba(0,0,0,.22);transform:translate(-50%,-50%);transition:left .35s}
-.vg-cap{font-size:11px;color:var(--sub);margin-top:8px;line-height:1.45;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.vg-cap b{color:var(--ink);font-weight:700}
-.cap-q{width:15px;height:15px;flex-shrink:0;border-radius:50%;border:none;background:#e7e7ee;color:var(--muted);font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1}
+.vg-cap{font-size:11.5px;color:var(--sub);margin-top:8px;line-height:1.5;white-space:nowrap;overflow:hidden}
+.cap-tail{white-space:nowrap}
+.cap-lead{font-weight:800;color:var(--body)}
+.cap-sub{font-weight:400;color:var(--light);font-size:10.5px}
+.cap-q{width:15px;height:15px;border-radius:50%;border:none;background:#e7e7ee;color:var(--muted);font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;vertical-align:-2px;margin-left:4px}
 .cap-q:hover{background:var(--key-bg);color:var(--key-d)}
-.cushion{margin-top:7px;font-size:10.5px;color:var(--light);line-height:1.45}
 .pop{position:absolute;left:0;right:0;top:100%;margin-top:6px;background:#fff;border:1px solid var(--line2);border-radius:10px;box-shadow:0 10px 32px rgba(0,0,0,.16);padding:12px;z-index:30;display:none}
 .pop.open{display:block}
 .pop-h{display:flex;align-items:center;margin-bottom:5px}
 .pop-h .t{font-size:12.5px;font-weight:800;flex:1}
 .pop-h .x{font-size:15px;color:#aaa;background:none;border:none}
 .pop-sub{font-size:10.5px;color:var(--muted);margin-bottom:8px;line-height:1.5}
+.pop-foot{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted);line-height:1.55}
 .crit-row{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);align-items:flex-start}
 .crit-row:last-of-type{border-bottom:none}
 .crit-row.active{margin:0 -6px;padding:6px;border-radius:6px;border-bottom:none}
@@ -246,7 +249,7 @@ button{cursor:pointer}
 .al-input.err{border-color:var(--red);background:#fff7f7}
 .al-set{height:38px;padding:0 12px;border-radius:4px;background:var(--key);color:#fff;font-size:12px;font-weight:700;border:none;white-space:nowrap}
 .al-set.off{background:#fff;color:var(--muted);border:1px solid var(--line2)}
-.al-err{margin-top:6px;font-size:10.5px;color:var(--red);line-height:1.4}
+.al-err{margin-top:6px;min-height:15px;font-size:10.5px;color:var(--red);line-height:1.4}
 .al-presets{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
 .al-preset{font-size:10.5px;font-weight:600;padding:4px 10px;border-radius:14px;border:1px solid var(--line2);background:#fff;color:var(--sub)}
 .al-preset.on{border-color:var(--key-line);background:var(--key-bg);color:var(--key-d);font-weight:700}
@@ -260,7 +263,7 @@ button{cursor:pointer}
 <div class="shell">
   <div class="head">
     <h1>에누리 Vip(원부상세) · 우측 패널 프로토타입<span class="ver">시안 B · PC</span></h1>
-    <div class="desc">우측 패널 순서를 <b>구매 타이밍 판정 › 최저가 추이 › 가격 알림 › 상품리뷰</b>로 재배치했습니다. 판정·추이·알림은 <b>하나의 세트(카드)</b>로 묶었고, 상품리뷰는 그 아래 별도 섹션으로 뒀습니다. (실제 화면 아님)</div>
+    <div class="desc">우측 패널 순서를 <b>구매 타이밍 판정 › 최저가 추이 › 가격 알림 › 상품리뷰</b>로 재배치했습니다. 판정·추이·알림은 <b>하나의 세트(카드)</b>로 묶었고, 상품리뷰는 그 아래 별도 섹션으로 뒀습니다. (시안 A와 콘텐츠 동일 · 실제 화면 아님)</div>
   </div>
   <div class="ctrls">
     <div class="grp">
@@ -317,7 +320,7 @@ button{cursor:pointer}
             </div>
             <div class="price-sub" id="pcShipNote"></div>
           </div>
-          <button class="buy-btn">최저가 구매하기</button>
+          <button class="buy-btn" id="pcBuy">최저가 구매하기</button>
         </div>
         <div class="epoint">enuri <b>6,000P 적립</b> · 에누리 접속 앱에서 구매 시<span class="info">적립안내 ⓘ</span></div>
         <div style="margin-top:6px">
@@ -403,6 +406,7 @@ const pct = () => CASES[CASE].pct ? CASES[CASE].pct[INC ? 'inc' : 'exc'] : null;
 const defGoal = () => Math.round(px() * .93 / 1000) * 1000;
 const alertLive = () => AL_ON || G_SET;
 const hasChart = () => CASES[CASE].span > 0;
+const showChart = () => hasChart() && CASE !== '일시품절';
 const hasVerdict = () => CASES[CASE].pct !== null;
 $('caseRow').innerHTML = Object.keys(CASES).map(k =>
   '<button class="chip' + (CASES[k].pct === null ? ' dash' : '') + '" data-case="' + k + '" onclick="setCase(\'' + k + '\')">' + k + '</button>').join('');
@@ -509,7 +513,9 @@ function drawChart(area, P, gap){
 }
 function sideHTML(){
   const C = CASES[CASE], p = pct();
-  const capTx = !hasVerdict() ? '' : '최근 ' + C.days + '일 가격과 비교했어요.';
+  const QBTN = '<button class="cap-q" onclick="togglePop(this)" aria-label="AI 분석 기준">?</button>';
+  const capTx = !hasVerdict() ? '' :
+    '<span class="cap-tail"><b class="cap-lead">최근 ' + C.days + '일 최저가 기준.</b> <span class="cap-sub">AI 분석 결과이며 실제와 다를 수 있어요</span>' + QBTN + '</span>';
   const handle = CASE === 'LOWEST' ? 0 : Math.min(96, Math.max(4, p === null ? 50 : p));
   let h = '';
   if (hasVerdict()){
@@ -521,10 +527,8 @@ function sideHTML(){
       '<div class="vg"><div class="vg-row"><span class="vg-end c">저렴</span>' +
         '<span class="vg-bar"><span class="vg-h" style="left:' + handle + '%"></span></span>' +
         '<span class="vg-end p">비쌈</span></div>' +
-        '<div class="vg-cap"><span>' + capTx + '</span>' +
-          '<button class="cap-q" onclick="togglePop(this)" aria-label="AI 분석 기준">?</button></div>' +
+        '<div class="vg-cap">' + capTx + '</div>' +
       '</div>' +
-      '<div class="cushion">' + CUSHION + '</div>' +
       '<div class="pop"><div class="pop-h"><span class="t">AI 분석 기준</span>' +
         '<button class="x" onclick="closePop(this)">✕</button></div>' +
         '<div class="pop-sub">관측 기간 중 최저가 가격 데이터를 기반으로 분석해요. 앞으로의 가격은 예측하지 않아요.</div>' +
@@ -532,14 +536,15 @@ function sideHTML(){
           '<span class="crit-badge cb-' + t.k + '">' + t.label + '</span>' +
           '<div class="crit-txt">' + t.desc + '</div>' +
           (t.k === CASE ? '<span class="crit-now">◀ 현재</span>' : '') + '</div>').join('') +
+        '<div class="pop-foot">실시간 가격 변동으로 판정과 차이가 있을 수 있으니, 구매 전 최신 가격을 한 번 더 확인해 주세요.</div>' +
       '</div></div></div>';
   }
   /* 최저가 추이 */
   h += '<div class="sb"><div class="blk-h">' + ICON_CHART +
       '<span class="t">최저가 추이</span>' +
-      (alertLive() && hasChart() ? '<span class="legend-mint" style="margin-left:2px"><i></i>알림 켠 날</span>' : '') +
+      (alertLive() && showChart() ? '<span class="legend-mint" style="margin-left:2px"><i></i>알림 켠 날</span>' : '') +
       '<span class="basis-tx">' + basisTx(INC) + '</span></div>';
-  if (!hasChart()){
+  if (!showChart()){
     h += '<div class="empty"><div><span class="ic">!</span></div>' +
       '<div class="t">최저가 추이 데이터를<br>수집할 예정인 상품이에요</div></div>';
   } else {
@@ -557,7 +562,7 @@ function sideHTML(){
           '<span class="track" style="width:28px;height:15px"><i style="width:11px;height:11px' + (INC ? ';left:15px' : '') + '"></i></span><span>' + basisTx(INC) + '</span></button>'
         : '<span class="al-saved">' + basisTx(SAVED_BASIS) + ' 기준 저장</span>') +
     '</div>' +
-    '<div class="al-desc">지금보다 내려가면 <b>앱푸시·카카오톡</b>으로 알려드려요.</div>' +
+    '<div class="al-desc">지금보다 내려가면 <b>알림</b>으로 알려드려요.</div>' +
     '<div class="al-stack">' +
       '<button class="al-btn pri' + (AL_ON ? ' on' : '') + '" onclick="setAl(\'' + (AL_ON ? 'basicOff' : 'on') + '\')">' +
         (AL_ON ? '✓ 알림 받는 중' : '가격 알림 받기') + '</button>' +
@@ -572,8 +577,8 @@ function sideHTML(){
         '<div class="al-row"><input class="al-input' + (ERR ? ' err' : '') + '" value="' + (DRAFT ? fmt(+DRAFT) : '') +
           '" inputmode="numeric" placeholder="목표가 입력" oninput="onDraft(this)">' +
         (G_SET ? '<button class="al-set off" onclick="setAl(\'setOff\')">알림 해제</button>'
-               : '<button class="al-set" onclick="saveGoal()">이 가격에 알림 받기</button>') + '</div>' +
-        (ERR ? '<div class="al-err">' + ERR + '</div>' : '') +
+               : '<button class="al-set" onclick="saveGoal()">알림 받기</button>') + '</div>' +
+        '<div class="al-err">' + (ERR || '') + '</div>' +
         '<div class="al-presets">' +
           [3,5,7].map(function(v){ return '<span class="al-preset' + (PRESET === v ? ' on' : '') + '" onclick="preset(' + v + ')">−' + v + '%</span>'; }).join('') +
         '</div>' +
@@ -589,6 +594,8 @@ function render(){
   const c = cur();
   $('pcNum').textContent = c === null ? '일시품절' : fmt(c);
   $('pcNum').style.color = c === null ? '#888' : '';
+  $('pcBuy').textContent = c === null ? '재입고 알림' : '최저가 구매하기';
+  $('pcBuy').classList.toggle('restock', c === null);
   document.querySelector('.price-main .won').style.display = c === null ? 'none' : '';
   document.querySelector('.price-main .per').style.display = c === null ? 'none' : '';
   $('pcShipNote').textContent = c === null ? '판매 중인 쇼핑몰이 없어요'
@@ -603,7 +610,7 @@ function render(){
     '<span class="note">' + (INC ? note : '+' + fmt(FEE) + '원') + '</span>' +
     '<button class="go">구매하기</button></div>').join('');
   $('pcSide').innerHTML = sideHTML();
-  if (hasChart()){
+  if (showChart()){
     const P = series(), root = $('pcSide');
     drawChart(root.querySelector('.chart-area'), P, endGap());
     const n = P.length + endGap(), slots = 4, step = Math.floor((n - 1) / slots);

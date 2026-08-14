@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구매 타이밍 판정 프로토타입 · 260813 (PC / MO)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* ============================================================
+   Design tokens — Figma 260813_PC / 260813_PC_A / 260813_MW_A
+   ============================================================ */
+:root{
+  --font:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,system-ui,"Apple SD Gothic Neo",sans-serif;
+
+  --text-primary:#222222;
+  --text-secondary:#444444;
+  --text-tertiary:#666666;
+  --text-sub:#888888;
+  --text-brand:#1a70dd;
+
+  --brand-primary:#1a70dd;
+  --brand-red:#ee2c40;
+  --brand-green:#1aaa30;
+  --brand-mint:#01c0c7;
+  --brand-yellow:#ffb400;
+
+  --border-light:#eeeeee;
+  --border-dark:#dddddd;
+  --btn-border-secondary:#cccccc;
+  --btn-border-secondary-pressed:#aaaaaa;
+
+  --radius-2:2px; --radius-xs:8px; --radius-full:50px;
+  --ls:-0.5px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:var(--font);color:var(--text-primary);background:#e9ebef;letter-spacing:var(--ls);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;letter-spacing:inherit;cursor:pointer;border:0;background:none;padding:0;color:inherit}
+input{font-family:inherit;letter-spacing:inherit}
+p,h1,h2,h3,h4{margin:0}
+
+/* ============================================================
+   프로토타입 크롬
+   ============================================================ */
+.proto-top{position:sticky;top:0;z-index:400;display:flex;align-items:center;gap:16px;height:56px;padding:0 20px;background:#141821;color:#fff}
+.proto-top h1{font-size:14px;font-weight:700;letter-spacing:-.3px;white-space:nowrap}
+.proto-top .meta{font-size:11px;color:#8a93a6;white-space:nowrap}
+.seg{display:flex;background:#252b39;border-radius:8px;padding:3px;gap:2px}
+.seg button{padding:6px 18px;border-radius:6px;font-size:13px;font-weight:600;color:#98a1b3}
+.seg button.on{background:#1a70dd;color:#fff}
+.proto-top .spacer{flex:1}
+.ghost-btn{background:#252b39;color:#c8cee0;font-size:12px;font-weight:600;padding:7px 12px;border-radius:6px}
+.ghost-btn.on{background:#1a70dd;color:#fff}
+
+.proto-body{display:flex;align-items:flex-start;min-height:calc(100vh - 56px)}
+.stage{flex:1;min-width:0;display:flex;justify-content:center;padding:28px 20px 80px}
+.panel{width:290px;flex:none;align-self:stretch;background:#fbfbfc;border-left:1px solid #dfe2e8;padding:20px 18px 60px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow:auto;z-index:400}
+.panel.hide{display:none}
+.panel h2{font-size:12px;font-weight:800;margin-bottom:4px}
+.panel .hint{font-size:11px;color:#8b93a3;line-height:1.5;margin-bottom:16px}
+.panel .grp{margin-bottom:18px}
+.panel .grp>.lbl{font-size:11px;font-weight:700;color:#6b7383;margin-bottom:7px;letter-spacing:0}
+.panel .opts{display:flex;flex-wrap:wrap;gap:6px}
+.panel .opts button{font-size:12px;font-weight:500;color:#3c4351;background:#fff;border:1px solid #d9dde5;border-radius:6px;padding:6px 9px;line-height:1.2}
+.panel .opts button.on{background:#1a70dd;border-color:#1a70dd;color:#fff;font-weight:600}
+.panel .note{font-size:10.5px;color:#98a0af;line-height:1.6;border-top:1px dashed #dfe2e8;padding-top:12px}
+
+/* ============================================================
+   공통 요소
+   ============================================================ */
+.ai-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:16px;border-radius:24px;
+  background:linear-gradient(97.72deg,#1c77ff 0%,#00cbc1 100%);font-size:9px;font-weight:800;color:#fff;letter-spacing:0;flex:none}
+
+/* 기간 탭 */
+.tabs{display:flex;gap:8px;align-items:center}
+.tabs.center{justify-content:center}
+.tabs button{width:56px;height:28px;border-radius:12px;font-size:13px;font-weight:400;color:var(--text-tertiary);border:1px solid transparent;line-height:1.3}
+.tabs button.on{border-radius:14px;border-color:var(--btn-border-secondary-pressed);color:var(--text-primary);font-weight:600}
+
+/* 차트 */
+.chartbox{display:flex;flex-direction:column;gap:8px}
+.chart{position:relative;height:120px;background:#fff;overflow:visible}
+.chart svg{display:block;width:100%;height:120px}
+.chart .lastv{position:absolute;right:0;font-size:11px;font-weight:500;letter-spacing:-.22px;color:var(--brand-primary);line-height:12px;pointer-events:none;background:#fff;padding-left:3px}
+.chart .hit{position:absolute;inset:0;cursor:crosshair}
+.chart .tip{position:absolute;transform:translate(-50%,-100%);background:#fff;border:1px solid #cfd4dc;border-radius:4px;
+  box-shadow:0 2px 4px rgba(0,0,0,.13);padding:4px 8px;white-space:nowrap;display:flex;gap:6px;align-items:center;pointer-events:none;opacity:0;transition:opacity .1s;z-index:5}
+.chart .tip.on{opacity:1}
+.chart .tip .d{font-size:11px;color:var(--text-tertiary)}
+.chart .tip .v{font-size:11px;font-weight:700;color:var(--text-primary)}
+.chart .tip:after{content:"";position:absolute;left:50%;bottom:-5px;width:8px;height:8px;background:#fff;border-right:1px solid #cfd4dc;border-bottom:1px solid #cfd4dc;transform:translateX(-50%) rotate(45deg)}
+.xaxis{display:flex;align-items:center;justify-content:space-between;height:20px;font-size:11px;color:var(--text-tertiary);letter-spacing:0}
+
+/* 알림 켠 날 배지 */
+.legend-on{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--brand-mint)}
+.legend-on i{width:6px;height:6px;border-radius:50%;background:var(--brand-mint);display:block}
+
+/* 게이지 */
+.gauge{display:flex;align-items:center;gap:10px;position:relative;height:18px}
+.gauge .cap{font-size:13px;font-weight:600;color:var(--text-secondary);line-height:1.4;flex:none;white-space:nowrap}
+.gauge .bar{flex:1;height:6px;border-radius:var(--radius-full);background:linear-gradient(90deg,#1a70dd 0%,#eeeeee 49.519%,#ee2c40 100%)}
+.gauge .knob{position:absolute;top:1px;width:16px;height:16px;border-radius:50%;background:var(--brand-primary);border:2.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.22);transition:left .32s cubic-bezier(.22,.7,.3,1)}
+.gauge .cap:last-of-type{text-align:right}
+
+/* 빈 추이 */
+.trend-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;height:168px;text-align:center}
+.trend-empty p{font-size:13px;color:var(--text-sub);line-height:1.55}
+
+/* 정보 아이콘 · 캡션 */
+.caption{display:flex;align-items:center;gap:4px}
+.caption .b{font-size:12px;font-weight:500;color:var(--text-secondary);line-height:1.4}
+.caption .g{font-size:12px;font-weight:400;color:var(--text-sub);line-height:1.4}
+.info-btn{width:16px;height:16px;border:1px solid #dbdbdb;border-radius:8px;background:#fff;display:inline-flex;align-items:center;justify-content:center;flex:none}
+
+/* AI 분석 기준 툴팁 */
+#globalTip{position:fixed;z-index:500;width:330px;background:#fff;border:1px solid #707070;filter:drop-shadow(0 2px 0 rgba(0,0,0,.13));display:none}
+#globalTip.on{display:block}
+#globalTip .hd{height:32px;background:#575c67;display:flex;align-items:center;padding:0 10px 0 16px;color:#fff;font-size:13px;font-weight:700;letter-spacing:0}
+#globalTip .hd .sp{flex:1}
+#globalTip .bd{padding:16px;display:flex;flex-direction:column;gap:12px}
+#globalTip .li{display:flex;gap:8px;align-items:flex-start}
+#globalTip .li .dot{width:2px;height:9px;display:flex;align-items:flex-end;flex:none}
+#globalTip .li .dot i{width:2px;height:2px;border-radius:50%;background:#666;display:block}
+#globalTip .li p{font-size:13px;color:#666;line-height:1.3;letter-spacing:0}
+#globalTip .rows{display:flex;flex-direction:column;gap:8px}
+#globalTip .row{display:flex;gap:8px;align-items:center}
+#globalTip .row.hl{background:#e9f7eb;padding:4px 8px;width:296px}
+#globalTip .tag{border-radius:2px;padding:2px 6px;font-size:12px;font-weight:600;color:#fff;white-space:nowrap;flex:none}
+#globalTip .tag.blue{background:var(--brand-primary)}
+#globalTip .tag.green{background:var(--brand-green)}
+#globalTip .tag.gray{background:#888}
+#globalTip .row>span:not(.tag){font-size:12px;color:#666;line-height:1.4}
+
+/* ============================================================
+   원부 요약형 모듈 (PC 우측영역 300px / MO 인라인 328px)
+   ============================================================ */
+.sum{display:flex;flex-direction:column;gap:16px;background:#fff}
+.sum-head{display:flex;align-items:center;justify-content:space-between}
+.sum-head .l{display:flex;align-items:center;gap:8px}
+.sum-head .t{font-size:16px;font-weight:700;color:#222;line-height:1.4}
+.sum-head .r{font-size:12px;font-weight:400;color:var(--text-tertiary);line-height:1.4}
+.sum-verdict{display:flex;flex-direction:column;gap:12px;justify-content:center;padding:8px 0}
+.sum-verdict .row1{display:flex;align-items:center;justify-content:space-between}
+.sum-verdict .row1 .l{display:flex;align-items:center;gap:4px}
+.sum-verdict .vt{font-size:14px;font-weight:700;line-height:1.4}
+.sum-verdict .r{font-size:12px;font-weight:400;color:var(--text-tertiary);line-height:1.4}
+.sum-btn{height:40px;border:1px solid var(--btn-border-secondary);border-radius:8px;display:flex;align-items:center;
+  justify-content:center;gap:4px;padding:0 24px;width:100%;font-size:15px;font-weight:600;color:#222;line-height:1.3}
+.sum-btn.on{border-color:var(--brand-primary);color:var(--brand-primary)}
+
+/* ============================================================
+   전체형 모듈 (PC 레이어 420 / MO 바텀시트 360)
+   ============================================================ */
+.full{background:#fff;--pad:20px}
+.full.mo{--pad:16px}
+.full .sec{padding:var(--pad);padding-bottom:calc(var(--pad) + 1px);display:flex;flex-direction:column;gap:12px;
+  justify-content:center;border-bottom:1px solid var(--border-light)}
+.full .sec.alert{gap:16px;border-bottom:0;padding-bottom:var(--pad)}
+.full .sec:last-child{border-bottom:0}
+.full .trow{display:flex;align-items:center;justify-content:space-between}
+.full .trow .l{display:flex;align-items:center;gap:8px}
+.full .tt{font-size:16px;font-weight:700;color:var(--text-primary);line-height:1.4}
+.full .tr{font-size:13px;font-weight:400;color:var(--text-sub);line-height:1.4}
+.full .vrow .l{gap:4px}
+.full .vt{font-size:16px;font-weight:700;line-height:1.4}
+
+/* 가격 알림 */
+.al-head{display:flex;flex-direction:column;gap:4px}
+.al-desc{font-size:13px;font-weight:400;color:var(--text-sub);line-height:1.4}
+.al-save{font-size:13px;font-weight:400;color:var(--text-sub);line-height:1.4}
+.switch{display:inline-flex;align-items:center;gap:4px}
+.switch em{font-style:normal;font-size:14px;font-weight:500;color:#666;line-height:18px}
+.switch .tr8{width:42px;height:20px;border-radius:10px;background:#ccc;position:relative;transition:background .18s;flex:none}
+.switch .tr8:after{content:"";position:absolute;top:1px;left:1px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .18s}
+.switch.on .tr8{background:var(--brand-primary)}
+.switch.on em{color:var(--brand-primary);font-weight:600}
+
+.btns{display:flex;flex-direction:column;gap:12px}
+.cta{height:48px;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;gap:6px;padding:0 30px;width:100%}
+.cta.primary{background:var(--brand-primary);color:#fff;font-size:17px;font-weight:700;line-height:1.4;letter-spacing:0}
+.cta.doing{background:var(--brand-primary);color:#fff;font-size:16px;font-weight:600;letter-spacing:0}
+.cta.line{background:#fff;color:var(--text-primary);font-size:16px;font-weight:500;letter-spacing:0}
+.cta.line.brand{color:var(--brand-primary);font-weight:600}
+.acc{border:1px solid var(--btn-border-secondary);border-radius:var(--radius-xs);overflow:hidden}
+.acc.brand{border-color:var(--brand-primary)}
+.acc>.cta{border:0}
+.acc .chev{display:flex;transition:transform .22s}
+.acc.open .chev{transform:rotate(180deg)}
+.acc-body{padding:0 17px 15px;display:none}
+.acc.open .acc-body{display:block}
+.in-row{display:flex;gap:8px;height:36px;margin-top:12px}
+.in{width:200px;flex:1 1 200px;min-width:0;border:1px solid var(--btn-border-secondary);border-radius:6px;height:36px;text-align:right;
+  padding:0 12px;font-size:15px;font-weight:600;color:var(--text-primary);outline:none;background:#fff}
+.in::placeholder{color:#bbb;font-weight:500}
+.in:focus{border-color:var(--brand-primary)}
+.in.err{border-color:var(--brand-red);color:var(--brand-red)}
+.in.brand{color:var(--brand-primary)}
+.sbtn{width:138px;flex:none;height:36px;border-radius:6px;background:var(--brand-primary);color:#fff;font-size:14px;font-weight:600;letter-spacing:0}
+.sbtn.line{background:#fff;border:1px solid var(--btn-border-secondary);color:var(--text-primary);font-weight:500}
+.errs{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.errs p{font-size:12px;color:var(--brand-red);line-height:1.4}
+.chips{display:flex;gap:6px;margin-top:12px}
+.chips button{width:52px;height:32px;border-radius:6px;border:1px solid var(--btn-border-secondary);font-size:13px;font-weight:500;color:var(--text-secondary);background:#fff}
+.chips button.on{border-color:var(--brand-primary);color:var(--brand-primary);font-weight:700}
+
+/* ============================================================
+   PC 뷰
+   ============================================================ */
+#pcView{width:1200px;max-width:100%;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(20,24,33,.12);overflow:hidden}
+.pc-util{height:30px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:20px;padding:0 32px;font-size:12px;color:#666}
+.pc-util .r{margin-left:auto;display:flex;gap:16px;color:#888}
+.pc-gnb{height:72px;display:flex;align-items:center;gap:24px;padding:0 32px}
+.pc-logo{font-size:26px;font-weight:800;color:#1a70dd;letter-spacing:-1.5px}
+.pc-search{flex:1;max-width:420px;height:40px;border:2px solid #1a70dd;border-radius:20px;display:flex;align-items:center;padding:0 16px;font-size:13px;color:#888;gap:8px}
+.pc-search .q{flex:1}
+.pc-gnb .icons{margin-left:auto;display:flex;gap:22px;font-size:11px;color:#555}
+.pc-gnb .icons div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.pc-crumb{border-top:1px solid #eee;height:40px;display:flex;align-items:center;gap:8px;padding:0 32px;font-size:12px;color:#666}
+.pc-head{padding:20px 32px 16px}
+.pc-head h2{font-size:24px;font-weight:700;letter-spacing:-.8px}
+.pc-head .specs{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:#666}
+.pc-main{display:flex;padding:0 32px 40px;border-top:1px solid #eee}
+.pc-left{display:flex;gap:24px;flex:1;min-width:0;padding:12px 24px 0 0}
+.pc-thumb{width:250px;flex:none}
+.pc-thumb .img{height:200px;border-radius:8px;background:linear-gradient(150deg,#e8f2ef,#cfe6e0);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:hidden}
+.pc-thumb .img .kb{position:absolute;bottom:0;width:210px;height:60px;background:linear-gradient(#f2f4f6,#dfe3e8);border-radius:6px 6px 0 0;border:1px solid #d3d8de}
+.pc-thumb .img b{font-size:19px;color:#2b3a44;z-index:1}
+.pc-thumb .img span{font-size:15px;color:#4c5a63;z-index:1}
+.pc-thumb .badge{position:absolute;left:0;top:0;background:var(--brand-red);color:#fff;font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px 0 8px 0;z-index:2}
+.pc-center{flex:1;min-width:0}
+.pc-price{display:flex;align-items:flex-start;gap:16px}
+.pc-price .p{flex:1}
+.pc-price .p .lab{font-size:14px;color:var(--brand-red);font-weight:700}
+.pc-price .p .v{font-size:28px;font-weight:800;color:var(--brand-red);letter-spacing:-1px}
+.pc-price .p .free{font-size:12px;color:#666;margin-top:2px}
+#pcBuy{width:180px;height:48px;background:#1a70dd;color:#fff;border-radius:8px;font-size:16px;font-weight:700;flex:none}
+#pcBuy.soldout{background:var(--brand-yellow);color:#222}
+.pc-mallbar{margin-top:14px;border:1px solid #eee;border-radius:8px;padding:10px 14px;font-size:12px;color:#555;display:flex;gap:8px;align-items:center;background:#f7fafd}
+.pc-mallbar .pt{color:#1a70dd;font-weight:700}
+.pc-opts{margin-top:16px}
+.pc-opts .t{display:flex;justify-content:space-between;font-size:13px;color:#444;margin-bottom:8px}
+.pc-opts .t a{color:#666;font-size:12px}
+.pc-opts .list{display:flex;gap:8px}
+.pc-opts .list button{border:1px solid #ddd;border-radius:6px;height:34px;padding:0 14px;font-size:13px;color:#444}
+.pc-opts .list button.on{border-color:#1a70dd;color:#1a70dd;font-weight:700}
+.pc-malls{margin-top:20px;border-top:2px solid #333}
+.pc-malls .hd{display:flex;align-items:center;justify-content:space-between;padding:10px 2px;font-size:13px;font-weight:700}
+.pc-malls .row{display:flex;align-items:center;padding:11px 2px;border-top:1px solid #f0f0f0;font-size:13px}
+.pc-malls .row .m{width:150px;font-weight:700;color:#333;font-size:12px}
+.pc-malls .row .pr{flex:1;text-align:right;font-weight:700;color:#222;font-size:14px;white-space:nowrap}
+.pc-malls .row .dl{width:140px;text-align:right;font-size:11px;color:#888}
+.pc-malls .row .b{width:80px;text-align:right}
+.pc-malls .row .b button{border:1px solid #ddd;border-radius:4px;font-size:11px;padding:5px 9px;color:#555;white-space:nowrap}
+
+/* 우측영역 (Figma 2177:7559) */
+.pc-right{width:332px;flex:none;border-left:1px solid #ddd;padding:32px 0 32px 1px;display:flex;flex-direction:column;gap:28px}
+.pc-right>div{padding-left:32px;width:332px}
+.pc-right .sum{width:300px}
+.pc-review{display:flex;flex-direction:column;gap:16px}
+.pc-review .rh{display:flex;align-items:center;justify-content:space-between}
+.pc-review .rh b{font-size:16px;font-weight:700;color:#000;line-height:22px}
+.pc-review .rh .more{font-size:12px;color:#999;display:flex;align-items:center;gap:2px}
+.pc-review .rtabs{display:flex}
+.pc-review .rtabs div{flex:1;height:32px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.pc-review .rtabs .a{border:1px solid #aaa;border-radius:8px 0 0 8px;font-weight:700;color:#222}
+.pc-review .rtabs .b{border:1px solid #ddd;border-left:0;border-radius:0 8px 8px 0;font-weight:500;color:#888}
+.pc-review .rtxt{padding:16px 0;font-size:13px;color:#666;line-height:1.4;letter-spacing:-.065px}
+.pc-review .rtxt b{color:#222;font-weight:600}
+.pc-review .rtags{display:flex;flex-wrap:wrap;gap:4px}
+.pc-review .rtags span{border-radius:50px;padding:4px 8px;font-size:13px;font-weight:500;background:#eff6ff;color:#1a70dd}
+.pc-review .rtags span.gray{background:#f4f4f4;color:#444}
+
+/* PC 레이어 */
+.pc-layer-dim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none}
+.pc-layer-dim.on{display:block}
+.pc-layer{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:420px;max-height:86vh;background:#fff;border-radius:var(--radius-xs);z-index:310;display:none;flex-direction:column;overflow:hidden}
+.pc-layer.on{display:flex}
+.pc-layer-hd{flex:none;display:flex;align-items:center;justify-content:space-between;padding:16px 20px 17px;border-bottom:1px solid var(--border-dark)}
+.pc-layer-hd h4{font-size:20px;font-weight:700;line-height:1.4}
+.pc-layer-bd{flex:1;min-height:0;overflow:auto}
+
+/* ============================================================
+   MO 뷰
+   ============================================================ */
+#moView{width:390px}
+.mo-phone{width:390px;height:800px;background:#fff;border-radius:34px;overflow:hidden;position:relative;box-shadow:0 14px 44px rgba(20,24,33,.24);border:9px solid #10131a}
+.mo-scroll{position:absolute;inset:0 0 64px 0;overflow-y:auto;overflow-x:hidden;background:#fff}
+.mo-gnb{position:sticky;top:0;z-index:20;height:48px;background:#fff;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;padding:0 14px}
+.mo-gnb .logo{font-size:20px;font-weight:800;color:#1a70dd;letter-spacing:-1px}
+.mo-gnb .sp{flex:1}
+.mo-hero{height:230px;background:linear-gradient(150deg,#e8f2ef,#cfe6e0);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.mo-hero b{font-size:19px;color:#2b3a44;z-index:1}
+.mo-hero span{font-size:15px;color:#4c5a63;z-index:1}
+.mo-hero .kb{position:absolute;bottom:24px;width:230px;height:64px;background:linear-gradient(#f2f4f6,#dfe3e8);border-radius:6px;border:1px solid #d3d8de}
+.mo-hero .badge{position:absolute;left:0;top:0;background:var(--brand-red);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:0 0 8px 0}
+.mo-sec{padding:16px}
+.mo-sec h3{font-size:15px;font-weight:600;line-height:1.4}
+.mo-star{font-size:12px;color:#666;margin-top:6px}
+.mo-price{margin-top:10px;display:flex;align-items:baseline;gap:6px}
+.mo-price .lab{font-size:13px;color:var(--brand-red);font-weight:700}
+.mo-price .v{font-size:22px;font-weight:800;color:var(--brand-red);letter-spacing:-.8px}
+/* MO 판정 칩 — Figma 2181:13492 (bg는 판정 색상과 톤 매칭) */
+.mo-chip{margin-top:12px;width:100%;border-radius:var(--radius-full);border:1px solid;display:flex;
+  align-items:center;justify-content:space-between;padding:8px 16px}
+.mo-chip .l{display:flex;align-items:center;gap:4px}
+.mo-chip .dot{width:8px;height:8px;border-radius:50%;display:block}
+.mo-chip .t{font-size:15px;font-weight:600;line-height:1.4}
+.mo-chip .m{display:flex;align-items:center;gap:2px;height:20px;font-size:13px;font-weight:500;color:var(--text-secondary);letter-spacing:0}
+.mo-divider{height:8px;background:#f4f5f7}
+.mo-tabs{display:flex;border-bottom:1px solid #eee;position:sticky;top:48px;background:#fff;z-index:15}
+.mo-tabs button{flex:1;height:42px;font-size:13px;color:#888}
+.mo-tabs button.on{color:#1a70dd;font-weight:700;box-shadow:inset 0 -2px 0 #1a70dd}
+.mo-mall{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid #f2f2f2;font-size:12px}
+.mo-mall .m{flex:1;color:#444}
+.mo-mall .pr{font-weight:700;color:var(--brand-red);font-size:13px}
+.mo-banner{margin:0 16px;border-radius:8px;background:linear-gradient(120deg,#eef4ff,#dbe9ff);padding:16px;font-size:14px;font-weight:700;color:#1c3f7a;line-height:1.45}
+.mo-spec{font-size:11px;color:#777;line-height:1.6;word-break:break-all}
+.mo-inline-wrap{padding:16px}
+.mo-bottom{position:absolute;left:0;right:0;bottom:0;height:64px;background:#fff;border-top:1px solid #eee;display:flex;align-items:center;padding:0 16px;z-index:30}
+#moBuy{flex:1;height:48px;border-radius:8px;background:#1a70dd;color:#fff;font-size:16px;font-weight:700}
+#moBuy.soldout{background:var(--brand-yellow);color:#222}
+
+.mo-dim{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .24s;z-index:40}
+.mo-dim.on{opacity:1;pointer-events:auto}
+.mo-sheet{position:absolute;left:0;right:0;bottom:0;z-index:50;background:#fff;border-radius:16px 16px 0 0;height:80%;display:flex;flex-direction:column;transform:translateY(102%);transition:transform .3s cubic-bezier(.22,.7,.3,1);overflow:hidden}
+.mo-sheet.on{transform:translateY(0)}
+.mo-sheet-hd{flex:none;display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid transparent;background:#fff;transition:border-color .2s}
+.mo-sheet-hd.stuck{border-color:var(--border-dark)}
+.mo-sheet-hd h4{font-size:20px;font-weight:700;line-height:1.4}
+.mo-sheet-bd{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+
+/* 토스트 — Figma alert (2177:9231 / 2177:9236) */
+.toast{background:rgba(0,0,0,.8);border-radius:12px;padding:8px 16px;display:flex;gap:16px;align-items:center;
+  justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;z-index:600}
+.toast.on{opacity:1;pointer-events:auto}
+.toast p{font-size:16px;font-weight:700;color:#fff;line-height:1.4;letter-spacing:-.5px;flex:1}
+.toast .act{display:flex;gap:2px;align-items:center;font-size:14px;font-weight:500;color:#fff;letter-spacing:-.5px;white-space:nowrap;flex:none}
+#pcToast{position:fixed;left:50%;transform:translateX(-50%);bottom:116px;min-width:483px;width:max-content;max-width:calc(100vw - 40px)}
+#pcToast p{white-space:nowrap}
+#moToast{position:absolute;left:16px;right:16px;bottom:80px}
+#moToast p{font-size:14px}
+#moToast .act{font-size:13px}
+
+.hidden{display:none!important}
+@media (max-width:1560px){.stage{padding:20px 12px 60px}#pcView{width:1120px}}
+</style>
+</head>
+<body>
+
+<div class="proto-top">
+  <h1>구매 타이밍 판정 · 프로토타입</h1>
+  <span class="meta">Figma 260813_PC / 260813_PC_A / 260813_MW_A</span>
+  <div class="seg" id="viewSeg"><button data-view="pc" class="on">PC</button><button data-view="mo">MO</button></div>
+  <div class="spacer"></div>
+  <button class="ghost-btn on" id="panelToggle">상태 패널</button>
+  <button class="ghost-btn" id="resetBtn">초기화</button>
+</div>
+
+<div class="proto-body">
+  <div class="stage">
+    <!-- ============ PC ============ -->
+    <div id="pcView">
+      <div class="pc-util">
+        <span style="font-weight:700;color:#1aaa30">건강<span style="color:#1a70dd">Plus</span></span>
+        <span>자동차</span><span>쇼핑지식</span><span>조립PC</span>
+        <span class="r"><span>다나와</span><span>물테일</span><span>플레이오토</span><span>메이크샵</span></span>
+      </div>
+      <div class="pc-gnb">
+        <span style="font-size:20px;color:#333">☰</span>
+        <span class="pc-logo">에누리</span>
+        <div class="pc-search"><span class="q">똑!똑!한 쇼핑혜택~ 나도 e100만점?!</span><span style="color:#1a70dd">🔍</span></div>
+        <div class="icons"><div><span>👤</span>로그인</div><div><span>🗂</span>최근 본 상품</div><div><span>🔔</span>알림함</div></div>
+      </div>
+      <div class="pc-crumb">🏠 &nbsp;컴퓨터/노트북/조립PC ▾ &nbsp;›&nbsp; 노트북 ▾ &nbsp;›&nbsp; 선택하세요 ▾</div>
+      <div class="pc-head">
+        <h2>LG전자 2025 그램15 15ZD80T-GX56K [SSD 256GB]</h2>
+        <div class="specs"><span>제조사 : LG전자</span><span>브랜드 : 2025 그램15</span><span>등록일 : 2025.04</span><span>출시가 : 1,599,000원(8%↓)</span><span>제품 분류 : AI노트북</span><span>화면 크기 : 39.6cm(15.6인치)</span><span>무게 : 1.29kg</span></div>
+      </div>
+      <div class="pc-main">
+        <div class="pc-left">
+          <div class="pc-thumb">
+            <div class="img"><span class="badge">30일 내 최저가</span><b>39.6cm / 1.29kg</b><span>라이젠340 / 72Wh</span><div class="kb"></div></div>
+          </div>
+          <div class="pc-center">
+            <div class="pc-price">
+              <div class="p"><div class="lab">최저가</div><div class="v">1,469,390원</div><div class="free">무료배송</div></div>
+              <button id="pcBuy">최저가 구매하기</button>
+            </div>
+            <div class="pc-mallbar"><b class="pt">e머니 11,750점 적립</b> 에누리 모바일 앱에서 구매 시</div>
+            <div class="pc-opts">
+              <div class="t"><span>옵션: 1개</span><a>5개 옵션 전체 보기 ›</a></div>
+              <div class="list"><button class="on">SSD 256GB</button><button>SSD 512GB</button><button>SSD 1TB</button><button>SSD 2TB</button><button>SSD 4TB</button></div>
+            </div>
+            <div class="pc-malls">
+              <div class="hd"><span>쇼핑몰별 최저가</span><span style="font-weight:400;color:#888">배송비 포함 가격 기준입니다.</span></div>
+              <div class="row"><span class="m">LG전자 (공식)</span><span class="pr" style="color:#ee2c40">1,379,460원</span><span class="dl">착불(배송/설치비 별도)</span><span class="b"><button>구매하기</button></span></div>
+              <div class="row"><span class="m">CJ온스타일</span><span class="pr" style="color:#ee2c40">1,469,390원</span><span class="dl">착불(설치비 별도)</span><span class="b"><button>구매하기</button></span></div>
+              <div class="row"><span class="m">AUCTION.</span><span class="pr">1,469,390원</span><span class="dl">착불 3,000원 포함</span><span class="b"><button>구매하기</button></span></div>
+              <div class="row"><span class="m">Gmarket</span><span class="pr">1,469,400원</span><span class="dl">착불 3,000원 포함</span><span class="b"><button>구매하기</button></span></div>
+              <div class="row"><span class="m">SSG.COM</span><span class="pr">1,499,000원</span><span class="dl">무료배송</span><span class="b"><button>구매하기</button></span></div>
+              <div class="row"><span class="m">LF mall</span><span class="pr">1,520,120원</span><span class="dl">무료배송</span><span class="b"><button>구매하기</button></span></div>
+              <div class="row"><span class="m">LOTTE Mart</span><span class="pr">1,562,502원</span><span class="dl">무료배송</span><span class="b"><button>구매하기</button></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="pc-right">
+          <div id="pcSummary"></div>
+          <div>
+            <div class="pc-review">
+              <div class="rh"><div style="display:flex;align-items:center;gap:4px"><b>상품리뷰</b><span style="color:#f5a623">★</span><b>4.8</b></div><span class="more">더보기 ›</span></div>
+              <div>
+                <div class="rtabs"><div class="a">AI 리뷰요약</div><div class="b">쇼핑몰 리뷰</div></div>
+                <p class="rtxt"><b>부팅도 빠르고,</b> 문서 작업이나 영상 편집도 쾌적하네요!<br>키보드 편하고 백라이트도 예뻐서 야간 작업 딱이에요.<br><b>배터리도 오래 가고,</b> 소음 없이 조용해 재택근무에 완벽해요. 대학생이나 직장인 분들 꼭 추천합니다!</p>
+                <div class="rtags"><span>빠른 부팅</span><span>사양 좋음</span><span class="gray">포장 불량</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ MO ============ -->
+    <div id="moView" class="hidden">
+      <div class="mo-phone">
+        <div class="mo-scroll" id="moScroll">
+          <div class="mo-gnb"><span>←</span><span class="logo">e</span><span class="sp"></span><span>🔍</span><span>🔔</span><span>☰</span></div>
+          <div class="mo-hero"><span class="badge">30일 내 최저가</span><b>39.6cm / 1.29kg</b><span>라이젠340 / 72Wh</span><div class="kb"></div></div>
+          <div class="mo-sec">
+            <h3>LG전자 2025 그램15 15ZD80T-GX56K [SSD 256GB]</h3>
+            <div class="mo-star">★ 4.7 (175개) · 출시가 1,599,000원 (8%↓)</div>
+            <div class="mo-price"><span class="lab">최저가</span><span class="v">1,469,390원</span></div>
+            <div style="font-size:12px;color:#888;margin-top:4px">옥션 · 무료배송</div>
+            <button class="mo-chip" id="moChip">
+              <span class="l"><i class="dot"></i><span class="t" id="moChipTxt">역대 최저가예요</span></span>
+              <span class="m">자세히
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.2 3.6L10.6 8l-4.4 4.4" stroke="#444" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </button>
+          </div>
+          <div class="mo-divider"></div>
+          <div class="mo-tabs"><button class="on">요약정보</button><button>가격비교 (107)</button><button>상품정보</button><button>상품리뷰</button></div>
+          <div class="mo-sec">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><b style="font-size:14px">쇼핑몰별 최저가</b><span style="font-size:11px;color:#888">ⓘ 기준</span></div>
+            <div class="mo-mall"><span class="m">삼성공식…</span><span class="pr">카드최저가 39,000원</span></div>
+            <div class="mo-mall"><span class="m">제이엠컴퓨터에이션</span><span class="pr">카드최저가 39,000원</span></div>
+            <div class="mo-mall"><span class="m">삼성공식파트너스</span><span class="pr">카드최저가 39,000원</span></div>
+            <div class="mo-mall"><span class="m">삼성공식파트너스</span><span class="pr">카드최저가 39,000원</span></div>
+          </div>
+          <div class="mo-banner">우리집에 맞는 인터넷 요금<br>에누리에서 혜택 비교 가입까지 한 번에!</div>
+          <div style="height:8px"></div>
+          <div class="mo-inline-wrap" id="moSummary"></div>
+          <div class="mo-divider"></div>
+          <div class="mo-sec">
+            <b style="font-size:15px">상품정보</b>
+            <div style="margin:10px 0;border:1px solid #eee;border-radius:6px;padding:10px;font-size:12px;color:#555">· 제조사 : CJ제일제당 &nbsp;&nbsp; · 브랜드 : CJ제일제당</div>
+            <p class="mo-spec">등록일 '19년 2월 / 화면 39.11cm(15.4인치) / 2880x1800(레티나 Only) / LED백라이트 / IPS패널(광시야각) / 명암비 후 구매 / SSD 최대 후 구매 / 두께 그래픽 UHD630+라데온Pro-555X(캐피즈4G) / 무선랜ac / 블루투스5.0 / RAM 8GB / 인강홀더 센터 볼트3(1개) / 독립형지 / 웹캠 / 멀티터치패드 / 터치bar.</p>
+          </div>
+          <div style="height:40px"></div>
+        </div>
+        <div class="mo-bottom"><button id="moBuy">최저가 구매하기</button></div>
+        <div class="toast" id="moToast"></div>
+        <div class="mo-dim" id="moDim"></div>
+        <div class="mo-sheet" id="moSheet">
+          <div class="mo-sheet-hd" id="moSheetHd">
+            <h4>최저가 알림 받기</h4>
+            <button id="moSheetClose" aria-label="닫기"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5.5 5.5l13 13M18.5 5.5l-13 13" stroke="#222" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+          </div>
+          <div class="mo-sheet-bd" id="moSheetBd"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="panel" id="panel">
+    <h2>상태 전환</h2>
+    <p class="hint">260813_PC_A · 260813_MW_A 스펙시트의 케이스를 전환합니다. 화면에서 직접 조작해도 동일하게 반영됩니다.</p>
+
+    <div class="grp"><div class="lbl">최저가 추이</div>
+      <div class="opts" data-key="trend"><button data-v="normal">기본</button><button data-v="pre">수집 전</button></div></div>
+
+    <div class="grp"><div class="lbl">가격 판정</div>
+      <div class="opts" data-key="verdict">
+        <button data-v="lowest">역대 최저가예요</button>
+        <button data-v="good">지금 가격이 좋은 편이에요</button>
+        <button data-v="fair">적정 가격이에요</button>
+        <button data-v="high">지금 가격을 분석한 결과예요</button>
+        <button data-v="insufficient">판정 데이터 부족</button>
+        <button data-v="precollect">수집 전</button>
+        <button data-v="soldout">일시품절</button>
+      </div></div>
+
+    <div class="grp"><div class="lbl">가격 알림 (최저가)</div>
+      <div class="opts" data-key="lowest"><button data-v="off">알림 전</button><button data-v="on">알림 받는 중</button></div></div>
+
+    <div class="grp"><div class="lbl">원하는 가격 알림 (목표가)</div>
+      <div class="opts" data-key="target">
+        <button data-v="off">기본</button><button data-v="expand">목표가 입력</button>
+        <button data-v="error">목표가 오류</button><button data-v="done">설정 완료</button>
+        <button data-v="doneOpen">목표가 변경</button>
+      </div></div>
+
+    <div class="grp"><div class="lbl">배송비 기준</div>
+      <div class="opts" data-key="ship"><button data-v="on">배송비 포함</button><button data-v="off">배송비 미포함</button></div></div>
+
+    <div class="grp"><div class="lbl">레이어 / 바텀시트</div>
+      <div class="opts" data-key="layer"><button data-v="open">열기</button><button data-v="close">닫기</button></div></div>
+
+    <p class="note">
+      · 판정 데이터 부족 → 판정 영역 <b>삭제</b>, 추이·알림 정상<br>
+      · 수집 전 → 판정 영역 <b>삭제</b>, 추이는 수집 예정 안내, 알림 정상<br>
+      · 일시품절 → 판정·알림 영역 <b>모두 삭제</b>, 구매 버튼 전환<br>
+      · 최저가 알림과 목표가 알림은 서로 독립입니다.<br>
+      · 알림을 설정하면 레이어/바텀시트가 자동으로 닫히고 토스트가 뜹니다.<br>
+      · 원부 진입 버튼은 알림 설정 시 <b>라벨은 그대로</b>, 색상만 브랜드로 전환됩니다.
+    </p>
+  </aside>
+</div>
+
+<div class="pc-layer-dim" id="pcLayerDim"></div>
+<div class="pc-layer" id="pcLayer">
+  <div class="pc-layer-hd"><h4>최저가 알림 받기</h4>
+    <button id="pcLayerClose" aria-label="닫기"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5.5 5.5l13 13M18.5 5.5l-13 13" stroke="#222" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="pc-layer-bd" id="pcLayerBd"></div>
+</div>
+
+<div class="toast" id="pcToast"></div>
+
+<div id="globalTip">
+  <div class="hd">AI 분석 기준<span class="sp"></span>
+    <button id="tipClose" aria-label="닫기"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="#ff6b6b" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="bd">
+    <div class="li"><span class="dot"><i></i></span><p>관측 기간 중 최저가 가격 데이터를 기반으로 분석해요.<br>앞으로의 가격은 예측하지 않아요.</p></div>
+    <div class="rows">
+      <div class="row"><span class="tag blue">역대 최저가예요</span><span>관측 기간 중 지금이 가장 낮은 가격</span></div>
+      <div class="row hl"><span class="tag green">지금 가격이 좋은 편이에요</span><span>평소 가격보다 충분히 낮은 구간</span></div>
+      <div class="row"><span class="tag gray">적정 가격이에요</span><span>평소 가격과 큰 차이 없음</span></div>
+    </div>
+    <div class="li"><span class="dot"><i></i></span><p>실시간 가격 변동으로 판정과 차이가 있을 수 있으니,<br>구매 전 최신 가격을 한 번 더 확인해 주세요</p></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   데이터
+   ============================================================ */
+const PRICE_IN = 1463390;      // 배송비 포함 최저가
+const PRICE_EX = 1459390;      // 배송비 미포함
+const DEFAULT_TARGET = 1323390;
+
+function makeSeries(seed,n,start,end){
+  let r=seed*9301; const rand=()=>{r=(r*9301+49297)%233280;return r/233280;};
+  const out=[]; let v=start;
+  for(let i=0;i<n;i++){
+    const t=i/(n-1), target=start+(end-start)*Math.pow(t,.85);
+    if(rand()<.32) v=v+((target-v)*.85+(rand()-.42)*(start-end)*.16);
+    v=Math.max(end*.985,Math.min(start*1.01,v));
+    out.push(Math.round(v/10)*10);
+  }
+  out[n-1]=end; out[n-2]=Math.round((end+(out[n-3]-end)*.35)/10)*10;
+  return out;
+}
+const PERIODS={
+  '1m':{label:'1개월',days:31,x:['26.07.11','07.21','08.06','현재'],data:makeSeries(2,26,1528000,PRICE_IN),start:new Date(2026,6,11)},
+  '3m':{label:'3개월',days:92,x:['26.05.14','06.14','07.15','현재'],data:makeSeries(5,34,1592000,PRICE_IN),start:new Date(2026,4,14)},
+  '6m':{label:'6개월',days:183,x:['26.02.14','04.14','06.14','현재'],data:makeSeries(9,40,1621000,PRICE_IN),start:new Date(2026,1,14)},
+  '12m':{label:'12개월',days:365,x:['25.08.14','25.12.14','26.04.14','현재'],data:makeSeries(13,46,1698000,PRICE_IN),start:new Date(2025,7,14)}
+};
+/* 판정 — Figma 2177:7772/7784/7796/7808 색상 */
+const VERDICTS={
+  lowest:{text:'역대 최저가예요',          color:'#1a70dd', bg:'#eff6ff', pos:0.00},
+  good  :{text:'지금 가격이 좋은 편이에요',  color:'#1aaa30', bg:'#e9f7eb', pos:0.19},
+  fair  :{text:'적정 가격이에요',          color:'#222222', bg:'#f4f4f4', pos:0.3033},
+  high  :{text:'지금 가격을 분석한 결과예요', color:'#222222', bg:'#f4f4f4', pos:0.5833}
+};
+/* 토스트 — Figma alert 2177:9231 / 2177:9236 */
+const TOAST={
+  on :{msg:'가격이 내려가면 알려드릴게요. 관심상품에도 담았어요.', action:'관심상품 보기'},
+  off:{msg:'알림을 해제했어요.'}
+};
+const HIDE_VERDICT = ['insufficient','precollect','soldout']; // 판정 영역 미노출
+const HIDE_ALERT   = ['soldout'];                             // 알림 영역 미노출
+
+/* ============================================================
+   상태 — 최저가 알림 / 목표가 알림은 독립
+   ============================================================ */
+const S={
+  view:'pc', period:'1m',
+  trend:'normal',        // normal | pre
+  verdict:'lowest',
+  ship:true,
+  lowestOn:false,                                   // 가격 알림 받기
+  target:{on:false, value:DEFAULT_TARGET, open:false, input:'', errors:[], chip:null},
+  layer:false
+};
+const fmt=n=>n.toLocaleString('ko-KR');
+const cur=()=>S.ship?PRICE_IN:PRICE_EX;
+const trendEmpty=()=>S.trend==='pre'||S.verdict==='precollect';
+const showVerdict=()=>!HIDE_VERDICT.includes(S.verdict);
+const showAlert=()=>!HIDE_ALERT.includes(S.verdict);
+const alertMarked=()=>S.lowestOn||S.target.on;
+
+/* ============================================================
+   차트
+   ============================================================ */
+const CH={w:380,h:120,top:21};
+function geom(period){
+  const d=PERIODS[period].data, min=Math.min(...d), max=Math.max(...d), span=(max-min)||1;
+  return d.map((v,i)=>[(i/(d.length-1))*CH.w, CH.top+(1-(v-min)/span)*(CH.h-CH.top-24), v, i]);
+}
+function chartSVG(period,mark){
+  const pts=geom(period);
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const last=pts[pts.length-1], ap=pts[Math.round(pts.length*0.55)];
+  const uid=period+'_'+Math.random().toString(36).slice(2,7);
+  return `<svg viewBox="0 0 ${CH.w} ${CH.h}" preserveAspectRatio="none">
+    <defs><linearGradient id="g${uid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a70dd" stop-opacity=".18"/><stop offset="100%" stop-color="#1a70dd" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${line} L ${CH.w} ${CH.h} L 0 ${CH.h} Z" fill="url(#g${uid})"/>
+    <path d="${line}" fill="none" stroke="#1a70dd" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="3.2" fill="#1a70dd" vector-effect="non-scaling-stroke"/>
+    ${mark?`<circle cx="${ap[0]}" cy="${ap[1]}" r="4" fill="#fff" stroke="#01c0c7" stroke-width="2.5" vector-effect="non-scaling-stroke"/>`:''}
+    <circle class="hoverDot" r="4" fill="#1a70dd" stroke="#fff" stroke-width="2" opacity="0" vector-effect="non-scaling-stroke"/>
+  </svg>`;
+}
+function dateLabel(period,idx){
+  const p=PERIODS[period], d=new Date(p.start.getTime());
+  d.setDate(d.getDate()+Math.round(p.days*(idx/(p.data.length-1))));
+  return String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
+}
+
+/* ============================================================
+   조각
+   ============================================================ */
+const shipLabel = ()=> S.ship?'배송비 포함':'배송비 미포함';
+
+function chartBlock(){
+  return `<div class="chartbox">
+    <div class="tabs center" data-role="tabs">
+      ${Object.keys(PERIODS).map(k=>`<button data-p="${k}" class="${S.period===k?'on':''}">${PERIODS[k].label}</button>`).join('')}
+    </div>
+    <div>
+      <div class="chart" data-role="chart">
+        ${chartSVG(S.period, alertMarked())}
+        <span class="lastv">${fmt(cur())}</span>
+        <div class="hit" data-role="hit"></div>
+        <div class="tip" data-role="tip"><span class="d"></span><span class="v"></span></div>
+      </div>
+      <div class="xaxis">${PERIODS[S.period].x.map(t=>`<span>${t}</span>`).join('')}</div>
+    </div>
+  </div>`;
+}
+function emptyTrend(){
+  return `<div class="trend-empty">
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" stroke="#DBDBDB" stroke-width="3"/><path d="M32 17v22" stroke="#DBDBDB" stroke-width="3.4" stroke-linecap="round"/><circle cx="32" cy="46.5" r="2.4" fill="#DBDBDB"/></svg>
+    <p>최저가 추이 데이터<br>수집 예정 상품입니다.</p></div>`;
+}
+function gauge(){
+  const v=VERDICTS[S.verdict];
+  return `<div class="gauge"><span class="cap">저렴</span><span class="bar"></span><span class="cap">비쌈</span>
+    <span class="knob" style="left:calc(32px + (100% - 80px) * ${v.pos})"></span></div>`;
+}
+function captionRow(){
+  return `<div class="caption"><span class="b">최근 90일 기준</span><span class="g">AI 분석 결과이며 실제와 다를 수 있어요</span>
+    <button class="info-btn" data-role="info" aria-label="AI 분석 기준">
+      <svg width="4" height="10" viewBox="0 0 4 10" fill="none"><circle cx="2" cy="1.5" r="1.2" fill="#8A8A8A"/><rect x="1.2" y="3.6" width="1.7" height="6" rx=".85" fill="#8A8A8A"/></svg>
+    </button></div>`;
+}
+const bellIcon = c=>`<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.9a4.1 4.1 0 00-4.1 4.1v2.2L2.7 10.6h10.6L12.1 8.2V6A4.1 4.1 0 008 1.9z" stroke="${c}" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.6 12.5a1.5 1.5 0 002.8 0" stroke="${c}" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+
+/* ============================================================
+   원부 요약형 (Figma 2177:7559 / 2181:13634)
+   ============================================================ */
+function summaryHTML(){
+  const v=VERDICTS[S.verdict];
+  return `<div class="sum">
+    <div class="sum-head">
+      <div class="l"><span class="t">최저가 추이</span>${alertMarked()?`<span class="legend-on"><i></i>알림 켠 날</span>`:''}</div>
+      <span class="r">${shipLabel()}</span>
+    </div>
+    ${trendEmpty()?emptyTrend():chartBlock()}
+    ${showVerdict()?`
+    <div class="sum-verdict">
+      <div class="row1"><div class="l"><span class="ai-badge">AI</span><span class="vt" style="color:${v.color}">${v.text}</span></div>
+        <span class="r">${shipLabel()}</span></div>
+      ${gauge()}
+    </div>`:''}
+    ${showAlert()?`<button class="sum-btn ${alertMarked()?'on':''}" data-role="open">
+      ${bellIcon(alertMarked()?'#1a70dd':'#222')}최저가 알림 받기
+    </button>`:''}
+  </div>`;
+}
+
+/* ============================================================
+   전체형 (PC 레이어 420 / MO 바텀시트 360)
+   ============================================================ */
+function fullHTML(mo){
+  const v=VERDICTS[S.verdict];
+  const t=S.target;
+  const changed = t.on && t.input.replace(/,/g,'') !== String(t.value);
+  const submitLabel = t.on ? (changed?'변경하기':'알림 해제') : '알림 받기';
+  const submitRole  = t.on && !changed ? 'targetOff' : 'targetSave';
+
+  return `<div class="full ${mo?'mo':''}">
+    <section class="sec">
+      <div class="trow"><div class="l"><span class="tt">최저가 추이</span>${alertMarked()?`<span class="legend-on"><i></i>알림 켠 날</span>`:''}</div>
+        <span class="tr">${shipLabel()}</span></div>
+      ${trendEmpty()?emptyTrend():chartBlock()}
+    </section>
+
+    ${showVerdict()?`
+    <section class="sec">
+      <div class="trow vrow"><div class="l"><span class="ai-badge">AI</span><span class="vt" style="color:${v.color}">${v.text}</span></div>
+        <span class="tr">${shipLabel()}</span></div>
+      ${gauge()}
+      ${captionRow()}
+    </section>`:''}
+
+    ${showAlert()?`
+    <section class="sec alert">
+      <div class="al-head">
+        <div class="trow"><span class="tt">가격 알림</span>
+          ${alertMarked()
+            ? `<span class="al-save">${shipLabel()} 기준 저장</span>`
+            : `<button class="switch ${S.ship?'on':''}" data-role="ship"><em>배송비 포함</em><span class="tr8"></span></button>`}
+        </div>
+        <span class="al-desc">지금보다 내려가면 알림으로 알려드려요.</span>
+      </div>
+      <div class="btns">
+        ${S.lowestOn
+          ? `<button class="cta doing" data-role="lowestOff"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3.5 9.3l3.6 3.6L14.5 5.6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>알림 받는 중</button>`
+          : `<button class="cta primary" data-role="lowestOn">가격 알림 받기</button>`}
+
+        <div class="acc ${t.open?'open':''} ${t.on?'brand':''}">
+          <button class="cta line ${t.on?'brand':''}" data-role="accToggle">
+            ${t.on?`목표가 ${fmt(t.value)}원`:'원하는 가격에 알림 받기'}
+            <span class="chev"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5.4 7.6L10 12.2l4.6-4.6" stroke="${t.on?'#1a70dd':'#222'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <div class="acc-body">
+            <div class="in-row">
+              <input class="in ${t.errors.length?'err':''} ${t.on&&!changed?'brand':''}" data-role="tinput" inputmode="numeric"
+                     value="${t.input}" placeholder="${t.on?'':'현재가 '+fmt(cur())+'원'}">
+              <button class="sbtn ${submitLabel==='알림 해제'?'line':''}" data-role="${submitRole}">${submitLabel}</button>
+            </div>
+            ${t.errors.length?`<div class="errs">${t.errors.map(e=>`<p>${e}</p>`).join('')}</div>`:''}
+            <div class="chips">${[3,5,7].map(p=>`<button data-pct="${p}" class="${t.chip===p?'on':''}">-${p}%</button>`).join('')}</div>
+          </div>
+        </div>
+      </div>
+    </section>`:''}
+  </div>`;
+}
+
+/* ============================================================
+   렌더
+   ============================================================ */
+function render(){
+  document.getElementById('pcSummary').innerHTML = summaryHTML();
+  document.getElementById('moSummary').innerHTML = summaryHTML();
+  document.getElementById('pcLayerBd').innerHTML = fullHTML(false);
+  document.getElementById('moSheetBd').innerHTML = fullHTML(true);
+
+  // 판정 칩 (MO 상단) — 배경/보더를 판정 색상과 톤 매칭
+  const chip=document.getElementById('moChip'), chipTxt=document.getElementById('moChipTxt');
+  if(showVerdict()){
+    const v=VERDICTS[S.verdict];
+    chip.classList.remove('hidden');
+    chipTxt.textContent=v.text; chipTxt.style.color=v.color;
+    chip.style.background=v.bg;
+    chip.style.borderColor=(v.color==='#222222'?'#aaaaaa':v.color);
+    chip.querySelector('.dot').style.background=v.color;
+  } else chip.classList.add('hidden');
+
+  // 일시품절 구매 버튼
+  const sold = S.verdict==='soldout';
+  const pcBuy=document.getElementById('pcBuy'), moBuy=document.getElementById('moBuy');
+  pcBuy.textContent = sold?'일시품절':'최저가 구매하기'; pcBuy.classList.toggle('soldout',sold);
+  moBuy.textContent = sold?'일시품절':'최저가 구매하기'; moBuy.classList.toggle('soldout',sold);
+
+  document.getElementById('pcView').classList.toggle('hidden',S.view!=='pc');
+  document.getElementById('moView').classList.toggle('hidden',S.view!=='mo');
+  document.getElementById('pcLayer').classList.toggle('on',S.view==='pc'&&S.layer);
+  document.getElementById('pcLayerDim').classList.toggle('on',S.view==='pc'&&S.layer);
+  document.getElementById('moSheet').classList.toggle('on',S.view==='mo'&&S.layer);
+  document.getElementById('moDim').classList.toggle('on',S.view==='mo'&&S.layer);
+
+  positionLastLabels(); syncPanel(); bind();
+}
+function positionLastLabels(){
+  if(trendEmpty()) return;
+  const pts=geom(S.period), y=pts[pts.length-1][1];
+  document.querySelectorAll('.chart .lastv').forEach(l=>l.style.top=Math.min(CH.h-14,y+10)+'px');
+}
+function syncPanel(){
+  const map={
+    trend:S.trend, verdict:S.verdict, ship:S.ship?'on':'off',
+    lowest:S.lowestOn?'on':'off',
+    target:!S.target.on ? (S.target.errors.length?'error':(S.target.open?'expand':'off'))
+                        : (S.target.open?'doneOpen':'done'),
+    layer:S.layer?'open':'close'
+  };
+  document.querySelectorAll('.panel .opts').forEach(g=>{
+    const k=g.dataset.key;
+    g.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===map[k]));
+  });
+}
+
+/* ============================================================
+   토스트
+   ============================================================ */
+let toastTimer=null;
+function showToast(kind){
+  const t=TOAST[kind];
+  const el=document.getElementById(S.view==='pc'?'pcToast':'moToast');
+  const other=document.getElementById(S.view==='pc'?'moToast':'pcToast');
+  other.classList.remove('on');
+  el.innerHTML = `<p>${t.msg}</p>` + (t.action?`<span class="act">${t.action}
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.2 3.6L10.6 8l-4.4 4.4" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`:'');
+  el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('on'),2800);
+}
+
+/* ============================================================
+   이벤트
+   ============================================================ */
+function closeLayer(){ S.layer=false; }
+function bind(){
+  document.querySelectorAll('.sum, .full').forEach(root=>{
+
+    root.querySelectorAll('[data-role="tabs"] button').forEach(b=>b.onclick=()=>{S.period=b.dataset.p;render();});
+
+    const chart=root.querySelector('[data-role="chart"]');
+    if(chart){
+      const hit=chart.querySelector('[data-role="hit"]'), tip=chart.querySelector('[data-role="tip"]'), dot=chart.querySelector('.hoverDot');
+      const pts=geom(S.period);
+      hit.onmousemove=e=>{
+        const r=chart.getBoundingClientRect();
+        const idx=Math.round(Math.min(1,Math.max(0,(e.clientX-r.left)/r.width))*(pts.length-1));
+        const p=pts[idx];
+        dot.setAttribute('cx',p[0]); dot.setAttribute('cy',p[1]); dot.setAttribute('opacity','1');
+        tip.classList.add('on');
+        tip.style.left=(p[0]/CH.w*r.width)+'px';
+        tip.style.top=(p[1]/CH.h*r.height-8)+'px';
+        tip.querySelector('.d').textContent=dateLabel(S.period,idx);
+        tip.querySelector('.v').textContent=fmt(p[2]);
+      };
+      hit.onmouseleave=()=>{tip.classList.remove('on');dot.setAttribute('opacity','0');};
+    }
+
+    const info=root.querySelector('[data-role="info"]');
+    if(info) info.onclick=e=>{
+      e.stopPropagation();
+      const tp=document.getElementById('globalTip');
+      if(tp.classList.contains('on')){tp.classList.remove('on');return;}
+      tp.classList.add('on');
+      const r=info.getBoundingClientRect();
+      tp.style.left=Math.min(innerWidth-342,Math.max(12,r.right-330))+'px';
+      let top=r.bottom+8;
+      if(top+tp.offsetHeight>innerHeight-8) top=Math.max(8,r.top-tp.offsetHeight-8);
+      tp.style.top=top+'px';
+    };
+
+    const open=root.querySelector('[data-role="open"]');
+    if(open) open.onclick=()=>{S.layer=true;render();};
+
+    const ship=root.querySelector('[data-role="ship"]');
+    if(ship) ship.onclick=()=>{S.ship=!S.ship; S.target.input=''; S.target.chip=null; S.target.errors=[]; render();};
+
+    // ---- 최저가 알림 (독립) ----
+    const lon=root.querySelector('[data-role="lowestOn"]');
+    if(lon) lon.onclick=()=>{ S.lowestOn=true; closeLayer(); render(); showToast('on'); };
+    const loff=root.querySelector('[data-role="lowestOff"]');
+    if(loff) loff.onclick=()=>{ S.lowestOn=false; render(); showToast('off'); };
+
+    // ---- 목표가 알림 (독립) ----
+    const acc=root.querySelector('[data-role="accToggle"]');
+    if(acc) acc.onclick=()=>{
+      S.target.open=!S.target.open;
+      if(S.target.open && S.target.on) S.target.input=fmt(S.target.value);
+      if(!S.target.open) S.target.errors=[];
+      render();
+    };
+    const inp=root.querySelector('[data-role="tinput"]');
+    if(inp){
+      inp.oninput=()=>{
+        const raw=inp.value.replace(/[^0-9]/g,'');
+        S.target.input=raw?fmt(Number(raw)):''; S.target.chip=null; S.target.errors=[];
+        render();
+        const f=document.querySelector((S.view==='pc'?'#pcLayerBd':'#moSheetBd')+' [data-role="tinput"]');
+        if(f){f.focus();f.setSelectionRange(f.value.length,f.value.length);}
+      };
+      inp.onkeydown=e=>{ if(e.key==='Enter'){const b=root.querySelector('[data-role="targetSave"]'); if(b)b.click();} };
+    }
+    const save=root.querySelector('[data-role="targetSave"]');
+    if(save) save.onclick=()=>{
+      const val=Number((S.target.input||'').replace(/,/g,''));
+      const errs=[];
+      if(!val||val<1) errs.push('1원 이상 입력해 주세요');
+      if(val>=cur()) errs.push('현재 최저가 보다 낮은 금액을 입력해 주세요');
+      if(errs.length){ S.target.errors=errs; S.target.open=true; render(); return; }
+      S.target.on=true; S.target.value=val; S.target.errors=[]; S.target.open=false; S.target.input='';
+      closeLayer(); render(); showToast('on');
+    };
+    const toff=root.querySelector('[data-role="targetOff"]');
+    if(toff) toff.onclick=()=>{ S.target.on=false; S.target.open=false; S.target.input=''; S.target.chip=null; S.target.errors=[]; render(); showToast('off'); };
+
+    root.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{
+      const pct=Number(b.dataset.pct);
+      S.target.chip=pct; S.target.input=fmt(Math.floor(cur()*(1-pct/100)/10)*10); S.target.errors=[];
+      render();
+    });
+  });
+}
+
+/* 전역 */
+const gTip=document.getElementById('globalTip');
+gTip.onclick=e=>e.stopPropagation();
+document.getElementById('tipClose').onclick=()=>gTip.classList.remove('on');
+document.addEventListener('click',()=>gTip.classList.remove('on'));
+addEventListener('resize',()=>gTip.classList.remove('on'));
+
+document.getElementById('viewSeg').onclick=e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  S.view=b.dataset.view; S.layer=false;
+  document.querySelectorAll('#viewSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  render();
+};
+document.getElementById('panelToggle').onclick=e=>{
+  const p=document.getElementById('panel'); p.classList.toggle('hide');
+  e.currentTarget.classList.toggle('on',!p.classList.contains('hide'));
+};
+document.getElementById('resetBtn').onclick=()=>{
+  Object.assign(S,{period:'1m',trend:'normal',verdict:'lowest',ship:true,lowestOn:false,layer:false});
+  S.target={on:false,value:DEFAULT_TARGET,open:false,input:'',errors:[],chip:null};
+  render();
+};
+document.querySelectorAll('.panel .opts').forEach(g=>{
+  g.onclick=e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    const k=g.dataset.key, v=b.dataset.v;
+    if(k==='trend'){ S.trend=v; if(v==='pre') S.verdict='precollect'; else if(S.verdict==='precollect') S.verdict='lowest'; }
+    if(k==='verdict'){ S.verdict=v; if(v==='precollect') S.trend='pre'; else if(S.trend==='pre') S.trend='normal'; }
+    if(k==='lowest') S.lowestOn=(v==='on');
+    if(k==='ship') S.ship=(v==='on');
+    if(k==='layer') S.layer=(v==='open');
+    if(k==='target'){
+      const t=S.target;
+      if(v==='off'){ Object.assign(t,{on:false,open:false,input:'',errors:[],chip:null}); }
+      if(v==='expand'){ Object.assign(t,{on:false,open:true,input:'',errors:[],chip:null}); }
+      if(v==='error'){ Object.assign(t,{on:false,open:true,input:fmt(PRICE_IN+60000),errors:['현재 최저가 보다 낮은 금액을 입력해 주세요'],chip:null}); }
+      if(v==='done'){ Object.assign(t,{on:true,value:DEFAULT_TARGET,open:false,input:'',errors:[],chip:null}); }
+      if(v==='doneOpen'){ Object.assign(t,{on:true,value:DEFAULT_TARGET,open:true,input:fmt(1298390),errors:[],chip:null}); }
+    }
+    render();
+  };
+});
+document.getElementById('pcLayerClose').onclick=()=>{S.layer=false;render();};
+document.getElementById('pcLayerDim').onclick=()=>{S.layer=false;render();};
+document.getElementById('moSheetClose').onclick=()=>{S.layer=false;render();};
+document.getElementById('moDim').onclick=()=>{S.layer=false;render();};
+document.getElementById('moChip').onclick=()=>{S.layer=true;render();};
+document.getElementById('moSheetBd').addEventListener('scroll',function(){
+  document.getElementById('moSheetHd').classList.toggle('stuck',this.scrollTop>2);
+});
+
+render();
+</script>
+</body>
+</html>
